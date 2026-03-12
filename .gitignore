@@ -1,0 +1,37 @@
+# dependencies
+node_modules/
+
+# build artifacts
+dist/
+dist-native/
+build/
+bin/
+out/
+web-build/
+.next/
+.turbo/
+.expo/
+*.log
+
+# secrets
+.env
+.env.local
+.env.*.local
+
+# system files
+.DS_Store
+Thumbs.db
+
+# ignore local dev tools
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ignore yarnv2 related if any
+.yarn/
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
