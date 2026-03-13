@@ -1,5 +1,6 @@
 export { default as coupleColors } from './colors/couple';
 export { default as petColors } from './colors/pet';
+export type { AppTheme } from './theme';
 
 export const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("ko-KR", {

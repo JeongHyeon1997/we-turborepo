@@ -1,4 +1,3 @@
-export * from './MyButton';
 export { Header } from './layout/Header';
 export { BottomNav } from './layout/BottomNav';
 export { AppLayout } from './layout/AppLayout';

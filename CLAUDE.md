@@ -30,6 +30,45 @@ packages/
 | `apps/web/couple` | `@we/web-couple` |
 | `apps/web/pet` | `@we/web-pet` |
 
+## UI 동일성 원칙
+
+**웹과 앱의 화면 구성은 항상 동일해야 한다.** 구현 코드(RN vs React)는 달라도 된다.
+
+### 기본 레이아웃
+
+모든 앱(web/native 공통)은 동일한 레이아웃 골조를 사용한다:
+
+```
+┌─────────────────────────────┐
+│  Header                     │
+│  [앱 아이콘]     [아이콘들] │
+├─────────────────────────────┤
+│                             │
+│  Content (Outlet / screen)  │
+│                             │
+├─────────────────────────────┤
+│  BottomNav                  │
+│  [탭1] [탭2] [탭3]          │
+└─────────────────────────────┘
+```
+
+### 플랫폼별 구현
+
+| 역할 | Web (`@we/ui-web`) | Native (`@we/ui`) |
+|------|--------------------|-------------------|
+| 레이아웃 | `AppLayout` → `<Outlet />` | `AppLayout` → active screen |
+| 헤더 | `Header` | `Header` |
+| 하단 탭 | `BottomNav` + react-router NavLink | `BottomNav` + Pressable |
+| 탭 정의 | `key, path, label, icon` | `key, label, icon, screen` |
+
+### 각 앱의 조합 위치
+
+- `apps/web/{name}/src/config/tabs.tsx` — 이 앱이 쓸 탭 목록
+- `apps/web/{name}/src/config/headerIcons.tsx` — 헤더 우측 아이콘
+- `apps/app/{name}/config/tabs.tsx` — 동일 구조, RN 버전
+
+> 새 탭/페이지를 추가할 때는 웹과 앱 양쪽 config/tabs 에 모두 추가한다.
+
 ## 모듈 설계 원칙
 
 모든 기능은 **넣었다 뺐다 할 수 있는 모듈** 단위로 만든다.
