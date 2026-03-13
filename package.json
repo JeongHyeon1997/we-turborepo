@@ -13,7 +13,8 @@
     "prettier": "latest"
   },
   "workspaces": [
-    "apps/*",
+    "apps/app/*",
+    "apps/web/*",
     "packages/*"
   ],
   "packageManager": "yarn@1.22.22",
