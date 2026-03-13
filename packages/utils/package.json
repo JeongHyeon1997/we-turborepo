@@ -6,6 +6,9 @@
   "scripts": {
     "lint": "eslint \"**/*.ts*\""
   },
+  "dependencies": {
+    "axios": "^1.7.0"
+  },
   "devDependencies": {
     "@we/eslint-config": "*",
     "@we/tsconfig": "*",
