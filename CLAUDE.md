@@ -30,6 +30,41 @@ packages/
 | `apps/web/couple` | `@we/web-couple` |
 | `apps/web/pet` | `@we/web-pet` |
 
+## 모듈 설계 원칙
+
+모든 기능은 **넣었다 뺐다 할 수 있는 모듈** 단위로 만든다.
+
+- 기능 하나 = 파일(또는 폴더) 하나. import 한 줄로 켜고, 제거하면 꺼진다
+- 프로젝트별로 필요한 것만 조합해서 사용한다
+- 공유 패키지(`packages/`)는 전체 목록을 정의하고, 각 앱은 필요한 것만 import한다
+
+### 예시: 바텀탭
+
+```ts
+// packages/ui/src/navigation/tabs.ts — 전체 탭 정의
+export { HomeTab } from './HomeTab';
+export { DiaryTab } from './DiaryTab';
+export { CalendarTab } from './CalendarTab';
+export { SettingsTab } from './SettingsTab';
+
+// apps/app/couple — 1,2,3만 사용
+import { HomeTab, DiaryTab, CalendarTab } from '@we/ui/navigation/tabs';
+
+// apps/app/pet — 1,4만 사용
+import { HomeTab, SettingsTab } from '@we/ui/navigation/tabs';
+```
+
+### 적용 범위
+
+| 항목 | 공유 위치 | 조합 위치 |
+|------|-----------|-----------|
+| 탭/네비게이션 항목 | `packages/ui` | 각 앱 navigator |
+| 색상 토큰 | `packages/utils/src/colors/` | 각 앱 theme |
+| 공용 컴포넌트 | `packages/ui` | 각 앱 screen |
+| 유틸 함수 | `packages/utils` | 각 앱 필요한 곳 |
+
+> 새 기능을 만들 때는 항상 "이걸 다른 앱에서 빼도 나머지가 정상 동작하는가?"를 확인한다.
+
 ## 핵심 규칙
 
 ### packages/ui
