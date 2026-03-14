@@ -4,6 +4,7 @@ import { tabs } from './config/tabs';
 import { theme } from './config/theme';
 import { HeaderIcons } from './config/headerIcons';
 import { DiaryPage } from './pages/DiaryPage';
+import { GalleryPage } from './pages/GalleryPage';
 import { CommunityPage } from './pages/CommunityPage';
 import { CommunityDetailPage } from './pages/CommunityDetailPage';
 import { MyInfoPage } from './pages/MyInfoPage';
@@ -40,6 +41,7 @@ export const router = createBrowserRouter(
       children: [
         { index: true, element: <Navigate to="/diary" replace /> },
         { path: 'diary',     element: <DiaryPage /> },
+        { path: 'gallery',   element: <GalleryPage /> },
         { path: 'community', element: <CommunityPage /> },
         { path: 'community/:id', element: <CommunityDetailPage /> },
         { path: 'my-info',   element: <MyInfoPage /> },

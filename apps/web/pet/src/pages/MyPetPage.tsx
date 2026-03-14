@@ -1,3 +1,5 @@
+import { DiaryPage } from './DiaryPage';
+
 export function MyPetPage() {
-  return <div>내아이</div>;
+  return <DiaryPage />;
 }

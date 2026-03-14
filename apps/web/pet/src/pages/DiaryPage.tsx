@@ -1,18 +1,20 @@
 import { useState, useRef, type CSSProperties, type ChangeEvent } from 'react';
 import { IoListOutline, IoCalendarOutline, IoChevronBack, IoChevronForward, IoAdd, IoClose } from 'react-icons/io5';
-import { coupleColors } from '@we/utils';
+import { petColors } from '@we/utils';
 import type { DiaryEntry } from '@we/utils';
 import { myDiaryEntries } from '../data/diaryEntries';
 
+const ACCENT = petColors.purple; // #97A4D9
+
 const MOODS = [
-  { emoji: '😊', label: '행복해요', color: '#FFD93D' },
-  { emoji: '🥰', label: '설레요',   color: '#FF6B9D' },
-  { emoji: '😌', label: '평온해요', color: '#74B9FF' },
-  { emoji: '🤔', label: '고민돼요', color: '#FDCB6E' },
-  { emoji: '😢', label: '슬퍼요',   color: '#8BA4B8' },
-  { emoji: '😤', label: '화나요',   color: '#FF7675' },
-  { emoji: '😴', label: '피곤해요', color: '#A29BFE' },
-  { emoji: '🌸', label: '두근두근', color: '#FD79A8' },
+  { emoji: '🎉', label: '신났어요',   color: '#FFD93D' },
+  { emoji: '🥰', label: '애교부려요', color: '#FF6B9D' },
+  { emoji: '😌', label: '얌전해요',   color: '#74B9FF' },
+  { emoji: '😴', label: '졸려요',     color: '#A29BFE' },
+  { emoji: '🍖', label: '배고파요',   color: '#FDCB6E' },
+  { emoji: '🤒', label: '아파요',     color: '#8BA4B8' },
+  { emoji: '🐾', label: '장난꾸러기', color: '#FD79A8' },
+  { emoji: '⚡', label: '활발해요',   color: '#FF7675' },
 ];
 
 type Mood = typeof MOODS[number];
@@ -62,7 +64,7 @@ function DiaryCard({ entry, onClick }: { entry: DiaryEntry; onClick: () => void 
             <div style={{ ...s.moodBadge, backgroundColor: (entry.moodColor ?? '#ccc') + '33' }}>
               <span>{entry.mood}</span>
               {entry.moodLabel && (
-                <span style={{ ...s.moodBadgeLabel, color: entry.moodColor ?? coupleColors.gray600 }}>
+                <span style={{ ...s.moodBadgeLabel, color: entry.moodColor ?? petColors.gray600 }}>
                   {entry.moodLabel}
                 </span>
               )}
@@ -146,14 +148,14 @@ export function DiaryPage() {
           style={{ ...s.toggleBtn, ...(viewMode === 'list' ? s.toggleBtnActive : {}) }}
           onClick={() => setViewMode('list')}
         >
-          <IoListOutline size={16} color={viewMode === 'list' ? '#fff' : coupleColors.gray400} />
+          <IoListOutline size={16} color={viewMode === 'list' ? '#fff' : petColors.gray400} />
           <span style={{ ...s.toggleText, ...(viewMode === 'list' ? s.toggleTextActive : {}) }}>목록</span>
         </button>
         <button
           style={{ ...s.toggleBtn, ...(viewMode === 'calendar' ? s.toggleBtnActive : {}) }}
           onClick={() => setViewMode('calendar')}
         >
-          <IoCalendarOutline size={16} color={viewMode === 'calendar' ? '#fff' : coupleColors.gray400} />
+          <IoCalendarOutline size={16} color={viewMode === 'calendar' ? '#fff' : petColors.gray400} />
           <span style={{ ...s.toggleText, ...(viewMode === 'calendar' ? s.toggleTextActive : {}) }}>캘린더</span>
         </button>
       </div>
@@ -175,11 +177,11 @@ export function DiaryPage() {
           {/* 월 네비게이션 */}
           <div style={s.calMonthNav}>
             <button style={s.calNavBtn} onClick={prevMonth}>
-              <IoChevronBack size={22} color={coupleColors.gray600} />
+              <IoChevronBack size={22} color={petColors.gray600} />
             </button>
             <span style={s.calMonthTitle}>{calYear}년 {MONTH_NAMES[calMonth]}</span>
             <button style={s.calNavBtn} onClick={nextMonth}>
-              <IoChevronForward size={22} color={coupleColors.gray600} />
+              <IoChevronForward size={22} color={petColors.gray600} />
             </button>
           </div>
 
@@ -207,8 +209,8 @@ export function DiaryPage() {
                 <div key={day} style={s.calDayCell} onClick={() => setSelectedDay(isSelected ? null : day)}>
                   <div style={{
                     ...s.calDayCircle,
-                    ...(isSelected ? { backgroundColor: '#f4a0a0' } : {}),
-                    ...(isToday && !isSelected ? { border: '2px solid #f4a0a0' } : {}),
+                    ...(isSelected ? { backgroundColor: ACCENT } : {}),
+                    ...(isToday && !isSelected ? { border: `2px solid ${ACCENT}` } : {}),
                   }}>
                     <span style={{
                       ...s.calDayText,
@@ -220,7 +222,7 @@ export function DiaryPage() {
                   {dayEntries.length > 0 && (
                     <div style={s.dotsRow}>
                       {dayEntries.slice(0, 3).map((e, j) => (
-                        <div key={j} style={{ ...s.dot, backgroundColor: e.moodColor ?? coupleColors.gray300 }} />
+                        <div key={j} style={{ ...s.dot, backgroundColor: e.moodColor ?? petColors.gray300 }} />
                       ))}
                     </div>
                   )}
@@ -235,7 +237,7 @@ export function DiaryPage() {
               <div>
                 <p style={s.selectedDayTitle}>{calMonth + 1}월 {selectedDay}일</p>
                 {selectedEntries.length === 0 ? (
-                  <p style={s.selectedDayEmpty}>이 날의 일기가 없어요</p>
+                  <p style={s.selectedDayEmpty}>이 날의 일기가 없어요 🐾</p>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {selectedEntries.map(e => (
@@ -263,7 +265,6 @@ export function DiaryPage() {
             {detailEntry.moodColor && (
               <div style={{ height: 6, backgroundColor: detailEntry.moodColor, flexShrink: 0 }} />
             )}
-            {/* 헤더: 날짜 + 기분 + 닫기 버튼 한 줄 */}
             <div style={s.detailHeader}>
               <span style={s.detailDate}>{formatDate(detailEntry.createdAt)}</span>
               <div style={s.detailHeaderRight}>
@@ -271,14 +272,14 @@ export function DiaryPage() {
                   <div style={{ ...s.moodBadge, backgroundColor: (detailEntry.moodColor ?? '#ccc') + '33' }}>
                     <span>{detailEntry.mood}</span>
                     {detailEntry.moodLabel && (
-                      <span style={{ ...s.moodBadgeLabel, color: detailEntry.moodColor ?? coupleColors.gray600 }}>
+                      <span style={{ ...s.moodBadgeLabel, color: detailEntry.moodColor ?? petColors.gray600 }}>
                         {detailEntry.moodLabel}
                       </span>
                     )}
                   </div>
                 )}
                 <button style={s.detailCloseBtn} onClick={() => setDetailEntry(null)}>
-                  <IoClose size={20} color={coupleColors.gray400} />
+                  <IoClose size={20} color={petColors.gray400} />
                 </button>
               </div>
             </div>
@@ -298,7 +299,7 @@ export function DiaryPage() {
       {showMoodModal && (
         <div style={s.overlay} onClick={() => setShowMoodModal(false)}>
           <div style={s.moodModal} onClick={e => e.stopPropagation()}>
-            <p style={s.moodModalTitle}>오늘의 기분은<br />어떠셨나요? 🌸</p>
+            <p style={s.moodModalTitle}>오늘 우리 아이는<br />어땠나요? 🐾</p>
             <div style={s.moodGrid}>
               {MOODS.map(mood => (
                 <button
@@ -342,7 +343,7 @@ export function DiaryPage() {
               <div style={s.divider} />
               <textarea
                 style={s.contentInput}
-                placeholder="오늘 있었던 일을 기록해보세요..."
+                placeholder="오늘 우리 아이는 어땠나요?..."
                 value={createForm.content}
                 onChange={e => setCreateForm(p => p ? { ...p, content: e.target.value } : p)}
               />
@@ -369,7 +370,7 @@ export function DiaryPage() {
 
 const s: Record<string, CSSProperties> = {
   page: {
-    backgroundColor: coupleColors.gray50,
+    backgroundColor: petColors.gray50,
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
@@ -380,7 +381,7 @@ const s: Record<string, CSSProperties> = {
   toggleWrap: { display: 'flex', justifyContent: 'center', padding: '14px 0 10px', flexShrink: 0 },
   toggleRow: {
     display: 'flex',
-    backgroundColor: coupleColors.gray100,
+    backgroundColor: petColors.gray100,
     borderRadius: 10,
     padding: 3,
     gap: 2,
@@ -390,8 +391,8 @@ const s: Record<string, CSSProperties> = {
     padding: '7px 16px', borderRadius: 8,
     border: 'none', background: 'none', cursor: 'pointer',
   },
-  toggleBtnActive: { backgroundColor: '#f4a0a0' },
-  toggleText: { fontSize: 13, color: coupleColors.gray400 },
+  toggleBtnActive: { backgroundColor: ACCENT },
+  toggleText: { fontSize: 13, color: petColors.gray400 },
   toggleTextActive: { color: '#fff' },
 
   // 목록 뷰
@@ -405,7 +406,7 @@ const s: Record<string, CSSProperties> = {
 
   // 카드
   card: {
-    backgroundColor: coupleColors.white,
+    backgroundColor: petColors.white,
     borderRadius: 12, overflow: 'hidden',
     boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
     cursor: 'pointer',
@@ -413,12 +414,12 @@ const s: Record<string, CSSProperties> = {
   moodStrip: { height: 4 },
   cardBody: { padding: 14 },
   cardMeta: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  dateText: { fontSize: 12, color: coupleColors.gray400 },
+  dateText: { fontSize: 12, color: petColors.gray400 },
   moodBadge: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 20, fontSize: 14 },
   moodBadgeLabel: { fontSize: 11 },
-  entryTitle: { margin: '0 0 6px', fontSize: 16, fontWeight: 700, color: coupleColors.gray800, fontFamily: 'BMJUA, sans-serif' },
+  entryTitle: { margin: '0 0 6px', fontSize: 16, fontWeight: 700, color: petColors.gray800, fontFamily: 'BMJUA, sans-serif' },
   entryContent: {
-    margin: 0, fontSize: 14, lineHeight: 1.6, color: coupleColors.gray600, fontFamily: 'BMHANNAPro, sans-serif',
+    margin: 0, fontSize: 14, lineHeight: 1.6, color: petColors.gray600, fontFamily: 'BMHANNAPro, sans-serif',
     display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden',
   },
   entryImage: { width: '100%', aspectRatio: '3/2', objectFit: 'cover', display: 'block', marginTop: 10, borderRadius: 8 },
@@ -432,39 +433,38 @@ const s: Record<string, CSSProperties> = {
     padding: 8, borderRadius: 8,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
-  calMonthTitle: { fontSize: 18, fontFamily: 'BMJUA, sans-serif', color: coupleColors.gray800 },
+  calMonthTitle: { fontSize: 18, fontFamily: 'BMJUA, sans-serif', color: petColors.gray800 },
   calGrid: {
     display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
-    backgroundColor: coupleColors.white,
+    backgroundColor: petColors.white,
     borderRadius: 16, boxShadow: '0 1px 6px rgba(0,0,0,0.08)',
     overflow: 'hidden', marginBottom: 16,
   },
-  calWeekCell: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px 0', backgroundColor: coupleColors.gray50 },
-  calWeekDay: { fontSize: 13, fontWeight: 600, color: coupleColors.gray500 },
+  calWeekCell: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px 0', backgroundColor: petColors.gray50 },
+  calWeekDay: { fontSize: 13, fontWeight: 600, color: petColors.gray500 },
   calDayCell: { display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 0', cursor: 'pointer' },
   calDayCircle: {
     width: 38, height: 38, borderRadius: 19,
     display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box',
   },
-  calDayText: { fontSize: 15, color: coupleColors.gray700 },
+  calDayText: { fontSize: 15, color: petColors.gray700 },
   dotsRow: { display: 'flex', gap: 3, marginTop: 4, height: 6 },
   dot: { width: 6, height: 6, borderRadius: 3 },
-  selectedDaySection: { marginTop: 4 }, // kept for legacy, using calEntries now
-  selectedDayTitle: { margin: '0 0 12px', fontSize: 15, fontFamily: 'BMJUA, sans-serif', color: coupleColors.gray700 },
-  selectedDayEmpty: { margin: 0, fontSize: 13, color: coupleColors.gray400, textAlign: 'center', padding: '20px 0' },
+  selectedDayTitle: { margin: '0 0 12px', fontSize: 15, fontFamily: 'BMJUA, sans-serif', color: petColors.gray700 },
+  selectedDayEmpty: { margin: 0, fontSize: 13, color: petColors.gray400, textAlign: 'center', padding: '20px 0' },
 
   // FAB
   fab: {
     position: 'fixed', bottom: 76, right: 20,
     width: 52, height: 52, borderRadius: 26,
-    backgroundColor: '#f4a0a0', border: 'none', cursor: 'pointer',
+    backgroundColor: ACCENT, border: 'none', cursor: 'pointer',
     boxShadow: '0 2px 10px rgba(0,0,0,0.18)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
 
   // 상세 모달
   detailModal: {
-    backgroundColor: coupleColors.white,
+    backgroundColor: petColors.white,
     borderRadius: 20, width: '92%', maxWidth: 480,
     maxHeight: '85vh', display: 'flex', flexDirection: 'column',
     overflow: 'hidden',
@@ -472,7 +472,7 @@ const s: Record<string, CSSProperties> = {
   detailHeader: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     padding: '12px 12px 12px 16px',
-    borderBottom: `1px solid ${coupleColors.gray100}`,
+    borderBottom: `1px solid ${petColors.gray100}`,
     flexShrink: 0,
   },
   detailHeaderRight: { display: 'flex', alignItems: 'center', gap: 8 },
@@ -482,10 +482,10 @@ const s: Record<string, CSSProperties> = {
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
   detailBody: { flex: 1, overflowY: 'auto', padding: '14px 16px 20px' },
-  detailDate: { fontSize: 13, color: coupleColors.gray400 },
-  detailTitle: { margin: '0 0 12px', fontSize: 20, fontWeight: 700, color: coupleColors.gray800, fontFamily: 'BMJUA, sans-serif' },
-  detailDivider: { height: 1, backgroundColor: coupleColors.gray100, marginBottom: 14 },
-  detailContent: { margin: 0, fontSize: 15, lineHeight: 1.8, color: coupleColors.gray700, fontFamily: 'BMHANNAPro, sans-serif' },
+  detailDate: { fontSize: 13, color: petColors.gray400 },
+  detailTitle: { margin: '0 0 12px', fontSize: 20, fontWeight: 700, color: petColors.gray800, fontFamily: 'BMJUA, sans-serif' },
+  detailDivider: { height: 1, backgroundColor: petColors.gray100, marginBottom: 14 },
+  detailContent: { margin: 0, fontSize: 15, lineHeight: 1.8, color: petColors.gray700, fontFamily: 'BMHANNAPro, sans-serif' },
   detailImage: { width: '100%', aspectRatio: '3/2', objectFit: 'cover', display: 'block', marginTop: 16, borderRadius: 10 },
 
   // 오버레이 공통
@@ -495,8 +495,8 @@ const s: Record<string, CSSProperties> = {
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     zIndex: 200,
   },
-  moodModal: { backgroundColor: coupleColors.white, borderRadius: 24, padding: 28, width: '88%', maxWidth: 360 },
-  moodModalTitle: { margin: '0 0 22px', fontSize: 20, fontFamily: 'BMJUA, sans-serif', color: coupleColors.gray800, textAlign: 'center', lineHeight: 1.55 },
+  moodModal: { backgroundColor: petColors.white, borderRadius: 24, padding: 28, width: '88%', maxWidth: 360 },
+  moodModalTitle: { margin: '0 0 22px', fontSize: 20, fontFamily: 'BMJUA, sans-serif', color: petColors.gray800, textAlign: 'center', lineHeight: 1.55 },
   moodGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 },
   moodItem: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '10px 4px', borderRadius: 14, border: 'none', cursor: 'pointer' },
   moodCircle: { width: 50, height: 50, borderRadius: 25, display: 'flex', alignItems: 'center', justifyContent: 'center' },
@@ -505,22 +505,22 @@ const s: Record<string, CSSProperties> = {
 
   // 작성 모달
   createOverlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 },
-  createModal: { backgroundColor: coupleColors.white, borderRadius: 20, width: '92%', maxWidth: 480, maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
-  createHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderBottom: `1px solid ${coupleColors.gray100}`, flexShrink: 0 },
-  cancelBtn: { background: 'none', border: 'none', fontSize: 15, color: coupleColors.gray500, cursor: 'pointer', fontFamily: 'BMHANNAPro, sans-serif', padding: 4 },
-  createHeaderTitle: { fontSize: 16, fontFamily: 'BMJUA, sans-serif', color: coupleColors.gray800 },
-  submitBtn: { background: 'none', border: 'none', fontSize: 15, color: '#e07878', cursor: 'pointer', fontFamily: 'BMJUA, sans-serif', padding: 4 },
+  createModal: { backgroundColor: petColors.white, borderRadius: 20, width: '92%', maxWidth: 480, maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+  createHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderBottom: `1px solid ${petColors.gray100}`, flexShrink: 0 },
+  cancelBtn: { background: 'none', border: 'none', fontSize: 15, color: petColors.gray500, cursor: 'pointer', fontFamily: 'BMHANNAPro, sans-serif', padding: 4 },
+  createHeaderTitle: { fontSize: 16, fontFamily: 'BMJUA, sans-serif', color: petColors.gray800 },
+  submitBtn: { background: 'none', border: 'none', fontSize: 15, color: ACCENT, cursor: 'pointer', fontFamily: 'BMJUA, sans-serif', padding: 4 },
   createBody: { flex: 1, overflowY: 'auto', padding: 16 },
   selectedMoodRow: { display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderRadius: 20, marginBottom: 16 },
   selectedMoodLabel: { fontSize: 14, fontFamily: 'BMJUA, sans-serif' },
-  changeMoodBtn: { marginLeft: 4, padding: '2px 8px', backgroundColor: 'rgba(0,0,0,0.06)', border: 'none', borderRadius: 10, fontSize: 11, color: coupleColors.gray500, cursor: 'pointer', fontFamily: 'BMHANNAPro, sans-serif' },
-  titleInput: { width: '100%', border: 'none', outline: 'none', fontSize: 18, fontFamily: 'BMJUA, sans-serif', color: coupleColors.gray800, padding: '8px 0', boxSizing: 'border-box' },
-  divider: { height: 1, backgroundColor: coupleColors.gray100, margin: '8px 0' },
-  contentInput: { width: '100%', minHeight: 180, border: 'none', outline: 'none', resize: 'none', fontSize: 15, fontFamily: 'BMHANNAPro, sans-serif', color: coupleColors.gray700, lineHeight: 1.7, padding: '4px 0', boxSizing: 'border-box' },
+  changeMoodBtn: { marginLeft: 4, padding: '2px 8px', backgroundColor: 'rgba(0,0,0,0.06)', border: 'none', borderRadius: 10, fontSize: 11, color: petColors.gray500, cursor: 'pointer', fontFamily: 'BMHANNAPro, sans-serif' },
+  titleInput: { width: '100%', border: 'none', outline: 'none', fontSize: 18, fontFamily: 'BMJUA, sans-serif', color: petColors.gray800, padding: '8px 0', boxSizing: 'border-box' },
+  divider: { height: 1, backgroundColor: petColors.gray100, margin: '8px 0' },
+  contentInput: { width: '100%', minHeight: 180, border: 'none', outline: 'none', resize: 'none', fontSize: 15, fontFamily: 'BMHANNAPro, sans-serif', color: petColors.gray700, lineHeight: 1.7, padding: '4px 0', boxSizing: 'border-box' },
   imagePreviewWrap: { position: 'relative', marginTop: 14, borderRadius: 12, overflow: 'hidden' },
   imagePreview: { width: '100%', aspectRatio: '3/2', objectFit: 'cover', display: 'block' },
   removeImageBtn: { position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  createFooter: { display: 'flex', padding: '10px 12px', borderTop: `1px solid ${coupleColors.gray100}`, flexShrink: 0 },
-  footerBtn: { display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', background: coupleColors.gray100, border: 'none', borderRadius: 10, cursor: 'pointer' },
-  footerBtnLabel: { fontSize: 13, color: coupleColors.gray600, fontFamily: 'BMHANNAPro, sans-serif' },
+  createFooter: { display: 'flex', padding: '10px 12px', borderTop: `1px solid ${petColors.gray100}`, flexShrink: 0 },
+  footerBtn: { display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', background: petColors.gray100, border: 'none', borderRadius: 10, cursor: 'pointer' },
+  footerBtnLabel: { fontSize: 13, color: petColors.gray600, fontFamily: 'BMHANNAPro, sans-serif' },
 };

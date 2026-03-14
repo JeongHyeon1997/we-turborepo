@@ -50,7 +50,8 @@ const styles = {
   root: {
     display: 'flex',
     flexDirection: 'column',
-    minHeight: '100dvh',
+    height: '100dvh',
+    overflow: 'hidden',
   } satisfies CSSProperties,
   main: {
     flex: 1,

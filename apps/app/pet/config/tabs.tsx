@@ -4,6 +4,7 @@ import type { NavTab } from '@we/ui';
 import { petColors } from '@we/utils';
 import type { CommunityPost } from '@we/utils';
 import { MyPetScreen } from '../screens/MyPetScreen';
+import { GalleryScreen } from '../screens/GalleryScreen';
 import { CommunityScreen } from '../screens/CommunityScreen';
 import { MyInfoScreen } from '../screens/MyInfoScreen';
 
@@ -20,6 +21,12 @@ export function createTabs({ onSettingsPress, onPostPress, onAuthorPress }: TabC
       label: '내아이',
       icon: <Ionicons name="paw-outline" size={22} />,
       screen: <MyPetScreen />,
+    },
+    {
+      key: 'gallery',
+      label: '갤러리',
+      icon: <Ionicons name="images-outline" size={22} />,
+      screen: <GalleryScreen />,
     },
     {
       key: 'community',

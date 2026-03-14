@@ -4,6 +4,7 @@ import type { NavTab } from '@we/ui';
 import { coupleColors } from '@we/utils';
 import type { CommunityPost } from '@we/utils';
 import { DiaryScreen } from '../screens/DiaryScreen';
+import { GalleryScreen } from '../screens/GalleryScreen';
 import { CommunityScreen } from '../screens/CommunityScreen';
 import { MyInfoScreen } from '../screens/MyInfoScreen';
 
@@ -20,6 +21,12 @@ export function createTabs({ onSettingsPress, onPostPress, onAuthorPress }: TabC
       label: '일기장',
       icon: <Ionicons name="book-outline" size={22} />,
       screen: <DiaryScreen />,
+    },
+    {
+      key: 'gallery',
+      label: '갤러리',
+      icon: <Ionicons name="images-outline" size={22} />,
+      screen: <GalleryScreen />,
     },
     {
       key: 'community',

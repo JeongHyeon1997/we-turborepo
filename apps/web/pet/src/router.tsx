@@ -4,6 +4,7 @@ import { tabs } from './config/tabs';
 import { theme } from './config/theme';
 import { HeaderIcons } from './config/headerIcons';
 import { MyPetPage } from './pages/MyPetPage';
+import { GalleryPage } from './pages/GalleryPage';
 import { CommunityPage } from './pages/CommunityPage';
 import { CommunityDetailPage } from './pages/CommunityDetailPage';
 import { MyInfoPage } from './pages/MyInfoPage';
@@ -40,6 +41,7 @@ export const router = createBrowserRouter(
       children: [
         { index: true, element: <Navigate to="/my-pet" replace /> },
         { path: 'my-pet',    element: <MyPetPage /> },
+        { path: 'gallery',   element: <GalleryPage /> },
         { path: 'community', element: <CommunityPage /> },
         { path: 'community/:id', element: <CommunityDetailPage /> },
         { path: 'my-info',   element: <MyInfoPage /> },

@@ -5,19 +5,21 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { coupleColors } from '@we/utils';
+import { petColors } from '@we/utils';
 import type { DiaryEntry } from '@we/utils';
 import { myDiaryEntries } from '../data/diaryEntries';
 
+const ACCENT = petColors.purple; // #97A4D9
+
 const MOODS = [
-  { emoji: '😊', label: '행복해요', color: '#FFD93D' },
-  { emoji: '🥰', label: '설레요',   color: '#FF6B9D' },
-  { emoji: '😌', label: '평온해요', color: '#74B9FF' },
-  { emoji: '🤔', label: '고민돼요', color: '#FDCB6E' },
-  { emoji: '😢', label: '슬퍼요',   color: '#8BA4B8' },
-  { emoji: '😤', label: '화나요',   color: '#FF7675' },
-  { emoji: '😴', label: '피곤해요', color: '#A29BFE' },
-  { emoji: '🌸', label: '두근두근', color: '#FD79A8' },
+  { emoji: '🎉', label: '신났어요',   color: '#FFD93D' },
+  { emoji: '🥰', label: '애교부려요', color: '#FF6B9D' },
+  { emoji: '😌', label: '얌전해요',   color: '#74B9FF' },
+  { emoji: '😴', label: '졸려요',     color: '#A29BFE' },
+  { emoji: '🍖', label: '배고파요',   color: '#FDCB6E' },
+  { emoji: '🤒', label: '아파요',     color: '#8BA4B8' },
+  { emoji: '🐾', label: '장난꾸러기', color: '#FD79A8' },
+  { emoji: '⚡', label: '활발해요',   color: '#FF7675' },
 ] as const;
 
 type Mood = { emoji: string; label: string; color: string };
@@ -67,7 +69,7 @@ function DiaryCard({ entry, onPress }: { entry: DiaryEntry; onPress: () => void 
             <View style={[s.moodBadge, { backgroundColor: (entry.moodColor ?? '#ccc') + '33' }]}>
               <Text style={s.moodEmoji}>{entry.mood}</Text>
               {entry.moodLabel && (
-                <Text style={[s.moodBadgeLabel, { color: entry.moodColor ?? coupleColors.gray600 }]}>
+                <Text style={[s.moodBadgeLabel, { color: entry.moodColor ?? petColors.gray600 }]}>
                   {entry.moodLabel}
                 </Text>
               )}
@@ -161,14 +163,14 @@ export function DiaryScreen() {
           style={[s.toggleBtn, viewMode === 'list' && s.toggleBtnActive]}
           onPress={() => setViewMode('list')}
         >
-          <Ionicons name="list-outline" size={17} color={viewMode === 'list' ? '#fff' : coupleColors.gray400} />
+          <Ionicons name="list-outline" size={17} color={viewMode === 'list' ? '#fff' : petColors.gray400} />
           <Text style={[s.toggleText, viewMode === 'list' && s.toggleTextActive]}>목록</Text>
         </Pressable>
         <Pressable
           style={[s.toggleBtn, viewMode === 'calendar' && s.toggleBtnActive]}
           onPress={() => setViewMode('calendar')}
         >
-          <Ionicons name="calendar-outline" size={17} color={viewMode === 'calendar' ? '#fff' : coupleColors.gray400} />
+          <Ionicons name="calendar-outline" size={17} color={viewMode === 'calendar' ? '#fff' : petColors.gray400} />
           <Text style={[s.toggleText, viewMode === 'calendar' && s.toggleTextActive]}>캘린더</Text>
         </Pressable>
       </View>
@@ -197,17 +199,16 @@ export function DiaryScreen() {
           {/* 월 네비게이션 */}
           <View style={s.calMonthNav}>
             <Pressable onPress={prevMonth} hitSlop={12}>
-              <Ionicons name="chevron-back" size={24} color={coupleColors.gray600} />
+              <Ionicons name="chevron-back" size={24} color={petColors.gray600} />
             </Pressable>
             <Text style={s.calMonthTitle}>{calYear}년 {MONTH_NAMES[calMonth]}</Text>
             <Pressable onPress={nextMonth} hitSlop={12}>
-              <Ionicons name="chevron-forward" size={24} color={coupleColors.gray600} />
+              <Ionicons name="chevron-forward" size={24} color={petColors.gray600} />
             </Pressable>
           </View>
 
           {/* 캘린더 그리드 */}
           <View style={s.calCard}>
-            {/* 요일 헤더 */}
             <View style={s.calWeekRow}>
               {WEEK_DAYS.map((d, i) => (
                 <View key={d} style={s.calCell}>
@@ -220,7 +221,6 @@ export function DiaryScreen() {
               ))}
             </View>
 
-            {/* 날짜 그리드 */}
             <View style={s.calGrid}>
               {calDays.map((day, i) => {
                 if (!day) return <View key={`e${i}`} style={s.calCell} />;
@@ -251,7 +251,7 @@ export function DiaryScreen() {
                     {dayEntries.length > 0 && (
                       <View style={s.dotsRow}>
                         {dayEntries.slice(0, 3).map((e, j) => (
-                          <View key={j} style={[s.dot, { backgroundColor: e.moodColor ?? coupleColors.gray300 }]} />
+                          <View key={j} style={[s.dot, { backgroundColor: e.moodColor ?? petColors.gray300 }]} />
                         ))}
                       </View>
                     )}
@@ -267,7 +267,7 @@ export function DiaryScreen() {
               <View>
                 <Text style={s.selectedDayTitle}>{calMonth + 1}월 {selectedDay}일</Text>
                 {selectedEntries.length === 0 ? (
-                  <Text style={s.selectedDayEmpty}>이 날의 일기가 없어요</Text>
+                  <Text style={s.selectedDayEmpty}>이 날의 일기가 없어요 🐾</Text>
                 ) : (
                   <View style={{ gap: 12 }}>
                     {selectedEntries.map(e => (
@@ -285,7 +285,7 @@ export function DiaryScreen() {
 
       {/* FAB */}
       <Pressable style={s.fab} onPress={() => setShowMoodModal(true)}>
-        <Ionicons name="add" size={28} color={coupleColors.white} />
+        <Ionicons name="add" size={28} color={petColors.white} />
       </Pressable>
 
       {/* 일기 상세 모달 */}
@@ -296,7 +296,6 @@ export function DiaryScreen() {
               {detailEntry.moodColor && (
                 <View style={[s.detailMoodStrip, { backgroundColor: detailEntry.moodColor }]} />
               )}
-              {/* 헤더: 날짜 + 기분 + 닫기 버튼 한 줄 */}
               <View style={s.detailHeader}>
                 <Text style={s.detailDate}>{formatDate(detailEntry.createdAt)}</Text>
                 <View style={s.detailHeaderRight}>
@@ -304,14 +303,14 @@ export function DiaryScreen() {
                     <View style={[s.moodBadge, { backgroundColor: (detailEntry.moodColor ?? '#ccc') + '33' }]}>
                       <Text style={s.moodEmoji}>{detailEntry.mood}</Text>
                       {detailEntry.moodLabel && (
-                        <Text style={[s.moodBadgeLabel, { color: detailEntry.moodColor ?? coupleColors.gray600 }]}>
+                        <Text style={[s.moodBadgeLabel, { color: detailEntry.moodColor ?? petColors.gray600 }]}>
                           {detailEntry.moodLabel}
                         </Text>
                       )}
                     </View>
                   )}
                   <Pressable onPress={() => setDetailEntry(null)} hitSlop={8}>
-                    <Ionicons name="close" size={22} color={coupleColors.gray400} />
+                    <Ionicons name="close" size={22} color={petColors.gray400} />
                   </Pressable>
                 </View>
               </View>
@@ -332,7 +331,7 @@ export function DiaryScreen() {
       <Modal visible={showMoodModal} transparent animationType="fade">
         <Pressable style={s.overlay} onPress={() => setShowMoodModal(false)}>
           <Pressable style={s.moodModal} onPress={() => {}}>
-            <Text style={s.moodModalTitle}>{'오늘의 기분은\n어떠셨나요? 🌸'}</Text>
+            <Text style={s.moodModalTitle}>{'오늘 우리 아이는\n어땠나요? 🐾'}</Text>
             <View style={s.moodGrid}>
               {MOODS.map(mood => (
                 <Pressable
@@ -355,7 +354,7 @@ export function DiaryScreen() {
       {createForm && (
         <Modal visible animationType="slide">
           <KeyboardAvoidingView
-            style={{ flex: 1, backgroundColor: coupleColors.white }}
+            style={{ flex: 1, backgroundColor: petColors.white }}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           >
             <View style={s.createHeader}>
@@ -378,7 +377,7 @@ export function DiaryScreen() {
               <TextInput
                 style={s.titleInput}
                 placeholder="제목을 입력하세요"
-                placeholderTextColor={coupleColors.gray300}
+                placeholderTextColor={petColors.gray300}
                 value={createForm.title}
                 onChangeText={t => setCreateForm(p => p ? { ...p, title: t } : p)}
                 maxLength={50}
@@ -386,8 +385,8 @@ export function DiaryScreen() {
               <View style={s.inputDivider} />
               <TextInput
                 style={s.contentInput}
-                placeholder="오늘 있었던 일을 기록해보세요..."
-                placeholderTextColor={coupleColors.gray300}
+                placeholder="오늘 우리 아이는 어땠나요?..."
+                placeholderTextColor={petColors.gray300}
                 value={createForm.content}
                 onChangeText={t => setCreateForm(p => p ? { ...p, content: t } : p)}
                 multiline
@@ -416,68 +415,66 @@ export function DiaryScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: coupleColors.gray50 },
-  fill: { flex: 1, backgroundColor: coupleColors.gray50 },
+  container: { flex: 1, backgroundColor: petColors.gray50 },
+  fill: { flex: 1, backgroundColor: petColors.gray50 },
   listContent: { flexGrow: 1, padding: 16, paddingBottom: 90 },
-  calScrollContent: { flexGrow: 1, paddingBottom: 90 },
 
   // 뷰 토글
   toggleWrap: { alignItems: 'center', paddingVertical: 14 },
   toggleRow: {
     flexDirection: 'row',
-    backgroundColor: coupleColors.gray100,
+    backgroundColor: petColors.gray100,
     borderRadius: 10, padding: 3, gap: 2,
   },
   toggleBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 },
-  toggleBtnActive: { backgroundColor: '#f4a0a0' },
-  toggleText: { fontSize: 13, fontFamily: 'BMHANNAPro', color: coupleColors.gray400 },
-  toggleTextActive: { color: coupleColors.white },
+  toggleBtnActive: { backgroundColor: ACCENT },
+  toggleText: { fontSize: 13, fontFamily: 'BMHANNAPro', color: petColors.gray400 },
+  toggleTextActive: { color: petColors.white },
 
   // 카드
   card: {
-    backgroundColor: coupleColors.white, borderRadius: 12, overflow: 'hidden',
+    backgroundColor: petColors.white, borderRadius: 12, overflow: 'hidden',
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 4, elevation: 2,
   },
   moodStrip: { height: 4 },
   cardBody: { padding: 14 },
   cardMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  dateText: { fontSize: 12, color: coupleColors.gray400, fontFamily: 'BMHANNAPro' },
+  dateText: { fontSize: 12, color: petColors.gray400, fontFamily: 'BMHANNAPro' },
   moodBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   moodEmoji: { fontSize: 14 },
   moodBadgeLabel: { fontSize: 11, fontFamily: 'BMHANNAPro' },
-  entryTitle: { fontSize: 16, fontFamily: 'BMJUA', color: coupleColors.gray800, marginBottom: 6 },
-  entryContent: { fontSize: 14, lineHeight: 22, color: coupleColors.gray600, fontFamily: 'BMHANNAPro' },
+  entryTitle: { fontSize: 16, fontFamily: 'BMJUA', color: petColors.gray800, marginBottom: 6 },
+  entryContent: { fontSize: 14, lineHeight: 22, color: petColors.gray600, fontFamily: 'BMHANNAPro' },
   entryImage: { width: '100%', aspectRatio: 3 / 2, marginTop: 10, borderRadius: 8 },
 
   // 캘린더
   calMonthNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 10 },
-  calMonthTitle: { fontSize: 18, fontFamily: 'BMJUA', color: coupleColors.gray800 },
+  calMonthTitle: { fontSize: 18, fontFamily: 'BMJUA', color: petColors.gray800 },
   calCard: {
     marginHorizontal: 12,
-    backgroundColor: coupleColors.white,
+    backgroundColor: petColors.white,
     borderRadius: 16,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 6, elevation: 2,
     overflow: 'hidden',
   },
-  calWeekRow: { flexDirection: 'row', backgroundColor: coupleColors.gray50 },
+  calWeekRow: { flexDirection: 'row', backgroundColor: petColors.gray50 },
   calGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   calCell: { width: '14.2857%', alignItems: 'center', paddingVertical: 10 },
-  calWeekDay: { fontSize: 13, fontFamily: 'BMHANNAPro', color: coupleColors.gray500, paddingVertical: 8 },
+  calWeekDay: { fontSize: 13, fontFamily: 'BMHANNAPro', color: petColors.gray500, paddingVertical: 8 },
   calDayCircle: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
-  calDayCircleSelected: { backgroundColor: '#f4a0a0' },
-  calDayCircleToday: { borderWidth: 2, borderColor: '#f4a0a0' },
-  calDayText: { fontSize: 15, fontFamily: 'BMHANNAPro', color: coupleColors.gray700 },
+  calDayCircleSelected: { backgroundColor: ACCENT },
+  calDayCircleToday: { borderWidth: 2, borderColor: ACCENT },
+  calDayText: { fontSize: 15, fontFamily: 'BMHANNAPro', color: petColors.gray700 },
   dotsRow: { flexDirection: 'row', gap: 3, marginTop: 3, height: 6 },
   dot: { width: 6, height: 6, borderRadius: 3 },
-  selectedDaySection: { margin: 16, marginTop: 20, gap: 12 },
-  selectedDayTitle: { fontSize: 15, fontFamily: 'BMJUA', color: coupleColors.gray700, marginBottom: 4 },
-  selectedDayEmpty: { fontSize: 13, fontFamily: 'BMHANNAPro', color: coupleColors.gray400, textAlign: 'center', paddingVertical: 20 },
+  selectedDayTitle: { fontSize: 15, fontFamily: 'BMJUA', color: petColors.gray700, marginBottom: 12 },
+  selectedDayEmpty: { fontSize: 13, fontFamily: 'BMHANNAPro', color: petColors.gray400, textAlign: 'center', paddingVertical: 20 },
 
   // FAB
   fab: {
     position: 'absolute', bottom: 20, right: 20,
     width: 52, height: 52, borderRadius: 26,
-    backgroundColor: '#f4a0a0',
+    backgroundColor: ACCENT,
     alignItems: 'center', justifyContent: 'center',
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.18, shadowRadius: 6, elevation: 5,
   },
@@ -485,7 +482,7 @@ const s = StyleSheet.create({
   // 상세 모달
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' },
   detailModal: {
-    backgroundColor: coupleColors.white,
+    backgroundColor: petColors.white,
     borderRadius: 20, width: '90%', maxWidth: 380, maxHeight: '80%',
     overflow: 'hidden',
   },
@@ -493,19 +490,19 @@ const s = StyleSheet.create({
   detailHeader: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: coupleColors.gray100,
+    borderBottomWidth: 1, borderBottomColor: petColors.gray100,
   },
   detailHeaderRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   detailBody: { padding: 16 },
-  detailDate: { fontSize: 13, color: coupleColors.gray400, fontFamily: 'BMHANNAPro' },
-  detailTitle: { fontSize: 20, fontFamily: 'BMJUA', color: coupleColors.gray800, marginBottom: 12 },
-  detailDivider: { height: 1, backgroundColor: coupleColors.gray100, marginBottom: 14 },
-  detailContent: { fontSize: 15, fontFamily: 'BMHANNAPro', color: coupleColors.gray700, lineHeight: 26 },
+  detailDate: { fontSize: 13, color: petColors.gray400, fontFamily: 'BMHANNAPro' },
+  detailTitle: { fontSize: 20, fontFamily: 'BMJUA', color: petColors.gray800, marginBottom: 12 },
+  detailDivider: { height: 1, backgroundColor: petColors.gray100, marginBottom: 14 },
+  detailContent: { fontSize: 15, fontFamily: 'BMHANNAPro', color: petColors.gray700, lineHeight: 26 },
   detailImage: { width: '100%', aspectRatio: 3 / 2, marginTop: 16, borderRadius: 10 },
 
   // 기분 모달
-  moodModal: { backgroundColor: coupleColors.white, borderRadius: 24, padding: 28, width: '88%', maxWidth: 360 },
-  moodModalTitle: { fontSize: 21, fontFamily: 'BMJUA', color: coupleColors.gray800, textAlign: 'center', lineHeight: 32, marginBottom: 22 },
+  moodModal: { backgroundColor: petColors.white, borderRadius: 24, padding: 28, width: '88%', maxWidth: 360 },
+  moodModalTitle: { fontSize: 21, fontFamily: 'BMJUA', color: petColors.gray800, textAlign: 'center', lineHeight: 32, marginBottom: 22 },
   moodGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center' },
   moodItem: { width: '22%', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 4, borderRadius: 14, gap: 6 },
   moodCircle: { width: 50, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center' },
@@ -516,29 +513,29 @@ const s = StyleSheet.create({
   createHeader: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingTop: Platform.OS === 'ios' ? 56 : 20, paddingBottom: 14,
-    borderBottomWidth: 1, borderBottomColor: coupleColors.gray100,
+    borderBottomWidth: 1, borderBottomColor: petColors.gray100,
   },
-  cancelBtn: { fontSize: 15, color: coupleColors.gray500, fontFamily: 'BMHANNAPro' },
-  createHeaderTitle: { fontSize: 16, fontFamily: 'BMJUA', color: coupleColors.gray800 },
-  submitBtn: { fontSize: 15, color: '#e07878', fontFamily: 'BMJUA' },
+  cancelBtn: { fontSize: 15, color: petColors.gray500, fontFamily: 'BMHANNAPro' },
+  createHeaderTitle: { fontSize: 16, fontFamily: 'BMJUA', color: petColors.gray800 },
+  submitBtn: { fontSize: 15, color: ACCENT, fontFamily: 'BMJUA' },
   createBody: { flex: 1, paddingHorizontal: 16, paddingTop: 16 },
   selectedMoodRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, marginBottom: 16, alignSelf: 'flex-start' },
   selectedMoodEmoji: { fontSize: 20 },
   selectedMoodLabel: { fontSize: 14, fontFamily: 'BMJUA' },
   changeMoodBtn: { marginLeft: 4, paddingHorizontal: 8, paddingVertical: 2, backgroundColor: 'rgba(0,0,0,0.06)', borderRadius: 10 },
-  changeMoodText: { fontSize: 11, color: coupleColors.gray500, fontFamily: 'BMHANNAPro' },
-  titleInput: { fontSize: 18, fontFamily: 'BMJUA', color: coupleColors.gray800, paddingVertical: 8 },
-  inputDivider: { height: 1, backgroundColor: coupleColors.gray100, marginVertical: 8 },
-  contentInput: { fontSize: 15, fontFamily: 'BMHANNAPro', color: coupleColors.gray700, lineHeight: 24, minHeight: 200, paddingTop: 4 },
+  changeMoodText: { fontSize: 11, color: petColors.gray500, fontFamily: 'BMHANNAPro' },
+  titleInput: { fontSize: 18, fontFamily: 'BMJUA', color: petColors.gray800, paddingVertical: 8 },
+  inputDivider: { height: 1, backgroundColor: petColors.gray100, marginVertical: 8 },
+  contentInput: { fontSize: 15, fontFamily: 'BMHANNAPro', color: petColors.gray700, lineHeight: 24, minHeight: 200, paddingTop: 4 },
   imagePreviewWrap: { marginTop: 14, borderRadius: 12, overflow: 'hidden' },
   imagePreview: { width: '100%', aspectRatio: 3 / 2 },
   removeImageBtn: { position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' },
   removeImageText: { color: '#fff', fontSize: 14 },
   createFooter: {
     flexDirection: 'row', padding: 12, paddingBottom: Platform.OS === 'ios' ? 28 : 12,
-    borderTopWidth: 1, borderTopColor: coupleColors.gray100,
+    borderTopWidth: 1, borderTopColor: petColors.gray100,
   },
-  footerBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10, backgroundColor: coupleColors.gray100 },
+  footerBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10, backgroundColor: petColors.gray100 },
   footerBtnIcon: { fontSize: 18 },
-  footerBtnLabel: { fontSize: 13, color: coupleColors.gray600, fontFamily: 'BMHANNAPro' },
+  footerBtnLabel: { fontSize: 13, color: petColors.gray600, fontFamily: 'BMHANNAPro' },
 });
