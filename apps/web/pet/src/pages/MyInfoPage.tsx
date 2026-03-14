@@ -3,7 +3,7 @@ import { petColors } from '@we/utils';
 import type { CommunityPost } from '@we/utils';
 import { communityPosts } from '../data/communityPosts';
 
-const myName = '우리새끼';
+const myName = '우리아이';
 const mockUser = { nickname: myName, profileImage: null as string | null, followers: 84, following: 32 };
 
 function formatDate(iso: string) {

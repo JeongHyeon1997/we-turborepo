@@ -27,4 +27,7 @@
     flex-direction: column;
     font-family: 'BMJUA', sans-serif;
   }
+  /* 스크롤바 숨김 (스크롤 동작은 유지) */
+  main::-webkit-scrollbar { display: none; }
+  main { scrollbar-width: none; }
 }

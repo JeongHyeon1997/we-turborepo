@@ -17,7 +17,7 @@ export function createTabs({ onSettingsPress, onPostPress, onAuthorPress }: TabC
   return [
     {
       key: 'my-pet',
-      label: '내새끼',
+      label: '내아이',
       icon: <Ionicons name="paw-outline" size={22} />,
       screen: <MyPetScreen />,
     },

@@ -16,7 +16,7 @@ const logo = (
       source={require('../../../packages/assets/pet_logo.png')}
       style={{ width: 28, height: 28 }}
     />
-    <Text style={{ fontFamily: 'BMJUA', fontWeight: '700', fontSize: 16 }}>우리, 새끼</Text>
+    <Text style={{ fontFamily: 'BMJUA', fontWeight: '700', fontSize: 16 }}>우리, 아이</Text>
   </View>
 );
 

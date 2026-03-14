@@ -15,7 +15,7 @@ const petLogoUrl = new URL('../../../../packages/assets/pet_logo.png', import.me
 const logo = (
   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
     <img src={petLogoUrl} alt="" width={28} height={28} />
-    <span style={{ fontWeight: 700, fontSize: 16 }}>우리, 새끼</span>
+    <span style={{ fontWeight: 700, fontSize: 16 }}>우리, 아이</span>
   </div>
 );
 

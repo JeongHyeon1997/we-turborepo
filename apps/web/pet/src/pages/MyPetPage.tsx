@@ -1,3 +1,3 @@
 export function MyPetPage() {
-  return <div>내새끼</div>;
+  return <div>내아이</div>;
 }
