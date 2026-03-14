@@ -3,8 +3,12 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
-      // 공유 디자인 토큰을 여기에 정의하세요
-      // colors, fontFamily, spacing 등
+      fontFamily: {
+        /** 타이틀, 버튼, 탭 레이블 등 UI 텍스트 */
+        jua: ['BMJUA', 'sans-serif'],
+        /** 본문, 일기, 리스트, 커뮤니티 콘텐츠 */
+        hanna: ['BMHANNAPro', 'sans-serif'],
+      },
     },
   },
   plugins: [],

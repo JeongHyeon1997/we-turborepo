@@ -8,17 +8,31 @@ import { CommunityPage } from './pages/CommunityPage';
 import { MyInfoPage } from './pages/MyInfoPage';
 import { SettingsPage } from './pages/SettingsPage';
 
+const coupleLogoUrl = new URL('../../../../packages/assets/couple_logo.png', import.meta.url).href;
+
 const logo = (
   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-    <img src="/icon.png" alt="" width={28} height={28} />
+    <img src={coupleLogoUrl} alt="" width={28} height={28} />
     <span style={{ fontWeight: 700, fontSize: 16 }}>우리, 커플</span>
   </div>
 );
 
+const stackRoutes = {
+  '/settings': '설정',
+};
+
 export const router = createBrowserRouter(
   [
     {
-      element: <AppLayout logo={logo} headerIcons={<HeaderIcons />} tabs={tabs} theme={theme} />,
+      element: (
+        <AppLayout
+          logo={logo}
+          headerIcons={<HeaderIcons />}
+          tabs={tabs}
+          theme={theme}
+          stackRoutes={stackRoutes}
+        />
+      ),
       children: [
         { index: true, element: <Navigate to="/diary" replace /> },
         { path: 'diary',     element: <DiaryPage /> },

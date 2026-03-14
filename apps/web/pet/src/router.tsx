@@ -8,17 +8,31 @@ import { CommunityPage } from './pages/CommunityPage';
 import { MyInfoPage } from './pages/MyInfoPage';
 import { SettingsPage } from './pages/SettingsPage';
 
+const petLogoUrl = new URL('../../../../packages/assets/pet_logo.png', import.meta.url).href;
+
 const logo = (
   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-    <img src="/icon.png" alt="" width={28} height={28} />
+    <img src={petLogoUrl} alt="" width={28} height={28} />
     <span style={{ fontWeight: 700, fontSize: 16 }}>우리, 새끼</span>
   </div>
 );
 
+const stackRoutes = {
+  '/settings': '설정',
+};
+
 export const router = createBrowserRouter(
   [
     {
-      element: <AppLayout logo={logo} headerIcons={<HeaderIcons />} tabs={tabs} theme={theme} />,
+      element: (
+        <AppLayout
+          logo={logo}
+          headerIcons={<HeaderIcons />}
+          tabs={tabs}
+          theme={theme}
+          stackRoutes={stackRoutes}
+        />
+      ),
       children: [
         { index: true, element: <Navigate to="/my-pet" replace /> },
         { path: 'my-pet',    element: <MyPetPage /> },
