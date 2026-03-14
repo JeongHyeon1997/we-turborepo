@@ -7,6 +7,7 @@ export interface NavTab {
   label: string;
   icon: ReactNode;
   screen: ReactNode;
+  headerIcons?: ReactNode;
 }
 
 interface BottomNavProps {

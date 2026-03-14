@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Image, Text, View } from 'react-native';
 import { AppLayout } from '@we/ui';
-import { tabs } from './config/tabs';
+import { createTabs } from './config/tabs';
 import { theme } from './config/theme';
+import { SettingsScreen } from './screens/SettingsScreen';
 
 const logo = (
   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -11,5 +13,17 @@ const logo = (
 );
 
 export default function App() {
-  return <AppLayout logo={logo} tabs={tabs} theme={theme} />;
+  const [showSettings, setShowSettings] = useState(false);
+
+  if (showSettings) {
+    return <SettingsScreen onBack={() => setShowSettings(false)} />;
+  }
+
+  return (
+    <AppLayout
+      logo={logo}
+      tabs={createTabs(() => setShowSettings(true))}
+      theme={theme}
+    />
+  );
 }

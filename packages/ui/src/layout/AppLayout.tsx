@@ -15,11 +15,13 @@ interface AppLayoutProps {
 
 export function AppLayout({ logo, headerIcons, tabs, theme }: AppLayoutProps) {
   const [activeKey, setActiveKey] = useState(tabs[0].key);
-  const activeScreen = tabs.find((t) => t.key === activeKey)?.screen;
+  const activeTab = tabs.find((t) => t.key === activeKey);
+  const activeScreen = activeTab?.screen;
+  const activeHeaderIcons = activeTab?.headerIcons ?? headerIcons;
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: theme.headerBg }]}>
-      <Header logo={logo} icons={headerIcons} theme={theme} />
+      <Header logo={logo} icons={activeHeaderIcons} theme={theme} />
       <View style={[styles.main, { backgroundColor: theme.contentBg }]}>
         {activeScreen}
       </View>

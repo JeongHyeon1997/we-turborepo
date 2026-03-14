@@ -1,11 +1,35 @@
+import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { NavTab } from '@we/ui';
+import { coupleColors } from '@we/utils';
 import { DiaryScreen } from '../screens/DiaryScreen';
 import { CommunityScreen } from '../screens/CommunityScreen';
 import { MyInfoScreen } from '../screens/MyInfoScreen';
 
-export const tabs: NavTab[] = [
-  { key: 'diary',     label: '일기장',  icon: <Ionicons name="book-outline"        size={22} />, screen: <DiaryScreen /> },
-  { key: 'community', label: '커뮤니티', icon: <Ionicons name="chatbubbles-outline" size={22} />, screen: <CommunityScreen /> },
-  { key: 'my-info',   label: '내 정보', icon: <Ionicons name="person-outline"      size={22} />, screen: <MyInfoScreen /> },
-];
+export function createTabs(onSettingsPress: () => void): NavTab[] {
+  return [
+    {
+      key: 'diary',
+      label: '일기장',
+      icon: <Ionicons name="book-outline" size={22} />,
+      screen: <DiaryScreen />,
+    },
+    {
+      key: 'community',
+      label: '커뮤니티',
+      icon: <Ionicons name="chatbubbles-outline" size={22} />,
+      screen: <CommunityScreen />,
+    },
+    {
+      key: 'my-info',
+      label: '내 정보',
+      icon: <Ionicons name="person-outline" size={22} />,
+      screen: <MyInfoScreen />,
+      headerIcons: (
+        <Pressable onPress={onSettingsPress} hitSlop={8}>
+          <Ionicons name="settings-outline" size={22} color={coupleColors.gray700} />
+        </Pressable>
+      ),
+    },
+  ];
+}

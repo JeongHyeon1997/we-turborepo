@@ -1,11 +1,35 @@
+import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { NavTab } from '@we/ui';
+import { petColors } from '@we/utils';
 import { MyPetScreen } from '../screens/MyPetScreen';
 import { CommunityScreen } from '../screens/CommunityScreen';
 import { MyInfoScreen } from '../screens/MyInfoScreen';
 
-export const tabs: NavTab[] = [
-  { key: 'my-pet',    label: '내새끼',  icon: <Ionicons name="paw-outline"         size={22} />, screen: <MyPetScreen /> },
-  { key: 'community', label: '커뮤니티', icon: <Ionicons name="chatbubbles-outline" size={22} />, screen: <CommunityScreen /> },
-  { key: 'my-info',   label: '내 정보', icon: <Ionicons name="person-outline"      size={22} />, screen: <MyInfoScreen /> },
-];
+export function createTabs(onSettingsPress: () => void): NavTab[] {
+  return [
+    {
+      key: 'my-pet',
+      label: '내새끼',
+      icon: <Ionicons name="paw-outline" size={22} />,
+      screen: <MyPetScreen />,
+    },
+    {
+      key: 'community',
+      label: '커뮤니티',
+      icon: <Ionicons name="chatbubbles-outline" size={22} />,
+      screen: <CommunityScreen />,
+    },
+    {
+      key: 'my-info',
+      label: '내 정보',
+      icon: <Ionicons name="person-outline" size={22} />,
+      screen: <MyInfoScreen />,
+      headerIcons: (
+        <Pressable onPress={onSettingsPress} hitSlop={8}>
+          <Ionicons name="settings-outline" size={22} color={petColors.gray700} />
+        </Pressable>
+      ),
+    },
+  ];
+}

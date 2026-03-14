@@ -6,6 +6,7 @@ import { HeaderIcons } from './config/headerIcons';
 import { DiaryPage } from './pages/DiaryPage';
 import { CommunityPage } from './pages/CommunityPage';
 import { MyInfoPage } from './pages/MyInfoPage';
+import { SettingsPage } from './pages/SettingsPage';
 
 const logo = (
   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -23,6 +24,7 @@ export const router = createBrowserRouter(
         { path: 'diary',     element: <DiaryPage /> },
         { path: 'community', element: <CommunityPage /> },
         { path: 'my-info',   element: <MyInfoPage /> },
+        { path: 'settings',  element: <SettingsPage /> },
       ],
     },
   ],
