@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 
 declare global {
   interface Window {
-    adsbygoogle: { push: (params: object) => void }[];
+    adsbygoogle: { push: (params: Record<string, unknown>) => void }[];
   }
 }
 
@@ -23,7 +23,7 @@ export function DisplayAds({
     const interval = setInterval(() => {
       if (window.adsbygoogle) {
         try {
-          window.adsbygoogle.push({});
+          window.adsbygoogle.push({} as Record<string, unknown>);
         } catch (e) {
           console.error(e);
         }
