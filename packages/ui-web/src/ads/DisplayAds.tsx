@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 
 declare global {
   interface Window {
-    adsbygoogle: { push: (params: Record<string, unknown>) => void }[];
+    adsbygoogle: Record<string, unknown>[];
   }
 }
 
