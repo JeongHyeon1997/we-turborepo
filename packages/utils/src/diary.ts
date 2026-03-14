@@ -1,3 +1,9 @@
+export interface Mood {
+  emoji: string;
+  label: string;
+  color: string;
+}
+
 export interface DiaryEntry {
   id: string;
   title: string;
