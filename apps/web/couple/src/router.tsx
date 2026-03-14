@@ -5,7 +5,9 @@ import { theme } from './config/theme';
 import { HeaderIcons } from './config/headerIcons';
 import { DiaryPage } from './pages/DiaryPage';
 import { CommunityPage } from './pages/CommunityPage';
+import { CommunityDetailPage } from './pages/CommunityDetailPage';
 import { MyInfoPage } from './pages/MyInfoPage';
+import { UserProfilePage } from './pages/UserProfilePage';
 import { SettingsPage } from './pages/SettingsPage';
 
 const coupleLogoUrl = new URL('../../../../packages/assets/couple_logo.png', import.meta.url).href;
@@ -19,6 +21,8 @@ const logo = (
 
 const stackRoutes = {
   '/settings': '설정',
+  '/community/*': '커뮤니티',
+  '/profile/*': '프로필',
 };
 
 export const router = createBrowserRouter(
@@ -37,7 +41,9 @@ export const router = createBrowserRouter(
         { index: true, element: <Navigate to="/diary" replace /> },
         { path: 'diary',     element: <DiaryPage /> },
         { path: 'community', element: <CommunityPage /> },
+        { path: 'community/:id', element: <CommunityDetailPage /> },
         { path: 'my-info',   element: <MyInfoPage /> },
+        { path: 'profile/:name', element: <UserProfilePage /> },
         { path: 'settings',  element: <SettingsPage /> },
       ],
     },

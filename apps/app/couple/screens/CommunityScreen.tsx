@@ -1,9 +1,200 @@
-import { View, Text } from 'react-native';
+import { useState, useRef } from 'react';
+import {
+  View, Text, Image, Pressable, FlatList,
+  Animated, StyleSheet,
+} from 'react-native';
+import { coupleColors } from '@we/utils';
+import type { CommunityPost } from '@we/utils';
+import { communityPosts as initialPosts } from '../data/communityPosts';
 
-export function CommunityScreen() {
+type Post = CommunityPost & { liked: boolean };
+
+function formatDate(iso: string) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function PostCard({
+  post,
+  onLike,
+  onPress,
+}: {
+  post: Post;
+  onLike: () => void;
+  onPress: () => void;
+}) {
+  const scale = useRef(new Animated.Value(1)).current;
+
+  function handleLike() {
+    Animated.sequence([
+      Animated.spring(scale, { toValue: 1.4, useNativeDriver: true, speed: 30 }),
+      Animated.spring(scale, { toValue: 0.9, useNativeDriver: true, speed: 30 }),
+      Animated.spring(scale, { toValue: 1,   useNativeDriver: true, speed: 30 }),
+    ]).start();
+    onLike();
+  }
+
   return (
-    <View>
-      <Text>커뮤니티</Text>
-    </View>
+    <Pressable style={s.card} onPress={onPress}>
+      {/* Header */}
+      <View style={s.cardHeader}>
+        <View style={[s.avatar, { backgroundColor: post.author.avatarColor }]}>
+          <Text style={s.avatarText}>{post.author.name[0]}</Text>
+        </View>
+        <View style={s.authorInfo}>
+          <Text style={s.authorName}>{post.author.name}</Text>
+          <Text style={s.date}>{formatDate(post.createdAt)}</Text>
+        </View>
+      </View>
+
+      {/* Content */}
+      <Text style={s.content} numberOfLines={3}>{post.content}</Text>
+
+      {/* Image */}
+      {post.image && (
+        <Image source={{ uri: post.image }} style={s.image} resizeMode="cover" />
+      )}
+
+      {/* Actions */}
+      <View style={s.actions}>
+        <Pressable style={s.actionBtn} onPress={handleLike} hitSlop={8}>
+          <Animated.Text style={[s.actionIcon, { transform: [{ scale }] }]}>
+            {post.liked ? '❤️' : '🤍'}
+          </Animated.Text>
+          <Text style={[s.actionCount, post.liked && { color: '#ef4444' }]}>{post.likes}</Text>
+        </Pressable>
+
+        <Pressable style={s.actionBtn} onPress={onPress} hitSlop={8}>
+          <Text style={s.actionIcon}>💬</Text>
+          <Text style={s.actionCount}>{post.comments}</Text>
+        </Pressable>
+
+        <Pressable style={s.actionBtn} hitSlop={8}>
+          <Text style={s.actionIcon}>↗️</Text>
+          <Text style={s.actionCount}>공유</Text>
+        </Pressable>
+      </View>
+    </Pressable>
   );
 }
+
+interface Props {
+  onPostPress: (post: CommunityPost) => void;
+}
+
+export function CommunityScreen({ onPostPress }: Props) {
+  const [posts, setPosts] = useState<Post[]>(
+    initialPosts.map(p => ({ ...p, liked: false }))
+  );
+
+  function toggleLike(id: string) {
+    setPosts(prev =>
+      prev.map(p =>
+        p.id === id
+          ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 }
+          : p
+      )
+    );
+  }
+
+  return (
+    <FlatList
+      data={posts}
+      keyExtractor={item => item.id}
+      contentContainerStyle={s.list}
+      ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+      renderItem={({ item }) => (
+        <PostCard
+          post={item}
+          onLike={() => toggleLike(item.id)}
+          onPress={() => onPostPress(item)}
+        />
+      )}
+    />
+  );
+}
+
+const s = StyleSheet.create({
+  list: {
+    padding: 16,
+  },
+  card: {
+    backgroundColor: coupleColors.white,
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 14,
+    paddingBottom: 0,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    fontSize: 16,
+    fontFamily: 'BMJUA',
+    color: coupleColors.gray700,
+  },
+  authorInfo: {
+    gap: 2,
+  },
+  authorName: {
+    fontSize: 14,
+    fontFamily: 'BMJUA',
+    color: coupleColors.gray800,
+  },
+  date: {
+    fontSize: 12,
+    color: coupleColors.gray400,
+    fontFamily: 'BMHANNAPro',
+  },
+  content: {
+    margin: 14,
+    marginBottom: 10,
+    fontSize: 14,
+    lineHeight: 22,
+    color: coupleColors.gray700,
+    fontFamily: 'BMHANNAPro',
+  },
+  image: {
+    width: '100%',
+    aspectRatio: 3 / 2,
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: coupleColors.gray100,
+    marginTop: 4,
+    gap: 4,
+  },
+  actionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+  actionIcon: {
+    fontSize: 20,
+  },
+  actionCount: {
+    fontSize: 13,
+    color: coupleColors.gray500,
+    fontFamily: 'BMJUA',
+  },
+});

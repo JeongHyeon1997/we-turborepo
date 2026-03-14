@@ -5,7 +5,9 @@ import { useFonts } from 'expo-font';
 import { AppLayout } from '@we/ui';
 import { createTabs } from './config/tabs';
 import { theme } from './config/theme';
+import type { CommunityPost } from '@we/utils';
 import { SettingsScreen } from './screens/SettingsScreen';
+import { CommunityDetailScreen } from './screens/CommunityDetailScreen';
 
 const logo = (
   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -24,19 +26,25 @@ export default function App() {
   });
 
   const [showSettings, setShowSettings] = useState(false);
+  const [communityPost, setCommunityPost] = useState<CommunityPost | null>(null);
 
   if (!fontsLoaded) return null;
+
+  const stackScreen = showSettings
+    ? { content: <SettingsScreen />, title: '설정', onBack: () => setShowSettings(false) }
+    : communityPost
+    ? { content: <CommunityDetailScreen post={communityPost} />, title: '커뮤니티', onBack: () => setCommunityPost(null) }
+    : undefined;
 
   return (
     <AppLayout
       logo={logo}
-      tabs={createTabs(() => setShowSettings(true))}
+      tabs={createTabs({
+        onSettingsPress: () => setShowSettings(true),
+        onPostPress: (post) => setCommunityPost(post),
+      })}
       theme={theme}
-      stackScreen={
-        showSettings
-          ? { content: <SettingsScreen />, title: '설정', onBack: () => setShowSettings(false) }
-          : undefined
-      }
+      stackScreen={stackScreen}
     />
   );
 }

@@ -1,28 +1,20 @@
 import { useState, useRef } from 'react';
-import {
-  View, Text, Image, Pressable, FlatList,
-  Animated, StyleSheet,
-} from 'react-native';
+import { View, Text, Image, Pressable, ScrollView, Animated, StyleSheet } from 'react-native';
 import { petColors } from '@we/utils';
 import type { CommunityPost } from '@we/utils';
-import { communityPosts as initialPosts } from '../data/communityPosts';
-
-type Post = CommunityPost & { liked: boolean };
 
 function formatDate(iso: string) {
   const d = new Date(iso);
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function PostCard({
-  post,
-  onLike,
-  onPress,
-}: {
-  post: Post;
-  onLike: () => void;
-  onPress: () => void;
-}) {
+interface Props {
+  post: CommunityPost;
+}
+
+export function CommunityDetailScreen({ post }: Props) {
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(post.likes);
   const scale = useRef(new Animated.Value(1)).current;
 
   function handleLike() {
@@ -31,12 +23,15 @@ function PostCard({
       Animated.spring(scale, { toValue: 0.9, useNativeDriver: true, speed: 30 }),
       Animated.spring(scale, { toValue: 1,   useNativeDriver: true, speed: 30 }),
     ]).start();
-    onLike();
+    setLiked(prev => {
+      setLikeCount(c => prev ? c - 1 : c + 1);
+      return !prev;
+    });
   }
 
   return (
-    <Pressable style={s.card} onPress={onPress}>
-      <View style={s.cardHeader}>
+    <ScrollView contentContainerStyle={s.page}>
+      <View style={s.header}>
         <View style={[s.avatar, { backgroundColor: post.author.avatarColor }]}>
           <Text style={s.avatarText}>{post.author.name[0]}</Text>
         </View>
@@ -46,7 +41,7 @@ function PostCard({
         </View>
       </View>
 
-      <Text style={s.content} numberOfLines={3}>{post.content}</Text>
+      <Text style={s.content}>{post.content}</Text>
 
       {post.image && (
         <Image source={{ uri: post.image }} style={s.image} resizeMode="cover" />
@@ -55,12 +50,12 @@ function PostCard({
       <View style={s.actions}>
         <Pressable style={s.actionBtn} onPress={handleLike} hitSlop={8}>
           <Animated.Text style={[s.actionIcon, { transform: [{ scale }] }]}>
-            {post.liked ? '❤️' : '🤍'}
+            {liked ? '❤️' : '🤍'}
           </Animated.Text>
-          <Text style={[s.actionCount, post.liked && { color: '#ef4444' }]}>{post.likes}</Text>
+          <Text style={[s.actionCount, liked && { color: '#ef4444' }]}>{likeCount}</Text>
         </Pressable>
 
-        <Pressable style={s.actionBtn} onPress={onPress} hitSlop={8}>
+        <Pressable style={s.actionBtn} hitSlop={8}>
           <Text style={s.actionIcon}>💬</Text>
           <Text style={s.actionCount}>{post.comments}</Text>
         </Pressable>
@@ -70,76 +65,33 @@ function PostCard({
           <Text style={s.actionCount}>공유</Text>
         </Pressable>
       </View>
-    </Pressable>
-  );
-}
 
-interface Props {
-  onPostPress: (post: CommunityPost) => void;
-}
-
-export function CommunityScreen({ onPostPress }: Props) {
-  const [posts, setPosts] = useState<Post[]>(
-    initialPosts.map(p => ({ ...p, liked: false }))
-  );
-
-  function toggleLike(id: string) {
-    setPosts(prev =>
-      prev.map(p =>
-        p.id === id
-          ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 }
-          : p
-      )
-    );
-  }
-
-  return (
-    <FlatList
-      data={posts}
-      keyExtractor={item => item.id}
-      contentContainerStyle={s.list}
-      ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-      renderItem={({ item }) => (
-        <PostCard
-          post={item}
-          onLike={() => toggleLike(item.id)}
-          onPress={() => onPostPress(item)}
-        />
-      )}
-    />
+      <View style={s.commentSection}>
+        <Text style={s.commentPlaceholder}>댓글 기능은 준비 중이에요 💬</Text>
+      </View>
+    </ScrollView>
   );
 }
 
 const s = StyleSheet.create({
-  list: {
+  page: {
     padding: 16,
   },
-  card: {
-    backgroundColor: petColors.white,
-    borderRadius: 12,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  cardHeader: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    padding: 14,
-    paddingBottom: 0,
+    marginBottom: 12,
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: 'BMJUA',
     color: petColors.gray700,
   },
@@ -147,7 +99,7 @@ const s = StyleSheet.create({
     gap: 2,
   },
   authorName: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: 'BMJUA',
     color: petColors.gray800,
   },
@@ -157,25 +109,26 @@ const s = StyleSheet.create({
     fontFamily: 'BMHANNAPro',
   },
   content: {
-    margin: 14,
-    marginBottom: 10,
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: 15,
+    lineHeight: 26,
     color: petColors.gray700,
     fontFamily: 'BMHANNAPro',
+    marginBottom: 16,
   },
   image: {
     width: '100%',
     aspectRatio: 3 / 2,
+    borderRadius: 10,
+    marginBottom: 16,
   },
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: petColors.gray100,
-    marginTop: 4,
+    borderBottomWidth: 1,
+    borderColor: petColors.gray100,
+    marginBottom: 20,
     gap: 4,
   },
   actionBtn: {
@@ -186,11 +139,20 @@ const s = StyleSheet.create({
     paddingVertical: 6,
   },
   actionIcon: {
-    fontSize: 20,
+    fontSize: 22,
   },
   actionCount: {
-    fontSize: 13,
+    fontSize: 14,
     color: petColors.gray500,
     fontFamily: 'BMJUA',
+  },
+  commentSection: {
+    paddingVertical: 16,
+  },
+  commentPlaceholder: {
+    textAlign: 'center',
+    color: petColors.gray400,
+    fontFamily: 'BMJUA',
+    fontSize: 14,
   },
 });

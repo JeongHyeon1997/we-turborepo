@@ -5,6 +5,7 @@ import { theme } from './config/theme';
 import { HeaderIcons } from './config/headerIcons';
 import { MyPetPage } from './pages/MyPetPage';
 import { CommunityPage } from './pages/CommunityPage';
+import { CommunityDetailPage } from './pages/CommunityDetailPage';
 import { MyInfoPage } from './pages/MyInfoPage';
 import { SettingsPage } from './pages/SettingsPage';
 
@@ -19,6 +20,7 @@ const logo = (
 
 const stackRoutes = {
   '/settings': '설정',
+  '/community/*': '커뮤니티',
 };
 
 export const router = createBrowserRouter(
@@ -37,6 +39,7 @@ export const router = createBrowserRouter(
         { index: true, element: <Navigate to="/my-pet" replace /> },
         { path: 'my-pet',    element: <MyPetPage /> },
         { path: 'community', element: <CommunityPage /> },
+        { path: 'community/:id', element: <CommunityDetailPage /> },
         { path: 'my-info',   element: <MyInfoPage /> },
         { path: 'settings',  element: <SettingsPage /> },
       ],

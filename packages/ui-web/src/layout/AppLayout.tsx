@@ -18,7 +18,14 @@ export function AppLayout({ logo, headerIcons, tabs, theme, stackRoutes }: AppLa
   const location = useLocation();
   const navigate = useNavigate();
 
-  const stackTitle = stackRoutes?.[location.pathname];
+  const stackTitle = stackRoutes
+    ? Object.entries(stackRoutes).find(([pattern]) => {
+        if (pattern.endsWith('*')) {
+          return location.pathname.startsWith(pattern.slice(0, -1));
+        }
+        return location.pathname === pattern;
+      })?.[1]
+    : undefined;
   const isStack = stackTitle !== undefined;
 
   return (

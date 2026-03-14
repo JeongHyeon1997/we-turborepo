@@ -2,11 +2,17 @@ import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { NavTab } from '@we/ui';
 import { coupleColors } from '@we/utils';
+import type { CommunityPost } from '@we/utils';
 import { DiaryScreen } from '../screens/DiaryScreen';
 import { CommunityScreen } from '../screens/CommunityScreen';
 import { MyInfoScreen } from '../screens/MyInfoScreen';
 
-export function createTabs(onSettingsPress: () => void): NavTab[] {
+interface TabCallbacks {
+  onSettingsPress: () => void;
+  onPostPress: (post: CommunityPost) => void;
+}
+
+export function createTabs({ onSettingsPress, onPostPress }: TabCallbacks): NavTab[] {
   return [
     {
       key: 'diary',
@@ -18,7 +24,7 @@ export function createTabs(onSettingsPress: () => void): NavTab[] {
       key: 'community',
       label: '커뮤니티',
       icon: <Ionicons name="chatbubbles-outline" size={22} />,
-      screen: <CommunityScreen />,
+      screen: <CommunityScreen onPostPress={onPostPress} />,
     },
     {
       key: 'my-info',
