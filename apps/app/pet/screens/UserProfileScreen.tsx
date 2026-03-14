@@ -1,11 +1,9 @@
-import { View, Text, Image, Pressable, FlatList, StyleSheet } from 'react-native';
+import { View, Text, Image, FlatList, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { petColors } from '@we/utils';
 import type { CommunityPost } from '@we/utils';
 import { communityPosts } from '../data/communityPosts';
-
-const myName = '우리새끼';
-const mockUser = { nickname: myName, profileImage: null as string | null, followers: 84, following: 32 };
+import { userProfiles } from '../data/userProfiles';
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -28,42 +26,41 @@ function CommunityItem({ post }: { post: CommunityPost }) {
   );
 }
 
-export function MyInfoScreen() {
-  const myCommunityPosts = communityPosts.filter(p => p.author.name === myName);
+interface Props {
+  authorName: string;
+}
+
+export function UserProfileScreen({ authorName }: Props) {
+  const profile = userProfiles[authorName];
+  const posts = communityPosts.filter(p => p.author.name === authorName);
+  const avatarColor = profile?.avatarColor
+    ?? communityPosts.find(p => p.author.name === authorName)?.author.avatarColor
+    ?? petColors.gray200;
 
   const Header = (
     <View>
       <View style={s.profileSection}>
-        <View style={s.avatarWrap}>
-          {mockUser.profileImage ? (
-            <Image source={{ uri: mockUser.profileImage }} style={s.avatar} />
-          ) : (
-            <View style={[s.avatar, s.avatarPlaceholder]}>
-              <Ionicons name="person" size={48} color={petColors.gray400} />
-            </View>
-          )}
+        <View style={[s.avatar, { backgroundColor: avatarColor, alignItems: 'center', justifyContent: 'center' }]}>
+          <Ionicons name="person" size={48} color={petColors.gray500} />
         </View>
-        <Text style={s.nickname}>{mockUser.nickname}</Text>
+        <Text style={s.nickname}>{authorName}</Text>
         <View style={s.statsRow}>
           <View style={s.statItem}>
-            <Text style={s.statNumber}>{mockUser.followers}</Text>
+            <Text style={s.statNumber}>{profile?.followers ?? '—'}</Text>
             <Text style={s.statLabel}>팔로워</Text>
           </View>
           <View style={s.divider} />
           <View style={s.statItem}>
-            <Text style={s.statNumber}>{mockUser.following}</Text>
+            <Text style={s.statNumber}>{profile?.following ?? '—'}</Text>
             <Text style={s.statLabel}>팔로잉</Text>
           </View>
         </View>
-        <Pressable style={({ pressed }) => [s.editButton, pressed && s.editButtonPressed]}>
-          <Text style={s.editButtonText}>프로필 편집</Text>
-        </Pressable>
       </View>
 
       <View style={s.sectionHeader}>
         <Text style={s.sectionTitle}>커뮤니티 글</Text>
         <View style={s.sectionBadge}>
-          <Text style={s.sectionBadgeText}>{myCommunityPosts.length}</Text>
+          <Text style={s.sectionBadgeText}>{posts.length}</Text>
         </View>
       </View>
     </View>
@@ -71,7 +68,7 @@ export function MyInfoScreen() {
 
   return (
     <FlatList
-      data={myCommunityPosts}
+      data={posts}
       keyExtractor={item => item.id}
       ListHeaderComponent={Header}
       ListEmptyComponent={<Text style={s.empty}>아직 작성한 글이 없어요.</Text>}
@@ -82,18 +79,13 @@ export function MyInfoScreen() {
 
 const s = StyleSheet.create({
   profileSection: { alignItems: 'center', paddingTop: 32, paddingHorizontal: 24, paddingBottom: 24 },
-  avatarWrap: { marginBottom: 14 },
-  avatar: { width: 96, height: 96, borderRadius: 48 },
-  avatarPlaceholder: { backgroundColor: petColors.gray100, alignItems: 'center', justifyContent: 'center' },
+  avatar: { width: 96, height: 96, borderRadius: 48, marginBottom: 14 },
   nickname: { fontSize: 20, fontFamily: 'BMJUA', color: petColors.gray900, marginBottom: 18 },
-  statsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 24 },
+  statsRow: { flexDirection: 'row', alignItems: 'center' },
   statItem: { alignItems: 'center', paddingHorizontal: 28 },
   statNumber: { fontSize: 20, fontFamily: 'BMJUA', color: petColors.gray900 },
   statLabel: { fontSize: 13, color: petColors.gray500, marginTop: 2 },
   divider: { width: 1, height: 32, backgroundColor: petColors.gray200 },
-  editButton: { paddingHorizontal: 28, paddingVertical: 10, borderRadius: 24, borderWidth: 1, borderColor: petColors.blue },
-  editButtonPressed: { backgroundColor: petColors.surface },
-  editButtonText: { fontSize: 14, fontFamily: 'BMJUA', color: petColors.gray700 },
   sectionHeader: {
     flexDirection: 'row', alignItems: 'center', gap: 8, padding: 14,
     borderTopWidth: 1, borderBottomWidth: 1, borderColor: petColors.gray100,

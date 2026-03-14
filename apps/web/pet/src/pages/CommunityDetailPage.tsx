@@ -1,5 +1,5 @@
 import { useState, useRef, CSSProperties } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { petColors } from '@we/utils';
 import { communityPosts } from '../data/communityPosts';
 
@@ -10,6 +10,7 @@ function formatDate(iso: string) {
 
 export function CommunityDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const post = communityPosts.find(p => p.id === id);
 
   const [liked, setLiked] = useState(false);
@@ -38,7 +39,12 @@ export function CommunityDetailPage() {
           <span style={s.avatarText}>{post.author.name[0]}</span>
         </div>
         <div style={s.authorInfo}>
-          <span style={s.authorName}>{post.author.name}</span>
+          <span
+            style={s.authorName}
+            onClick={() => navigate(`/profile/${encodeURIComponent(post.author.name)}`)}
+          >
+            {post.author.name}
+          </span>
           <span style={s.date}>{formatDate(post.createdAt)}</span>
         </div>
       </div>
@@ -121,6 +127,7 @@ const s: Record<string, CSSProperties> = {
     fontWeight: 700,
     color: petColors.gray800,
     fontFamily: 'BMJUA, sans-serif',
+    cursor: 'pointer',
   },
   date: {
     fontSize: 12,

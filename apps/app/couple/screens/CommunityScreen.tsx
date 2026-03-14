@@ -18,10 +18,12 @@ function PostCard({
   post,
   onLike,
   onPress,
+  onAuthorPress,
 }: {
   post: Post;
   onLike: () => void;
   onPress: () => void;
+  onAuthorPress: () => void;
 }) {
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -42,7 +44,9 @@ function PostCard({
           <Text style={s.avatarText}>{post.author.name[0]}</Text>
         </View>
         <View style={s.authorInfo}>
-          <Text style={s.authorName}>{post.author.name}</Text>
+          <Pressable onPress={(e) => { e.stopPropagation?.(); onAuthorPress(); }} hitSlop={4}>
+            <Text style={s.authorName}>{post.author.name}</Text>
+          </Pressable>
           <Text style={s.date}>{formatDate(post.createdAt)}</Text>
         </View>
       </View>
@@ -80,9 +84,10 @@ function PostCard({
 
 interface Props {
   onPostPress: (post: CommunityPost) => void;
+  onAuthorPress: (name: string) => void;
 }
 
-export function CommunityScreen({ onPostPress }: Props) {
+export function CommunityScreen({ onPostPress, onAuthorPress }: Props) {
   const [posts, setPosts] = useState<Post[]>(
     initialPosts.map(p => ({ ...p, liked: false }))
   );
@@ -108,6 +113,7 @@ export function CommunityScreen({ onPostPress }: Props) {
           post={item}
           onLike={() => toggleLike(item.id)}
           onPress={() => onPostPress(item)}
+          onAuthorPress={() => onAuthorPress(item.author.name)}
         />
       )}
     />

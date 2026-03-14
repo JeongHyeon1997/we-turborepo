@@ -10,9 +10,10 @@ import { MyInfoScreen } from '../screens/MyInfoScreen';
 interface TabCallbacks {
   onSettingsPress: () => void;
   onPostPress: (post: CommunityPost) => void;
+  onAuthorPress: (name: string) => void;
 }
 
-export function createTabs({ onSettingsPress, onPostPress }: TabCallbacks): NavTab[] {
+export function createTabs({ onSettingsPress, onPostPress, onAuthorPress }: TabCallbacks): NavTab[] {
   return [
     {
       key: 'my-pet',
@@ -24,7 +25,7 @@ export function createTabs({ onSettingsPress, onPostPress }: TabCallbacks): NavT
       key: 'community',
       label: '커뮤니티',
       icon: <Ionicons name="chatbubbles-outline" size={22} />,
-      screen: <CommunityScreen onPostPress={onPostPress} />,
+      screen: <CommunityScreen onPostPress={onPostPress} onAuthorPress={onAuthorPress} />,
     },
     {
       key: 'my-info',

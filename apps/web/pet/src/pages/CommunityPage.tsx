@@ -35,7 +35,12 @@ function PostCard({ post, onLike }: { post: CommunityPost & { liked: boolean }; 
       <div style={s.cardHeader}>
         <Avatar color={post.author.avatarColor} name={post.author.name} />
         <div style={s.authorInfo}>
-          <span style={s.authorName}>{post.author.name}</span>
+          <span
+            style={s.authorName}
+            onClick={(e) => { e.stopPropagation(); navigate(`/profile/${encodeURIComponent(post.author.name)}`); }}
+          >
+            {post.author.name}
+          </span>
           <span style={s.date}>{formatDate(post.createdAt)}</span>
         </div>
       </div>
@@ -142,6 +147,7 @@ const s: Record<string, CSSProperties> = {
     fontWeight: 700,
     color: petColors.gray800,
     fontFamily: 'BMJUA, sans-serif',
+    cursor: 'pointer',
   },
   date: {
     fontSize: 12,

@@ -8,6 +8,7 @@ import { theme } from './config/theme';
 import type { CommunityPost } from '@we/utils';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { CommunityDetailScreen } from './screens/CommunityDetailScreen';
+import { UserProfileScreen } from './screens/UserProfileScreen';
 
 const logo = (
   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -27,6 +28,7 @@ export default function App() {
 
   const [showSettings, setShowSettings] = useState(false);
   const [communityPost, setCommunityPost] = useState<CommunityPost | null>(null);
+  const [profileName, setProfileName] = useState<string | null>(null);
 
   if (!fontsLoaded) return null;
 
@@ -34,6 +36,8 @@ export default function App() {
     ? { content: <SettingsScreen />, title: '설정', onBack: () => setShowSettings(false) }
     : communityPost
     ? { content: <CommunityDetailScreen post={communityPost} />, title: '커뮤니티', onBack: () => setCommunityPost(null) }
+    : profileName
+    ? { content: <UserProfileScreen authorName={profileName} />, title: '프로필', onBack: () => setProfileName(null) }
     : undefined;
 
   return (
@@ -42,6 +46,7 @@ export default function App() {
       tabs={createTabs({
         onSettingsPress: () => setShowSettings(true),
         onPostPress: (post) => setCommunityPost(post),
+        onAuthorPress: (name) => setProfileName(name),
       })}
       theme={theme}
       stackScreen={stackScreen}
