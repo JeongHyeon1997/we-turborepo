@@ -16,6 +16,8 @@ apps/
     └── pet/          # @we/web-pet
 packages/
 ├── ui/               # @we/ui — React Native 전용 공유 UI
+├── ui-web/           # @we/ui-web — Web 전용 공유 UI
+├── tailwind-config/  # @we/tailwind-config — 공유 Tailwind 설정
 ├── utils/            # @we/utils — 플랫폼 무관 공유 유틸
 ├── tsconfig/         # @we/tsconfig
 └── eslint-config/    # @we/eslint-config
@@ -99,6 +101,7 @@ import { HomeTab, SettingsTab } from '@we/ui/navigation/tabs';
 |------|-----------|-----------|
 | 탭/네비게이션 항목 | `packages/ui` | 각 앱 navigator |
 | 색상 토큰 | `packages/utils/src/colors/` | 각 앱 theme |
+| Tailwind 테마 토큰 | `packages/tailwind-config` | 각 앱 tailwind.config |
 | 공용 컴포넌트 | `packages/ui` | 각 앱 screen |
 | 유틸 함수 | `packages/utils` | 각 앱 필요한 곳 |
 
@@ -109,11 +112,16 @@ import { HomeTab, SettingsTab } from '@we/ui/navigation/tabs';
 ### packages/ui
 - **React Native 전용** — `react-native` peer dependency 있음
 - Web 컴포넌트는 절대 여기에 추가하지 않는다
-- Web 공용 컴포넌트가 필요하면 `packages/ui-web` 신규 패키지 생성
+- Web 공용 컴포넌트가 필요하면 `packages/ui-web` 패키지를 사용
 
 ### packages/utils
 - 플랫폼 무관 순수 함수만 — Node API, RN API, Browser API 사용 금지
 - Expo 앱과 Web 앱이 모두 의존하므로 platform-specific 코드 금지
+
+### packages/tailwind-config
+- 공유 Tailwind 테마 토큰(colors, spacing 등)을 여기서 정의
+- Expo 앱과 Web 앱 모두 이 config를 `require('@we/tailwind-config')`로 가져와 extend
+- Tailwind CSS v3 기반 (`tailwindcss@^3.4.0`)
 
 ### TypeScript
 - Expo 앱: `@we/tsconfig/react-native.json` extend, `jsx: react-native`
@@ -125,6 +133,77 @@ import { HomeTab, SettingsTab } from '@we/ui/navigation/tabs';
 - Web 앱 개발: `dev` 스크립트 → `yarn turbo run dev --filter=@we/web-couple`
 - 전체 빌드: `yarn turbo run build`
 - 전체 lint: `yarn turbo run lint`
+
+## NativeWind / Tailwind CSS
+
+웹과 앱에서 동일한 Tailwind 클래스를 사용할 수 있다.
+
+### 스타일 시스템 구조
+
+| 플랫폼 | 도구 | 설정 파일 |
+|--------|------|-----------|
+| Expo (Native) | NativeWind v4 | `babel.config.js`, `metro.config.js`, `global.css`, `tailwind.config.js` |
+| Web (Vite) | Tailwind CSS v3 + PostCSS | `postcss.config.cjs`, `tailwind.config.cjs`, `src/index.css` |
+| 공유 테마 | `@we/tailwind-config` | `packages/tailwind-config/tailwind.config.js` |
+
+### Expo 앱에서 className 사용
+
+```tsx
+// NativeWind v4 — React Native 컴포넌트에 className 사용 가능
+import { View, Text } from 'react-native';
+
+export function Card() {
+  return (
+    <View className="flex-1 bg-white p-4 rounded-xl shadow">
+      <Text className="text-lg font-bold text-gray-900">제목</Text>
+    </View>
+  );
+}
+```
+
+### Web 앱에서 className 사용
+
+```tsx
+// 일반 Tailwind CSS — HTML 요소에 className 사용
+export function Card() {
+  return (
+    <div className="flex flex-col bg-white p-4 rounded-xl shadow">
+      <span className="text-lg font-bold text-gray-900">제목</span>
+    </div>
+  );
+}
+```
+
+### 공유 테마 토큰 추가
+
+`packages/tailwind-config/tailwind.config.js`의 `theme.extend`에 추가:
+
+```js
+theme: {
+  extend: {
+    colors: {
+      primary: '#FF6B9D',
+      secondary: '#4A90D9',
+    },
+  },
+},
+```
+
+### 새 Expo 앱에 NativeWind 추가 시
+- `babel.config.js` — nativewind/babel preset 추가
+- `metro.config.js` — `withNativeWind(config, { input: './global.css' })`
+- `global.css` — `@tailwind base/components/utilities`
+- `tailwind.config.js` — `@we/tailwind-config` extend + content paths
+- `nativewind-env.d.ts` — `/// <reference types="nativewind/types" />`
+- `index.ts` — `import './global.css'` 맨 위에 추가
+- `package.json` — `nativewind`, `tailwindcss`, `@we/tailwind-config` 추가
+
+### 새 Web 앱에 Tailwind 추가 시
+- `tailwind.config.cjs` — `@we/tailwind-config` extend + content paths
+- `postcss.config.cjs` — tailwindcss + autoprefixer
+- `src/index.css` — `@tailwind base/components/utilities`
+- `src/main.tsx` — `import './index.css'` 맨 위에 추가
+- `package.json` — `tailwindcss`, `postcss`, `autoprefixer`, `@we/tailwind-config` 추가
 
 ## 스킬 사용법
 
@@ -141,11 +220,14 @@ import { HomeTab, SettingsTab } from '@we/ui/navigation/tabs';
 **Expo 앱 추가** (`apps/app/{name}/`):
 - `package.json` name: `@we/name`
 - `tsconfig.json`: `@we/tsconfig/react-native.json` extend
-- dependencies: `expo`, `react`, `react-native`, `@we/ui`, `@we/utils`
+- dependencies: `expo`, `react`, `react-native`, `nativewind`, `@we/ui`, `@we/utils`, `@we/tailwind-config`
+- devDependencies: `tailwindcss`
+- NativeWind 설정 파일 추가 (위 NativeWind 섹션 참조)
 
 **Web 앱 추가** (`apps/web/{name}/`):
 - `package.json` name: `@we/web-name`
 - `tsconfig.json`: `@we/tsconfig/base.json` extend + `jsx: react-jsx`
 - `tsconfig.node.json`: vite.config.ts용 별도 설정
-- dependencies: `react`, `react-dom`, `@we/utils` (ui는 web 전용 패키지 생성 후)
-- devDependencies: `vite`, `@vitejs/plugin-react`
+- dependencies: `react`, `react-dom`, `@we/utils`, `@we/tailwind-config`
+- devDependencies: `vite`, `@vitejs/plugin-react`, `tailwindcss`, `postcss`, `autoprefixer`
+- Tailwind 설정 파일 추가 (위 NativeWind 섹션 참조)
