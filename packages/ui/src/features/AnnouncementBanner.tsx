@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
+import { View, Text, Pressable, StyleSheet, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { Announcement } from '@we/utils';
 
 const N = {
-  gray100: '#f3f4f6', gray200: '#e5e7eb', gray300: '#d1d5db',
-  gray400: '#9ca3af', gray800: '#1f2937', white: '#ffffff',
+  gray100: '#f3f4f6', gray400: '#9ca3af', gray800: '#1f2937', white: '#ffffff',
 };
 
 function formatDate(iso: string) {
@@ -21,7 +20,19 @@ export interface AnnouncementBannerProps {
 
 export function AnnouncementBanner({ announcements, accentColor, onPress }: AnnouncementBannerProps) {
   const [idx, setIdx] = useState(0);
+  const anim = useRef(new Animated.Value(1)).current;
 
+  // 인덱스 변경 시 슬라이드인 애니메이션
+  useEffect(() => {
+    anim.setValue(0);
+    Animated.timing(anim, {
+      toValue: 1,
+      duration: 350,
+      useNativeDriver: true,
+    }).start();
+  }, [idx]);
+
+  // 자동 재생
   useEffect(() => {
     if (announcements.length <= 1) return;
     const t = setInterval(() => setIdx(i => (i + 1) % announcements.length), 4000);
@@ -31,15 +42,16 @@ export function AnnouncementBanner({ announcements, accentColor, onPress }: Anno
   if (announcements.length === 0) return null;
 
   const ann = announcements[idx];
-  const iconBg = accentColor + '28';
+  const translateY = anim.interpolate({ inputRange: [0, 1], outputRange: [6, 0] });
 
   return (
     <View style={s.outer}>
       <Pressable style={s.card} onPress={() => onPress(ann.id)}>
-        <View style={[s.iconBox, { backgroundColor: iconBg }]}>
+        <View style={[s.iconBox, { backgroundColor: accentColor + '28' }]}>
           <Ionicons name="megaphone-outline" size={18} color={accentColor} />
         </View>
-        <View style={s.body}>
+
+        <Animated.View style={[s.body, { opacity: anim, transform: [{ translateY }] }]}>
           {ann.important && (
             <View style={[s.importantTag, { backgroundColor: accentColor + '22' }]}>
               <Text style={[s.importantTagText, { color: accentColor }]}>중요</Text>
@@ -47,24 +59,10 @@ export function AnnouncementBanner({ announcements, accentColor, onPress }: Anno
           )}
           <Text style={s.title} numberOfLines={1}>{ann.title}</Text>
           <Text style={s.date}>{formatDate(ann.createdAt)}</Text>
-        </View>
+        </Animated.View>
+
         <Ionicons name="chevron-forward" size={16} color={N.gray400} />
       </Pressable>
-
-      {announcements.length > 1 && (
-        <View style={s.dots}>
-          {announcements.map((_, i) => (
-            <Pressable
-              key={i}
-              onPress={() => setIdx(i)}
-              style={[
-                s.dot,
-                { width: i === idx ? 16 : 6, backgroundColor: i === idx ? accentColor : N.gray300 },
-              ]}
-            />
-          ))}
-        </View>
-      )}
     </View>
   );
 }
@@ -89,6 +87,7 @@ const s = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 4,
     elevation: 1,
+    overflow: 'hidden',
   },
   iconBox: {
     width: 34,
@@ -121,17 +120,5 @@ const s = StyleSheet.create({
   date: {
     fontSize: 11,
     color: N.gray400,
-  },
-  dots: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 4,
-    paddingTop: 6,
-    paddingBottom: 2,
-  },
-  dot: {
-    height: 6,
-    borderRadius: 3,
   },
 });

@@ -1,11 +1,24 @@
-import { useState, useEffect, type CSSProperties } from 'react';
+import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { IoMegaphoneOutline, IoChevronForward } from 'react-icons/io5';
 import type { Announcement } from '@we/utils';
 
 const N = {
-  gray100: '#f3f4f6', gray200: '#e5e7eb', gray300: '#d1d5db',
-  gray400: '#9ca3af', gray800: '#1f2937', white: '#ffffff',
+  gray100: '#f3f4f6', gray400: '#9ca3af', gray800: '#1f2937', white: '#ffffff',
 };
+
+// 키프레임 한 번만 주입
+const STYLE_ID = 'ann-banner-anim';
+if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
+  const el = document.createElement('style');
+  el.id = STYLE_ID;
+  el.textContent = `
+    @keyframes ann-slide-in {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0);   }
+    }
+  `;
+  document.head.appendChild(el);
+}
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -20,11 +33,12 @@ export interface AnnouncementBannerProps {
 
 export function AnnouncementBanner({ announcements, accentColor, onPress }: AnnouncementBannerProps) {
   const [idx, setIdx] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (announcements.length <= 1) return;
-    const t = setInterval(() => setIdx(i => (i + 1) % announcements.length), 4000);
-    return () => clearInterval(t);
+    timerRef.current = setInterval(() => setIdx(i => (i + 1) % announcements.length), 4000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [announcements.length]);
 
   if (announcements.length === 0) return null;
@@ -37,7 +51,9 @@ export function AnnouncementBanner({ announcements, accentColor, onPress }: Anno
         <div style={{ ...s.iconBox, backgroundColor: accentColor + '28' }}>
           <IoMegaphoneOutline size={18} color={accentColor} />
         </div>
-        <div style={s.body}>
+
+        {/* key 변경 시 div 재마운트 → 애니메이션 재실행 */}
+        <div key={idx} style={s.body}>
           {ann.important && (
             <span style={{ ...s.importantTag, backgroundColor: accentColor + '22', color: accentColor }}>
               중요
@@ -46,24 +62,9 @@ export function AnnouncementBanner({ announcements, accentColor, onPress }: Anno
           <span style={s.title}>{ann.title}</span>
           <span style={s.date}>{formatDate(ann.createdAt)}</span>
         </div>
+
         <IoChevronForward size={16} color={N.gray400} />
       </button>
-
-      {announcements.length > 1 && (
-        <div style={s.dots}>
-          {announcements.map((_, i) => (
-            <button
-              key={i}
-              style={{
-                ...s.dot,
-                width: i === idx ? 16 : 6,
-                backgroundColor: i === idx ? accentColor : N.gray300,
-              }}
-              onClick={() => setIdx(i)}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }
@@ -85,6 +86,7 @@ const s: Record<string, CSSProperties> = {
     boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
     cursor: 'pointer',
     textAlign: 'left',
+    overflow: 'hidden',
   },
   iconBox: {
     width: 34,
@@ -101,6 +103,7 @@ const s: Record<string, CSSProperties> = {
     flexDirection: 'column',
     gap: 2,
     minWidth: 0,
+    animation: 'ann-slide-in 0.35s ease both',
   },
   importantTag: {
     display: 'inline-block',
@@ -123,21 +126,5 @@ const s: Record<string, CSSProperties> = {
   date: {
     fontSize: 11,
     color: N.gray400,
-  },
-  dots: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 4,
-    paddingTop: 6,
-    paddingBottom: 2,
-  },
-  dot: {
-    height: 6,
-    borderRadius: 3,
-    border: 'none',
-    padding: 0,
-    cursor: 'pointer',
-    transition: 'all 0.3s',
   },
 };
