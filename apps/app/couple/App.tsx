@@ -5,12 +5,14 @@ import { useFonts } from 'expo-font';
 import { AppLayout } from '@we/ui';
 import { createTabs } from './config/tabs';
 import { theme } from './config/theme';
-import type { CommunityPost, Announcement } from '@we/utils';
+import type { CommunityPost, Announcement, CoupleConnection, CouplePartner } from '@we/utils';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { CommunityDetailScreen } from './screens/CommunityDetailScreen';
 import { UserProfileScreen } from './screens/UserProfileScreen';
 import { AnnouncementsScreen } from './screens/AnnouncementsScreen';
 import { AnnouncementDetailScreen } from './screens/AnnouncementDetailScreen';
+import { CoupleConnectScreen } from './screens/CoupleConnectScreen';
+import { CoupleConfirmScreen } from './screens/CoupleConfirmScreen';
 import { announcements } from './data/announcements';
 
 const logo = (
@@ -34,8 +36,13 @@ export default function App() {
   const [profileName, setProfileName] = useState<string | null>(null);
   const [showAnnouncements, setShowAnnouncements] = useState(false);
   const [announcementDetail, setAnnouncementDetail] = useState<Announcement | null>(null);
+  const [connection, setConnection] = useState<CoupleConnection | null>(null);
+  const [showCoupleConnect, setShowCoupleConnect] = useState(false);
+  const [confirmPartner, setConfirmPartner] = useState<CouplePartner | null>(null);
 
   if (!fontsLoaded) return null;
+
+  const today = new Date().toISOString().slice(0, 10);
 
   const stackScreen = showSettings
     ? { content: <SettingsScreen />, title: '설정', onBack: () => setShowSettings(false) }
@@ -58,6 +65,32 @@ export default function App() {
         title: '공지사항',
         onBack: () => setShowAnnouncements(false),
       }
+    : confirmPartner
+    ? {
+        content: (
+          <CoupleConfirmScreen
+            partner={confirmPartner}
+            onAccept={() => {
+              setConnection({ partner: confirmPartner, datingStartDate: today, shareStartDate: today });
+              setConfirmPartner(null);
+              setShowCoupleConnect(false);
+            }}
+            onDecline={() => setConfirmPartner(null)}
+          />
+        ),
+        title: '커플 연결',
+        onBack: () => setConfirmPartner(null),
+      }
+    : showCoupleConnect
+    ? {
+        content: (
+          <CoupleConnectScreen
+            onCodeEntered={(partner) => setConfirmPartner(partner)}
+          />
+        ),
+        title: '상대방 연결',
+        onBack: () => setShowCoupleConnect(false),
+      }
     : undefined;
 
   return (
@@ -72,6 +105,9 @@ export default function App() {
           if (ann) setAnnouncementDetail(ann);
         },
         onAnnouncementsListPress: () => setShowAnnouncements(true),
+        connection,
+        onConnectPress: () => setShowCoupleConnect(true),
+        onUpdateConnection: (c) => setConnection(c),
       })}
       theme={theme}
       stackScreen={stackScreen}

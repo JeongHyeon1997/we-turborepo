@@ -7,6 +7,8 @@ export type { NavTab } from './layout/BottomNav';
 export { DiaryFeature } from './features/DiaryFeature';
 export { GalleryFeature } from './features/GalleryFeature';
 export { AnnouncementBanner } from './features/AnnouncementBanner';
+export { DatePickerModal } from './features/DatePickerModal';
 export type { DiaryFeatureProps } from './features/DiaryFeature';
 export type { GalleryFeatureProps } from './features/GalleryFeature';
 export type { AnnouncementBannerProps } from './features/AnnouncementBanner';
+export type { DatePickerModalProps } from './features/DatePickerModal';

@@ -2,7 +2,7 @@ import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { NavTab } from '@we/ui';
 import { coupleColors } from '@we/utils';
-import type { CommunityPost } from '@we/utils';
+import type { CommunityPost, CoupleConnection } from '@we/utils';
 import { DiaryScreen } from '../screens/DiaryScreen';
 import { GalleryScreen } from '../screens/GalleryScreen';
 import { CommunityScreen } from '../screens/CommunityScreen';
@@ -14,6 +14,9 @@ interface TabCallbacks {
   onAuthorPress: (name: string) => void;
   onAnnouncementPress: (id: string) => void;
   onAnnouncementsListPress: () => void;
+  connection: CoupleConnection | null;
+  onConnectPress: () => void;
+  onUpdateConnection: (c: CoupleConnection) => void;
 }
 
 export function createTabs({
@@ -22,6 +25,9 @@ export function createTabs({
   onAuthorPress,
   onAnnouncementPress,
   onAnnouncementsListPress,
+  connection,
+  onConnectPress,
+  onUpdateConnection,
 }: TabCallbacks): NavTab[] {
   const announcementBtn = (
     <Pressable onPress={onAnnouncementsListPress} hitSlop={8}>
@@ -60,7 +66,14 @@ export function createTabs({
       key: 'my-info',
       label: '내 정보',
       icon: <Ionicons name="person-outline" size={22} />,
-      screen: <MyInfoScreen onAnnouncementPress={onAnnouncementPress} />,
+      screen: (
+        <MyInfoScreen
+          onAnnouncementPress={onAnnouncementPress}
+          connection={connection}
+          onConnectPress={onConnectPress}
+          onUpdateConnection={onUpdateConnection}
+        />
+      ),
       headerIcons: (
         <View style={{ flexDirection: 'row', gap: 8 }}>
           {announcementBtn}

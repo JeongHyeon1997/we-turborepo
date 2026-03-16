@@ -12,6 +12,8 @@ import { UserProfilePage } from './pages/UserProfilePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AnnouncementsPage } from './pages/AnnouncementsPage';
 import { AnnouncementDetailPage } from './pages/AnnouncementDetailPage';
+import { CoupleConnectPage } from './pages/CoupleConnectPage';
+import { CoupleConfirmPage } from './pages/CoupleConfirmPage';
 
 const coupleLogoUrl = new URL('../../../../packages/assets/couple_logo.png', import.meta.url).href;
 
@@ -27,6 +29,8 @@ const stackRoutes = {
   '/community/*': '커뮤니티',
   '/profile/*': '프로필',
   '/announcements*': '공지사항',
+  '/couple-connect': '상대방 연결',
+  '/couple-confirm': '커플 연결',
 };
 
 export const router = createBrowserRouter(
@@ -52,6 +56,8 @@ export const router = createBrowserRouter(
         { path: 'settings',  element: <SettingsPage /> },
         { path: 'announcements', element: <AnnouncementsPage /> },
         { path: 'announcements/:id', element: <AnnouncementDetailPage /> },
+        { path: 'couple-connect', element: <CoupleConnectPage /> },
+        { path: 'couple-confirm', element: <CoupleConfirmPage /> },
       ],
     },
   ],
