@@ -55,6 +55,7 @@ export default function App() {
           <AuthFeature
             onLogin={(user: AuthUser) => { login(user); setShowAuth(false); }}
             accentColor="#f4a0a0"
+            appName="우리, 커플"
           />
         ),
         title: '로그인',
