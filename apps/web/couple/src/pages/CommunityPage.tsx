@@ -2,7 +2,7 @@ import { useState, useRef, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { coupleColors } from '@we/utils';
 import type { CommunityPost } from '@we/utils';
-import { AnnouncementBanner } from '@we/ui-web';
+import { AnnouncementBanner, ReportModal } from '@we/ui-web';
 import { communityPosts as initialPosts } from '../data/communityPosts';
 import { announcements } from '../data/announcements';
 
@@ -19,9 +19,18 @@ function Avatar({ color, name }: { color: string; name: string }) {
   );
 }
 
-function PostCard({ post, onLike }: { post: CommunityPost & { liked: boolean }; onLike: () => void }) {
+function PostCard({
+  post,
+  onLike,
+  onReport,
+}: {
+  post: CommunityPost & { liked: boolean };
+  onLike: () => void;
+  onReport: () => void;
+}) {
   const navigate = useNavigate();
   const [animating, setAnimating] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const animRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function handleLike(e: React.MouseEvent) {
@@ -44,6 +53,29 @@ function PostCard({ post, onLike }: { post: CommunityPost & { liked: boolean }; 
             {post.author.name}
           </span>
           <span style={s.date}>{formatDate(post.createdAt)}</span>
+        </div>
+
+        {/* ⋯ 더보기 버튼 */}
+        <div style={s.moreWrap} onClick={e => e.stopPropagation()}>
+          <button
+            style={s.moreBtn}
+            onClick={() => setMenuOpen(v => !v)}
+          >
+            ···
+          </button>
+          {menuOpen && (
+            <>
+              <div style={s.menuBackdrop} onClick={() => setMenuOpen(false)} />
+              <div style={s.menu}>
+                <button
+                  style={s.menuItem}
+                  onClick={() => { setMenuOpen(false); onReport(); }}
+                >
+                  🚨 신고하기
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -86,6 +118,7 @@ export function CommunityPage() {
   const [posts, setPosts] = useState<(CommunityPost & { liked: boolean })[]>(
     initialPosts.map(p => ({ ...p, liked: false }))
   );
+  const [reportTargetId, setReportTargetId] = useState<string | null>(null);
 
   function toggleLike(id: string) {
     setPosts(prev =>
@@ -106,9 +139,22 @@ export function CommunityPage() {
       />
       <div style={s.page}>
         {posts.map(post => (
-          <PostCard key={post.id} post={post} onLike={() => toggleLike(post.id)} />
+          <PostCard
+            key={post.id}
+            post={post}
+            onLike={() => toggleLike(post.id)}
+            onReport={() => setReportTargetId(post.id)}
+          />
         ))}
       </div>
+
+      <ReportModal
+        visible={reportTargetId !== null}
+        targetType="post"
+        accentColor="#f4a0a0"
+        onSubmit={(_reasons, _text) => { /* TODO: API 연동 */ }}
+        onClose={() => setReportTargetId(null)}
+      />
     </div>
   );
 }
@@ -151,6 +197,7 @@ const s: Record<string, CSSProperties> = {
     display: 'flex',
     flexDirection: 'column',
     gap: 2,
+    flex: 1,
   },
   authorName: {
     fontSize: 14,
@@ -162,6 +209,50 @@ const s: Record<string, CSSProperties> = {
   date: {
     fontSize: 12,
     color: coupleColors.gray400,
+  },
+  moreWrap: {
+    position: 'relative',
+  },
+  moreBtn: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: 18,
+    color: coupleColors.gray400,
+    padding: '4px 8px',
+    letterSpacing: 1,
+    fontFamily: 'inherit',
+  },
+  menuBackdrop: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 99,
+  },
+  menu: {
+    position: 'absolute',
+    right: 0,
+    top: '100%',
+    marginTop: 4,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+    border: '1px solid #e5e7eb',
+    zIndex: 100,
+    minWidth: 120,
+    overflow: 'hidden',
+  },
+  menuItem: {
+    display: 'block',
+    width: '100%',
+    padding: '12px 16px',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: 14,
+    fontFamily: 'BMJUA, sans-serif',
+    color: '#ef4444',
+    textAlign: 'left',
+    whiteSpace: 'nowrap',
   },
   content: {
     margin: '10px 14px',

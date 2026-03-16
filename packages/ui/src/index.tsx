@@ -16,3 +16,5 @@ export { AuthPromptModal } from './features/AuthPromptModal';
 export { AuthFeature } from './features/AuthFeature';
 export type { AuthPromptModalProps } from './features/AuthPromptModal';
 export type { AuthFeatureProps } from './features/AuthFeature';
+export { ReportModal } from './features/ReportModal';
+export type { ReportModalProps } from './features/ReportModal';

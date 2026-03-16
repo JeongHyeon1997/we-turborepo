@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { coupleColors } from '@we/utils';
 import type { CommunityPost } from '@we/utils';
-import { AnnouncementBanner } from '@we/ui';
+import { AnnouncementBanner, ReportModal } from '@we/ui';
 import { communityPosts as initialPosts } from '../data/communityPosts';
 import { announcements } from '../data/announcements';
 
@@ -21,11 +21,13 @@ function PostCard({
   onLike,
   onPress,
   onAuthorPress,
+  onReport,
 }: {
   post: Post;
   onLike: () => void;
   onPress: () => void;
   onAuthorPress: () => void;
+  onReport: () => void;
 }) {
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -51,6 +53,15 @@ function PostCard({
           </Pressable>
           <Text style={s.date}>{formatDate(post.createdAt)}</Text>
         </View>
+
+        {/* ⋯ 더보기 버튼 */}
+        <Pressable
+          style={s.moreBtn}
+          onPress={(e) => { e.stopPropagation?.(); onReport(); }}
+          hitSlop={8}
+        >
+          <Text style={s.moreBtnText}>···</Text>
+        </Pressable>
       </View>
 
       {/* Content */}
@@ -94,6 +105,7 @@ export function CommunityScreen({ onPostPress, onAuthorPress, onAnnouncementPres
   const [posts, setPosts] = useState<Post[]>(
     initialPosts.map(p => ({ ...p, liked: false }))
   );
+  const [reportTargetId, setReportTargetId] = useState<string | null>(null);
 
   function toggleLike(id: string) {
     setPosts(prev =>
@@ -114,105 +126,72 @@ export function CommunityScreen({ onPostPress, onAuthorPress, onAnnouncementPres
   );
 
   return (
-    <FlatList
-      data={posts}
-      keyExtractor={item => item.id}
-      contentContainerStyle={s.list}
-      ListHeaderComponent={banner}
-      ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-      renderItem={({ item }) => (
-        <PostCard
-          post={item}
-          onLike={() => toggleLike(item.id)}
-          onPress={() => onPostPress(item)}
-          onAuthorPress={() => onAuthorPress(item.author.name)}
-        />
-      )}
-    />
+    <>
+      <FlatList
+        data={posts}
+        keyExtractor={item => item.id}
+        contentContainerStyle={s.list}
+        ListHeaderComponent={banner}
+        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+        renderItem={({ item }) => (
+          <PostCard
+            post={item}
+            onLike={() => toggleLike(item.id)}
+            onPress={() => onPostPress(item)}
+            onAuthorPress={() => onAuthorPress(item.author.name)}
+            onReport={() => setReportTargetId(item.id)}
+          />
+        )}
+      />
+      <ReportModal
+        visible={reportTargetId !== null}
+        targetType="post"
+        accentColor="#f4a0a0"
+        onSubmit={(_reasons, _text) => { /* TODO: API 연동 */ }}
+        onClose={() => setReportTargetId(null)}
+      />
+    </>
   );
 }
 
 const s = StyleSheet.create({
-  list: {
-    padding: 16,
-  },
+  list: { padding: 16 },
   card: {
     backgroundColor: coupleColors.white,
-    borderRadius: 12,
-    overflow: 'hidden',
+    borderRadius: 12, overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOpacity: 0.08, shadowRadius: 4, elevation: 2,
   },
   cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    padding: 14,
-    paddingBottom: 0,
+    flexDirection: 'row', alignItems: 'center',
+    gap: 10, padding: 14, paddingBottom: 0,
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 40, height: 40, borderRadius: 20,
+    alignItems: 'center', justifyContent: 'center',
   },
-  avatarText: {
-    fontSize: 16,
-    fontFamily: 'BMJUA',
-    color: coupleColors.gray700,
-  },
-  authorInfo: {
-    gap: 2,
-  },
-  authorName: {
-    fontSize: 14,
-    fontFamily: 'BMJUA',
-    color: coupleColors.gray800,
-  },
-  date: {
-    fontSize: 12,
-    color: coupleColors.gray400,
-    fontFamily: 'BMHANNAPro',
-  },
+  avatarText: { fontSize: 16, fontFamily: 'BMJUA', color: coupleColors.gray700 },
+  authorInfo: { gap: 2, flex: 1 },
+  authorName: { fontSize: 14, fontFamily: 'BMJUA', color: coupleColors.gray800 },
+  date: { fontSize: 12, color: coupleColors.gray400, fontFamily: 'BMHANNAPro' },
+  moreBtn: { padding: 4 },
+  moreBtnText: { fontSize: 18, color: coupleColors.gray400, letterSpacing: 1 },
   content: {
-    margin: 14,
-    marginBottom: 10,
-    fontSize: 14,
-    lineHeight: 22,
-    color: coupleColors.gray700,
-    fontFamily: 'BMHANNAPro',
+    margin: 14, marginBottom: 10, fontSize: 14, lineHeight: 22,
+    color: coupleColors.gray700, fontFamily: 'BMHANNAPro',
   },
-  image: {
-    width: '100%',
-    aspectRatio: 3 / 2,
-  },
+  image: { width: '100%', aspectRatio: 3 / 2 },
   actions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: coupleColors.gray100,
-    marginTop: 4,
-    gap: 4,
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 10, paddingVertical: 10,
+    borderTopWidth: 1, borderTopColor: coupleColors.gray100,
+    marginTop: 4, gap: 4,
   },
   actionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
+    flexDirection: 'row', alignItems: 'center',
+    gap: 4, paddingHorizontal: 8, paddingVertical: 6,
   },
-  actionIcon: {
-    fontSize: 20,
-  },
-  actionCount: {
-    fontSize: 13,
-    color: coupleColors.gray500,
-    fontFamily: 'BMJUA',
-  },
+  actionIcon: { fontSize: 20 },
+  actionCount: { fontSize: 13, color: coupleColors.gray500, fontFamily: 'BMJUA' },
 });
