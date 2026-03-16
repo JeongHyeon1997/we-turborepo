@@ -1,10 +1,105 @@
-import { CSSProperties } from 'react';
+import { useState, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { petColors } from '@we/utils';
 import type { CommunityPost } from '@we/utils';
-import { AnnouncementBanner } from '@we/ui-web';
+import { AnnouncementBanner, DatePickerModal } from '@we/ui-web';
 import { communityPosts } from '../data/communityPosts';
 import { announcements } from '../data/announcements';
+import { useFamilyGroup, setFamilyGroup, removeFamilyMember } from '../data/familyStore';
+
+const ACCENT = '#97A4D9';
+
+function daysBetween(isoDate: string) {
+  const start = new Date(isoDate);
+  const now   = new Date();
+  start.setHours(0, 0, 0, 0); now.setHours(0, 0, 0, 0);
+  return Math.floor((now.getTime() - start.getTime()) / 86400000) + 1;
+}
+
+function FamilySection() {
+  const navigate = useNavigate();
+  const { group } = useFamilyGroup();
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  if (!group) {
+    return (
+      <button style={fs.connectCard} onClick={() => navigate('/family-connect')}>
+        <span style={fs.connectEmoji}>🐾</span>
+        <div style={fs.connectBody}>
+          <span style={fs.connectTitle}>가족을 초대해주세요</span>
+          <span style={fs.connectSub}>함께 일기를 작성하려면 가족 연결이 필요합니다.</span>
+        </div>
+        <span style={fs.connectArrow}>초대코드 입력하러 가기 →</span>
+      </button>
+    );
+  }
+
+  return (
+    <>
+      <div style={fs.card}>
+        {/* 아바타 행 */}
+        <div style={fs.avatarRow}>
+          <div style={{ ...fs.avatar, backgroundColor: ACCENT + '88' }}>
+            <span style={fs.avatarText}>나</span>
+          </div>
+          {group.members.map(m => (
+            <div key={m.id} style={{ ...fs.avatar, backgroundColor: m.avatarColor }}>
+              <span style={fs.avatarText}>{m.name[0]}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* 함께한 날 */}
+        <p style={fs.daysText}>가족과 함께한지 {daysBetween(group.groupStartDate)}일째 🐾</p>
+
+        {/* 시작일 편집 */}
+        <button style={fs.dateRow} onClick={() => setShowDatePicker(true)}>
+          <span style={fs.dateLabel}>📅 그룹 시작일</span>
+          <span style={fs.dateValue}>{group.groupStartDate.replace(/-/g, '.')}</span>
+          <span style={fs.dateEdit}>✏️</span>
+        </button>
+
+        {/* 멤버 목록 */}
+        <div style={fs.memberList}>
+          {group.members.map(m => (
+            <div key={m.id} style={fs.memberRow}>
+              <div style={{ ...fs.memberDot, backgroundColor: m.avatarColor }} />
+              <span style={fs.memberName}>{m.name}</span>
+              <button
+                style={fs.removeBtn}
+                onClick={() => { if (window.confirm(`${m.name}님을 가족에서 제거할까요?`)) removeFamilyMember(m.id); }}
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* 멤버 추가 + 그룹 해제 */}
+        <div style={fs.actionRow}>
+          <button style={fs.addBtn} onClick={() => navigate('/family-connect')}>
+            + 가족 추가
+          </button>
+          <button
+            style={fs.leaveBtn}
+            onClick={() => { if (window.confirm('가족 그룹을 해제할까요?')) setFamilyGroup(null); }}
+          >
+            그룹 해제
+          </button>
+        </div>
+      </div>
+
+      <DatePickerModal
+        visible={showDatePicker}
+        value={group.groupStartDate}
+        title="그룹 시작일 선택"
+        accentColor={ACCENT}
+        onConfirm={date => { setFamilyGroup({ ...group, groupStartDate: date }); setShowDatePicker(false); }}
+        onCancel={() => setShowDatePicker(false)}
+      />
+    </>
+  );
+}
 
 const myName = '우리아이';
 const mockUser = { nickname: myName, profileImage: null as string | null, followers: 84, following: 32 };
@@ -37,6 +132,9 @@ export function MyInfoPage() {
         accentColor="#97A4D9"
         onPress={(id) => navigate(`/announcements/${id}`)}
       />
+      <div style={{ padding: '12px 16px 0' }}>
+        <FamilySection />
+      </div>
       {/* Profile header */}
       <div style={s.profileSection}>
         <div style={s.avatarWrap}>
@@ -81,6 +179,75 @@ export function MyInfoPage() {
     </div>
   );
 }
+
+const fs: Record<string, CSSProperties> = {
+  connectCard: {
+    display: 'flex', flexDirection: 'column', alignItems: 'center',
+    padding: '16px 20px', borderRadius: 16,
+    border: `1.5px dashed ${ACCENT}`,
+    background: ACCENT + '0d',
+    gap: 6, cursor: 'pointer', width: '100%',
+    fontFamily: 'inherit',
+  },
+  connectEmoji: { fontSize: 28 },
+  connectBody: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 },
+  connectTitle: { fontSize: 15, fontWeight: 700, color: ACCENT, fontFamily: 'BMJUA, sans-serif' },
+  connectSub: { fontSize: 12, color: petColors.gray500, fontFamily: 'BMHANNAPro, sans-serif', textAlign: 'center' },
+  connectArrow: { fontSize: 12, color: ACCENT, fontFamily: 'BMJUA, sans-serif', marginTop: 4 },
+  card: {
+    padding: '20px 16px', borderRadius: 20,
+    backgroundColor: petColors.white,
+    border: `1px solid ${ACCENT}33`,
+    boxShadow: `0 4px 20px ${ACCENT}20`,
+    display: 'flex', flexDirection: 'column', gap: 12,
+  },
+  avatarRow: {
+    display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
+  },
+  avatar: {
+    width: 44, height: 44, borderRadius: '50%',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  },
+  avatarText: { fontSize: 16, fontWeight: 700, color: '#fff', fontFamily: 'BMJUA, sans-serif' },
+  daysText: {
+    margin: 0, fontSize: 18, fontWeight: 700,
+    fontFamily: 'BMJUA, sans-serif', color: ACCENT,
+  },
+  dateRow: {
+    display: 'flex', alignItems: 'center', gap: 8,
+    padding: '10px 14px', borderRadius: 12,
+    background: ACCENT + '15', border: 'none', cursor: 'pointer',
+    fontFamily: 'inherit', width: '100%',
+  },
+  dateLabel: { flex: 1, fontSize: 13, color: petColors.gray700, fontFamily: 'BMJUA, sans-serif' },
+  dateValue: { fontSize: 13, color: petColors.gray600, fontFamily: 'BMHANNAPro, sans-serif' },
+  dateEdit: { fontSize: 13 },
+  memberList: { display: 'flex', flexDirection: 'column', gap: 6 },
+  memberRow: {
+    display: 'flex', alignItems: 'center', gap: 8,
+    padding: '8px 12px', borderRadius: 10,
+    backgroundColor: petColors.gray50,
+  },
+  memberDot: { width: 10, height: 10, borderRadius: 5, flexShrink: 0 },
+  memberName: { flex: 1, fontSize: 14, fontWeight: 700, fontFamily: 'BMJUA, sans-serif', color: petColors.gray800 },
+  removeBtn: {
+    background: 'none', border: 'none', cursor: 'pointer',
+    fontSize: 12, color: petColors.gray400, padding: '2px 4px',
+  },
+  actionRow: { display: 'flex', gap: 8 },
+  addBtn: {
+    flex: 1, padding: '10px 0', borderRadius: 12,
+    border: `1.5px solid ${ACCENT}`, background: 'none',
+    fontSize: 14, fontWeight: 700, color: ACCENT,
+    fontFamily: 'BMJUA, sans-serif', cursor: 'pointer',
+  },
+  leaveBtn: {
+    padding: '10px 16px', borderRadius: 12,
+    border: `1px solid ${petColors.gray200}`, background: 'none',
+    fontSize: 13, color: petColors.gray400,
+    fontFamily: 'BMJUA, sans-serif', cursor: 'pointer',
+  },
+};
 
 const s: Record<string, CSSProperties> = {
   page: { display: 'flex', flexDirection: 'column' },

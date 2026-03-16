@@ -5,12 +5,14 @@ import { useFonts } from 'expo-font';
 import { AppLayout } from '@we/ui';
 import { createTabs } from './config/tabs';
 import { theme } from './config/theme';
-import type { CommunityPost, Announcement } from '@we/utils';
+import type { CommunityPost, Announcement, FamilyGroup, FamilyMember } from '@we/utils';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { CommunityDetailScreen } from './screens/CommunityDetailScreen';
 import { UserProfileScreen } from './screens/UserProfileScreen';
 import { AnnouncementsScreen } from './screens/AnnouncementsScreen';
 import { AnnouncementDetailScreen } from './screens/AnnouncementDetailScreen';
+import { FamilyConnectScreen } from './screens/FamilyConnectScreen';
+import { FamilyConfirmScreen } from './screens/FamilyConfirmScreen';
 import { announcements } from './data/announcements';
 
 const logo = (
@@ -34,8 +36,13 @@ export default function App() {
   const [profileName, setProfileName] = useState<string | null>(null);
   const [showAnnouncements, setShowAnnouncements] = useState(false);
   const [announcementDetail, setAnnouncementDetail] = useState<Announcement | null>(null);
+  const [group, setGroup] = useState<FamilyGroup | null>(null);
+  const [showFamilyConnect, setShowFamilyConnect] = useState(false);
+  const [confirmMember, setConfirmMember] = useState<FamilyMember | null>(null);
 
   if (!fontsLoaded) return null;
+
+  const today = new Date().toISOString().slice(0, 10);
 
   const stackScreen = showSettings
     ? { content: <SettingsScreen />, title: '설정', onBack: () => setShowSettings(false) }
@@ -58,6 +65,37 @@ export default function App() {
         title: '공지사항',
         onBack: () => setShowAnnouncements(false),
       }
+    : confirmMember
+    ? {
+        content: (
+          <FamilyConfirmScreen
+            newMember={confirmMember}
+            existingGroup={group}
+            onAccept={() => {
+              const members = group ? [...group.members, confirmMember] : [confirmMember];
+              setGroup(g => g
+                ? { ...g, members }
+                : { members: [confirmMember], groupStartDate: today }
+              );
+              setConfirmMember(null);
+              setShowFamilyConnect(false);
+            }}
+            onDecline={() => setConfirmMember(null)}
+          />
+        ),
+        title: '가족 추가',
+        onBack: () => setConfirmMember(null),
+      }
+    : showFamilyConnect
+    ? {
+        content: (
+          <FamilyConnectScreen
+            onCodeEntered={(member) => setConfirmMember(member)}
+          />
+        ),
+        title: '가족 초대',
+        onBack: () => setShowFamilyConnect(false),
+      }
     : undefined;
 
   return (
@@ -72,6 +110,9 @@ export default function App() {
           if (ann) setAnnouncementDetail(ann);
         },
         onAnnouncementsListPress: () => setShowAnnouncements(true),
+        group,
+        onConnectPress: () => setShowFamilyConnect(true),
+        onUpdateGroup: (g) => setGroup(g),
       })}
       theme={theme}
       stackScreen={stackScreen}

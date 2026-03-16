@@ -7,6 +7,7 @@ export type { CommunityPost } from './community';
 export type { DiaryEntry, Mood } from './diary';
 export type { Announcement } from './announcement';
 export type { CouplePartner, CoupleConnection } from './couple';
+export type { FamilyMember, FamilyGroup } from './family';
 
 export const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("ko-KR", {
