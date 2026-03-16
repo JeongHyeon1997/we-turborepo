@@ -127,6 +127,7 @@ function CoupleSection() {
         visible={pickerType === 'dating'}
         value={datingStartDate}
         title="연애 시작일"
+        accentColor={ACCENT}
         onConfirm={date => { setConnection({ ...connection, datingStartDate: date }); setPickerType(null); }}
         onCancel={() => setPickerType(null)}
       />
@@ -134,6 +135,7 @@ function CoupleSection() {
         visible={pickerType === 'share'}
         value={shareStartDate}
         title="일기 공유 시작일"
+        accentColor={ACCENT}
         onConfirm={date => { setConnection({ ...connection, shareStartDate: date }); setPickerType(null); }}
         onCancel={() => setPickerType(null)}
       />
