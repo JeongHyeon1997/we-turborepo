@@ -1,4 +1,4 @@
-import { Pressable } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { NavTab } from '@we/ui';
 import { coupleColors } from '@we/utils';
@@ -12,15 +12,30 @@ interface TabCallbacks {
   onSettingsPress: () => void;
   onPostPress: (post: CommunityPost) => void;
   onAuthorPress: (name: string) => void;
+  onAnnouncementPress: (id: string) => void;
+  onAnnouncementsListPress: () => void;
 }
 
-export function createTabs({ onSettingsPress, onPostPress, onAuthorPress }: TabCallbacks): NavTab[] {
+export function createTabs({
+  onSettingsPress,
+  onPostPress,
+  onAuthorPress,
+  onAnnouncementPress,
+  onAnnouncementsListPress,
+}: TabCallbacks): NavTab[] {
+  const announcementBtn = (
+    <Pressable onPress={onAnnouncementsListPress} hitSlop={8}>
+      <Ionicons name="notifications-outline" size={22} color={coupleColors.gray700} />
+    </Pressable>
+  );
+
   return [
     {
       key: 'diary',
       label: '일기장',
       icon: <Ionicons name="book-outline" size={22} />,
-      screen: <DiaryScreen />,
+      screen: <DiaryScreen onAnnouncementPress={onAnnouncementPress} />,
+      headerIcons: announcementBtn,
     },
     {
       key: 'gallery',
@@ -32,17 +47,27 @@ export function createTabs({ onSettingsPress, onPostPress, onAuthorPress }: TabC
       key: 'community',
       label: '커뮤니티',
       icon: <Ionicons name="chatbubbles-outline" size={22} />,
-      screen: <CommunityScreen onPostPress={onPostPress} onAuthorPress={onAuthorPress} />,
+      screen: (
+        <CommunityScreen
+          onPostPress={onPostPress}
+          onAuthorPress={onAuthorPress}
+          onAnnouncementPress={onAnnouncementPress}
+        />
+      ),
+      headerIcons: announcementBtn,
     },
     {
       key: 'my-info',
       label: '내 정보',
       icon: <Ionicons name="person-outline" size={22} />,
-      screen: <MyInfoScreen />,
+      screen: <MyInfoScreen onAnnouncementPress={onAnnouncementPress} />,
       headerIcons: (
-        <Pressable onPress={onSettingsPress} hitSlop={8}>
-          <Ionicons name="settings-outline" size={22} color={coupleColors.gray700} />
-        </Pressable>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          {announcementBtn}
+          <Pressable onPress={onSettingsPress} hitSlop={8}>
+            <Ionicons name="settings-outline" size={22} color={coupleColors.gray700} />
+          </Pressable>
+        </View>
       ),
     },
   ];

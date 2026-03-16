@@ -1,8 +1,11 @@
 import { useState, CSSProperties } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { coupleColors } from '@we/utils';
 import type { CommunityPost, DiaryEntry } from '@we/utils';
+import { AnnouncementBanner } from '@we/ui-web';
 import { communityPosts } from '../data/communityPosts';
 import { myDiaryEntries } from '../data/diaryEntries';
+import { announcements } from '../data/announcements';
 
 const myName = '우리커플';
 const mockUser = { nickname: myName, profileImage: null as string | null, followers: 128, following: 64 };
@@ -45,6 +48,7 @@ function DiaryItem({ entry }: { entry: DiaryEntry }) {
 }
 
 export function MyInfoPage() {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState<FilterType>('전체');
 
   const myCommunityPosts = communityPosts.filter(p => p.author.name === myName);
@@ -58,6 +62,11 @@ export function MyInfoPage() {
 
   return (
     <div style={s.page}>
+      <AnnouncementBanner
+        announcements={announcements}
+        accentColor="#f4a0a0"
+        onPress={(id) => navigate(`/announcements/${id}`)}
+      />
       {/* Profile header */}
       <div style={s.profileSection}>
         <div style={s.avatarWrap}>

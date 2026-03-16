@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { DiaryFeature } from '@we/ui';
+import { View } from 'react-native';
+import { DiaryFeature, AnnouncementBanner } from '@we/ui';
 import type { Mood, DiaryEntry } from '@we/utils';
 import { myDiaryEntries } from '../data/diaryEntries';
+import { announcements } from '../data/announcements';
 
 const MOODS: Mood[] = [
   { emoji: '🎉', label: '신났어요',   color: '#FFD93D' },
@@ -14,15 +16,26 @@ const MOODS: Mood[] = [
   { emoji: '⚡', label: '활발해요',   color: '#FF7675' },
 ];
 
-export function DiaryScreen() {
+interface Props {
+  onAnnouncementPress: (id: string) => void;
+}
+
+export function DiaryScreen({ onAnnouncementPress }: Props) {
   const [entries, setEntries] = useState<DiaryEntry[]>(myDiaryEntries);
   return (
-    <DiaryFeature
-      accentColor="#97A4D9"
-      moods={MOODS}
-      moodModalTitle={'오늘 우리 아이는\n어땠나요? 🐾'}
-      entries={entries}
-      onAddEntry={e => setEntries(prev => [e, ...prev])}
-    />
+    <View style={{ flex: 1 }}>
+      <AnnouncementBanner
+        announcements={announcements}
+        accentColor="#97A4D9"
+        onPress={onAnnouncementPress}
+      />
+      <DiaryFeature
+        accentColor="#97A4D9"
+        moods={MOODS}
+        moodModalTitle={'오늘 우리 아이는\n어땠나요? 🐾'}
+        entries={entries}
+        onAddEntry={e => setEntries(prev => [e, ...prev])}
+      />
+    </View>
   );
 }

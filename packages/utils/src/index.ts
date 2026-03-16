@@ -5,6 +5,7 @@ export { createApi } from './lib/createApi';
 export { fonts } from './fonts';
 export type { CommunityPost } from './community';
 export type { DiaryEntry, Mood } from './diary';
+export type { Announcement } from './announcement';
 
 export const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("ko-KR", {

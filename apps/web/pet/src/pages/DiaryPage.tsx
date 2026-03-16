@@ -1,6 +1,8 @@
-import { DiaryFeature } from '@we/ui-web';
+import { useNavigate } from 'react-router-dom';
+import { DiaryFeature, AnnouncementBanner } from '@we/ui-web';
 import type { Mood } from '@we/utils';
 import { useDiaryEntries } from '../data/diaryStore';
+import { announcements } from '../data/announcements';
 
 const MOODS: Mood[] = [
   { emoji: '🎉', label: '신났어요',   color: '#FFD93D' },
@@ -14,14 +16,24 @@ const MOODS: Mood[] = [
 ];
 
 export function DiaryPage() {
+  const navigate = useNavigate();
   const { entries, addEntry } = useDiaryEntries();
   return (
-    <DiaryFeature
-      accentColor="#97A4D9"
-      moods={MOODS}
-      moodModalTitle={'오늘 우리 아이는\n어땠나요? 🐾'}
-      entries={entries}
-      onAddEntry={addEntry}
-    />
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+      <AnnouncementBanner
+        announcements={announcements}
+        accentColor="#97A4D9"
+        onPress={(id) => navigate(`/announcements/${id}`)}
+      />
+      <div style={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
+        <DiaryFeature
+          accentColor="#97A4D9"
+          moods={MOODS}
+          moodModalTitle={'오늘 우리 아이는\n어땠나요? 🐾'}
+          entries={entries}
+          onAddEntry={addEntry}
+        />
+      </div>
+    </div>
   );
 }

@@ -2,7 +2,9 @@ import { View, Text, Image, Pressable, FlatList, StyleSheet } from 'react-native
 import { Ionicons } from '@expo/vector-icons';
 import { petColors } from '@we/utils';
 import type { CommunityPost } from '@we/utils';
+import { AnnouncementBanner } from '@we/ui';
 import { communityPosts } from '../data/communityPosts';
+import { announcements } from '../data/announcements';
 
 const myName = '우리아이';
 const mockUser = { nickname: myName, profileImage: null as string | null, followers: 84, following: 32 };
@@ -28,11 +30,20 @@ function CommunityItem({ post }: { post: CommunityPost }) {
   );
 }
 
-export function MyInfoScreen() {
+interface Props {
+  onAnnouncementPress: (id: string) => void;
+}
+
+export function MyInfoScreen({ onAnnouncementPress }: Props) {
   const myCommunityPosts = communityPosts.filter(p => p.author.name === myName);
 
   const Header = (
     <View>
+      <AnnouncementBanner
+        announcements={announcements}
+        accentColor="#97A4D9"
+        onPress={onAnnouncementPress}
+      />
       <View style={s.profileSection}>
         <View style={s.avatarWrap}>
           {mockUser.profileImage ? (

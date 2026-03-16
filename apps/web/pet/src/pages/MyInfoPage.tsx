@@ -1,7 +1,10 @@
 import { CSSProperties } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { petColors } from '@we/utils';
 import type { CommunityPost } from '@we/utils';
+import { AnnouncementBanner } from '@we/ui-web';
 import { communityPosts } from '../data/communityPosts';
+import { announcements } from '../data/announcements';
 
 const myName = '우리아이';
 const mockUser = { nickname: myName, profileImage: null as string | null, followers: 84, following: 32 };
@@ -24,10 +27,16 @@ function CommunityItem({ post }: { post: CommunityPost }) {
 }
 
 export function MyInfoPage() {
+  const navigate = useNavigate();
   const myCommunityPosts = communityPosts.filter(p => p.author.name === myName);
 
   return (
     <div style={s.page}>
+      <AnnouncementBanner
+        announcements={announcements}
+        accentColor="#97A4D9"
+        onPress={(id) => navigate(`/announcements/${id}`)}
+      />
       {/* Profile header */}
       <div style={s.profileSection}>
         <div style={s.avatarWrap}>

@@ -10,6 +10,8 @@ import { CommunityDetailPage } from './pages/CommunityDetailPage';
 import { MyInfoPage } from './pages/MyInfoPage';
 import { UserProfilePage } from './pages/UserProfilePage';
 import { SettingsPage } from './pages/SettingsPage';
+import { AnnouncementsPage } from './pages/AnnouncementsPage';
+import { AnnouncementDetailPage } from './pages/AnnouncementDetailPage';
 
 const petLogoUrl = new URL('../../../../packages/assets/pet_logo.png', import.meta.url).href;
 
@@ -24,6 +26,7 @@ const stackRoutes = {
   '/settings': '설정',
   '/community/*': '커뮤니티',
   '/profile/*': '프로필',
+  '/announcements*': '공지사항',
 };
 
 export const router = createBrowserRouter(
@@ -47,6 +50,8 @@ export const router = createBrowserRouter(
         { path: 'my-info',   element: <MyInfoPage /> },
         { path: 'profile/:name', element: <UserProfilePage /> },
         { path: 'settings',  element: <SettingsPage /> },
+        { path: 'announcements', element: <AnnouncementsPage /> },
+        { path: 'announcements/:id', element: <AnnouncementDetailPage /> },
       ],
     },
   ],

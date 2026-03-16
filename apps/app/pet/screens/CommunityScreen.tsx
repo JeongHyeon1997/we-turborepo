@@ -5,7 +5,9 @@ import {
 } from 'react-native';
 import { petColors } from '@we/utils';
 import type { CommunityPost } from '@we/utils';
+import { AnnouncementBanner } from '@we/ui';
 import { communityPosts as initialPosts } from '../data/communityPosts';
+import { announcements } from '../data/announcements';
 
 type Post = CommunityPost & { liked: boolean };
 
@@ -81,9 +83,10 @@ function PostCard({
 interface Props {
   onPostPress: (post: CommunityPost) => void;
   onAuthorPress: (name: string) => void;
+  onAnnouncementPress: (id: string) => void;
 }
 
-export function CommunityScreen({ onPostPress, onAuthorPress }: Props) {
+export function CommunityScreen({ onPostPress, onAuthorPress, onAnnouncementPress }: Props) {
   const [posts, setPosts] = useState<Post[]>(
     initialPosts.map(p => ({ ...p, liked: false }))
   );
@@ -98,11 +101,20 @@ export function CommunityScreen({ onPostPress, onAuthorPress }: Props) {
     );
   }
 
+  const banner = (
+    <AnnouncementBanner
+      announcements={announcements}
+      accentColor="#97A4D9"
+      onPress={onAnnouncementPress}
+    />
+  );
+
   return (
     <FlatList
       data={posts}
       keyExtractor={item => item.id}
       contentContainerStyle={s.list}
+      ListHeaderComponent={banner}
       ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
       renderItem={({ item }) => (
         <PostCard

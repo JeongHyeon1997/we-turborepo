@@ -2,7 +2,9 @@ import { useState, useRef, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { petColors } from '@we/utils';
 import type { CommunityPost } from '@we/utils';
+import { AnnouncementBanner } from '@we/ui-web';
 import { communityPosts as initialPosts } from '../data/communityPosts';
+import { announcements } from '../data/announcements';
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -80,6 +82,7 @@ function PostCard({ post, onLike }: { post: CommunityPost & { liked: boolean }; 
 }
 
 export function CommunityPage() {
+  const navigate = useNavigate();
   const [posts, setPosts] = useState<(CommunityPost & { liked: boolean })[]>(
     initialPosts.map(p => ({ ...p, liked: false }))
   );
@@ -95,10 +98,17 @@ export function CommunityPage() {
   }
 
   return (
-    <div style={s.page}>
-      {posts.map(post => (
-        <PostCard key={post.id} post={post} onLike={() => toggleLike(post.id)} />
-      ))}
+    <div>
+      <AnnouncementBanner
+        announcements={announcements}
+        accentColor="#97A4D9"
+        onPress={(id) => navigate(`/announcements/${id}`)}
+      />
+      <div style={s.page}>
+        {posts.map(post => (
+          <PostCard key={post.id} post={post} onLike={() => toggleLike(post.id)} />
+        ))}
+      </div>
     </div>
   );
 }

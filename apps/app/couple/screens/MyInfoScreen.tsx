@@ -3,8 +3,10 @@ import { View, Text, Image, Pressable, FlatList, StyleSheet } from 'react-native
 import { Ionicons } from '@expo/vector-icons';
 import { coupleColors } from '@we/utils';
 import type { CommunityPost, DiaryEntry } from '@we/utils';
+import { AnnouncementBanner } from '@we/ui';
 import { communityPosts } from '../data/communityPosts';
 import { myDiaryEntries } from '../data/diaryEntries';
+import { announcements } from '../data/announcements';
 
 const myName = '우리커플';
 const mockUser = { nickname: myName, profileImage: null as string | null, followers: 128, following: 64 };
@@ -56,7 +58,11 @@ function DiaryItem({ entry }: { entry: DiaryEntry }) {
   );
 }
 
-export function MyInfoScreen() {
+interface Props {
+  onAnnouncementPress: (id: string) => void;
+}
+
+export function MyInfoScreen({ onAnnouncementPress }: Props) {
   const [filter, setFilter] = useState<FilterType>('전체');
 
   const myCommunityPosts = communityPosts.filter(p => p.author.name === myName);
@@ -70,6 +76,11 @@ export function MyInfoScreen() {
 
   const Header = (
     <View>
+      <AnnouncementBanner
+        announcements={announcements}
+        accentColor="#f4a0a0"
+        onPress={onAnnouncementPress}
+      />
       {/* Profile */}
       <View style={s.profileSection}>
         <View style={s.avatarWrap}>
