@@ -2,10 +2,10 @@ import './global.css';
 import { useState } from 'react';
 import { Image, Text, View } from 'react-native';
 import { useFonts } from 'expo-font';
-import { AppLayout } from '@we/ui';
+import { AppLayout, AuthFeature, AuthPromptModal } from '@we/ui';
 import { createTabs } from './config/tabs';
 import { theme } from './config/theme';
-import type { CommunityPost, Announcement, FamilyGroup, FamilyMember } from '@we/utils';
+import type { CommunityPost, Announcement, FamilyGroup, FamilyMember, AuthUser } from '@we/utils';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { CommunityDetailScreen } from './screens/CommunityDetailScreen';
 import { UserProfileScreen } from './screens/UserProfileScreen';
@@ -14,6 +14,7 @@ import { AnnouncementDetailScreen } from './screens/AnnouncementDetailScreen';
 import { FamilyConnectScreen } from './screens/FamilyConnectScreen';
 import { FamilyConfirmScreen } from './screens/FamilyConfirmScreen';
 import { announcements } from './data/announcements';
+import { login, useAuth } from './data/authStore';
 
 const logo = (
   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -31,6 +32,10 @@ export default function App() {
     BMHANNAPro: require('../../../packages/assets/fonts/BMHANNAPro.ttf'),
   });
 
+  const { isLoggedIn } = useAuth();
+  const [showAuth, setShowAuth] = useState(false);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+
   const [showSettings, setShowSettings] = useState(false);
   const [communityPost, setCommunityPost] = useState<CommunityPost | null>(null);
   const [profileName, setProfileName] = useState<string | null>(null);
@@ -44,7 +49,18 @@ export default function App() {
 
   const today = new Date().toISOString().slice(0, 10);
 
-  const stackScreen = showSettings
+  const stackScreen = showAuth
+    ? {
+        content: (
+          <AuthFeature
+            onLogin={(user: AuthUser) => { login(user); setShowAuth(false); }}
+            accentColor="#97A4D9"
+          />
+        ),
+        title: '로그인',
+        onBack: () => setShowAuth(false),
+      }
+    : showSettings
     ? { content: <SettingsScreen />, title: '설정', onBack: () => setShowSettings(false) }
     : communityPost
     ? { content: <CommunityDetailScreen post={communityPost} />, title: '커뮤니티', onBack: () => setCommunityPost(null) }
@@ -99,23 +115,32 @@ export default function App() {
     : undefined;
 
   return (
-    <AppLayout
-      logo={logo}
-      tabs={createTabs({
-        onSettingsPress: () => setShowSettings(true),
-        onPostPress: (post) => setCommunityPost(post),
-        onAuthorPress: (name) => setProfileName(name),
-        onAnnouncementPress: (id) => {
-          const ann = announcements.find(a => a.id === id);
-          if (ann) setAnnouncementDetail(ann);
-        },
-        onAnnouncementsListPress: () => setShowAnnouncements(true),
-        group,
-        onConnectPress: () => setShowFamilyConnect(true),
-        onUpdateGroup: (g) => setGroup(g),
-      })}
-      theme={theme}
-      stackScreen={stackScreen}
-    />
+    <>
+      <AppLayout
+        logo={logo}
+        tabs={createTabs({
+          onSettingsPress: () => setShowSettings(true),
+          onPostPress: (post) => setCommunityPost(post),
+          onAuthorPress: (name) => setProfileName(name),
+          onAnnouncementPress: (id) => {
+            const ann = announcements.find(a => a.id === id);
+            if (ann) setAnnouncementDetail(ann);
+          },
+          onAnnouncementsListPress: () => setShowAnnouncements(true),
+          group,
+          onConnectPress: () => { if (!isLoggedIn) { setShowAuthPrompt(true); } else { setShowFamilyConnect(true); } },
+          onUpdateGroup: (g) => setGroup(g),
+        })}
+        theme={theme}
+        stackScreen={stackScreen}
+      />
+      <AuthPromptModal
+        visible={showAuthPrompt}
+        message="가족 연결은 회원만 이용할 수 있어요"
+        accentColor="#97A4D9"
+        onLoginPress={() => { setShowAuthPrompt(false); setShowAuth(true); }}
+        onClose={() => setShowAuthPrompt(false)}
+      />
+    </>
   );
 }

@@ -2,8 +2,9 @@ import { useState, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { coupleColors } from '@we/utils';
 import type { CommunityPost, DiaryEntry } from '@we/utils';
-import { AnnouncementBanner } from '@we/ui-web';
+import { AnnouncementBanner, AuthPromptModal } from '@we/ui-web';
 import { DatePickerModal } from '@we/ui-web';
+import { useAuth } from '../data/authStore';
 import { communityPosts } from '../data/communityPosts';
 import { myDiaryEntries } from '../data/diaryEntries';
 import { announcements } from '../data/announcements';
@@ -61,18 +62,32 @@ function DiaryItem({ entry }: { entry: DiaryEntry }) {
 function CoupleSection() {
   const navigate = useNavigate();
   const { connection } = useCoupleConnection();
+  const { isLoggedIn } = useAuth();
   const [pickerType, setPickerType] = useState<'dating' | 'share' | null>(null);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 
   if (!connection) {
     return (
-      <button style={s.connectCard} onClick={() => navigate('/couple-connect')}>
-        <span style={s.connectEmoji}>💕</span>
-        <div style={s.connectBody}>
-          <span style={s.connectTitle}>상대방과 연결해주세요</span>
-          <span style={s.connectSub}>함께 일기를 작성하려면 연결이 필요합니다.</span>
-        </div>
-        <span style={s.connectArrow}>초대코드 입력하러 가기 →</span>
-      </button>
+      <>
+        <button
+          style={s.connectCard}
+          onClick={() => isLoggedIn ? navigate('/couple-connect') : setShowAuthPrompt(true)}
+        >
+          <span style={s.connectEmoji}>💕</span>
+          <div style={s.connectBody}>
+            <span style={s.connectTitle}>상대방과 연결해주세요</span>
+            <span style={s.connectSub}>함께 일기를 작성하려면 연결이 필요합니다.</span>
+          </div>
+          <span style={s.connectArrow}>초대코드 입력하러 가기 →</span>
+        </button>
+        <AuthPromptModal
+          visible={showAuthPrompt}
+          message="커플 연결은 회원만 이용할 수 있어요"
+          accentColor="#f4a0a0"
+          onLoginPress={() => { setShowAuthPrompt(false); navigate('/auth'); }}
+          onClose={() => setShowAuthPrompt(false)}
+        />
+      </>
     );
   }
 

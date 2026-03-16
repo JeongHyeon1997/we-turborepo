@@ -12,3 +12,7 @@ export type { DiaryFeatureProps } from './features/DiaryFeature';
 export type { GalleryFeatureProps } from './features/GalleryFeature';
 export type { AnnouncementBannerProps } from './features/AnnouncementBanner';
 export type { DatePickerModalProps } from './features/DatePickerModal';
+export { AuthPromptModal } from './features/AuthPromptModal';
+export { AuthFeature } from './features/AuthFeature';
+export type { AuthPromptModalProps } from './features/AuthPromptModal';
+export type { AuthFeatureProps } from './features/AuthFeature';

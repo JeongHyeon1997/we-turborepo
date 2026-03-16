@@ -2,7 +2,8 @@ import { useState, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { petColors } from '@we/utils';
 import type { CommunityPost } from '@we/utils';
-import { AnnouncementBanner, DatePickerModal } from '@we/ui-web';
+import { AnnouncementBanner, DatePickerModal, AuthPromptModal } from '@we/ui-web';
+import { useAuth } from '../data/authStore';
 import { communityPosts } from '../data/communityPosts';
 import { announcements } from '../data/announcements';
 import { useFamilyGroup, setFamilyGroup, removeFamilyMember } from '../data/familyStore';
@@ -19,18 +20,32 @@ function daysBetween(isoDate: string) {
 function FamilySection() {
   const navigate = useNavigate();
   const { group } = useFamilyGroup();
+  const { isLoggedIn } = useAuth();
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 
   if (!group) {
     return (
-      <button style={fs.connectCard} onClick={() => navigate('/family-connect')}>
-        <span style={fs.connectEmoji}>🐾</span>
-        <div style={fs.connectBody}>
-          <span style={fs.connectTitle}>가족을 초대해주세요</span>
-          <span style={fs.connectSub}>함께 일기를 작성하려면 가족 연결이 필요합니다.</span>
-        </div>
-        <span style={fs.connectArrow}>초대코드 입력하러 가기 →</span>
-      </button>
+      <>
+        <button
+          style={fs.connectCard}
+          onClick={() => isLoggedIn ? navigate('/family-connect') : setShowAuthPrompt(true)}
+        >
+          <span style={fs.connectEmoji}>🐾</span>
+          <div style={fs.connectBody}>
+            <span style={fs.connectTitle}>가족을 초대해주세요</span>
+            <span style={fs.connectSub}>함께 일기를 작성하려면 가족 연결이 필요합니다.</span>
+          </div>
+          <span style={fs.connectArrow}>초대코드 입력하러 가기 →</span>
+        </button>
+        <AuthPromptModal
+          visible={showAuthPrompt}
+          message="가족 연결은 회원만 이용할 수 있어요"
+          accentColor="#97A4D9"
+          onLoginPress={() => { setShowAuthPrompt(false); navigate('/auth'); }}
+          onClose={() => setShowAuthPrompt(false)}
+        />
+      </>
     );
   }
 
@@ -77,7 +92,10 @@ function FamilySection() {
 
         {/* 멤버 추가 + 그룹 해제 */}
         <div style={fs.actionRow}>
-          <button style={fs.addBtn} onClick={() => navigate('/family-connect')}>
+          <button
+            style={fs.addBtn}
+            onClick={() => isLoggedIn ? navigate('/family-connect') : setShowAuthPrompt(true)}
+          >
             + 가족 추가
           </button>
           <button
@@ -88,6 +106,14 @@ function FamilySection() {
           </button>
         </div>
       </div>
+
+      <AuthPromptModal
+        visible={showAuthPrompt}
+        message="가족 연결은 회원만 이용할 수 있어요"
+        accentColor="#97A4D9"
+        onLoginPress={() => { setShowAuthPrompt(false); navigate('/auth'); }}
+        onClose={() => setShowAuthPrompt(false)}
+      />
 
       <DatePickerModal
         visible={showDatePicker}

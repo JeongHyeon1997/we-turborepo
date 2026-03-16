@@ -102,6 +102,130 @@ packages/
 
 ---
 
+## 인증 / 회원 게이트 아키텍처
+
+### 기능 분리 원칙
+
+| 기능 | 비회원 (Guest) | 회원 (Member) |
+|------|----------------|---------------|
+| 일기 작성/갤러리 | ✓ (로컬 저장) | ✓ (서버 동기화) |
+| 공지사항 보기 | ✓ | ✓ |
+| 커뮤니티 읽기 | ✓ | ✓ |
+| 커뮤니티 작성 | ✗ → AuthPrompt | ✓ |
+| 커플/가족 연결 | ✗ → AuthPrompt | ✓ |
+| 크로스 디바이스 동기화 | ✗ | ✓ |
+
+### 데이터 저장 전략
+
+```
+비회원: 기기 로컬 (Web → localStorage, Native → 인메모리)
+회원:   RDS + S3 (백엔드 구현 후)
+사진 원본: S3, 메타데이터만 RDS
+```
+
+### 앱별 authStore 위치
+
+```
+apps/web/{name}/src/data/authStore.ts   (localStorage 영속화)
+apps/app/{name}/data/authStore.ts       (인메모리, TODO: AsyncStorage)
+```
+
+authStore 공통 API:
+```typescript
+login(user: AuthUser): void
+logout(): void
+isLoggedIn(): boolean
+getUser(): AuthUser | null
+useAuth(): { user: AuthUser | null, isLoggedIn: boolean }
+```
+
+### Repository 패턴 (diaryRepo)
+
+```
+apps/web/{name}/src/data/diaryRepo.ts
+apps/app/{name}/data/diaryRepo.ts
+```
+
+```typescript
+// 비로그인: 로컬 스토어만 사용
+// 로그인: 로컬 우선 + remoteApi 동기화 (백엔드 미구현 시 stub)
+export function useDiaryEntries() { ... }
+export function addEntry(entry: DiaryEntry) {
+  addLocalEntry(entry);
+  if (isLoggedIn()) remoteApi.addEntry(entry).catch(console.error);
+}
+```
+
+> 실제 API URL이 생기면 `remoteApi` stub만 교체하면 된다. Screen/Page 코드 변경 불필요.
+
+### 회원가입 시 로컬 → 서버 마이그레이션
+
+```typescript
+// 가입 완료 시 호출
+async function migrateLocalData(userId: string) {
+  const entries = getLocalEntries();
+  if (entries.length > 0) {
+    await fetch('/api/diary/migrate', { method: 'POST', body: JSON.stringify({ userId, entries }) });
+  }
+}
+```
+
+### 인증 공통 컴포넌트 (`@we/ui-web`, `@we/ui`)
+
+| 컴포넌트 | 설명 | props |
+|---------|------|-------|
+| `AuthPromptModal` | 비회원이 유료 기능 접근 시 하단 시트 | `visible`, `message`, `accentColor`, `onLoginPress`, `onClose` |
+| `AuthFeature` | 로그인/회원가입 전체 화면 | `onLogin`, `accentColor` |
+
+### 인증 라우트
+
+```
+Web: /auth  →  AuthPage  (stackRoutes에 포함, 뒤로가기 있음)
+Native: showAuth state  →  AuthFeature stackScreen
+```
+
+### 인증 게이트 패턴
+
+**Web:**
+```tsx
+const { isLoggedIn } = useAuth();
+const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+
+// 버튼 클릭 시
+isLoggedIn ? navigate('/protected-route') : setShowAuthPrompt(true);
+
+// JSX
+<AuthPromptModal
+  visible={showAuthPrompt}
+  message="이 기능은 회원만 이용할 수 있어요"
+  accentColor={ACCENT}
+  onLoginPress={() => { setShowAuthPrompt(false); navigate('/auth'); }}
+  onClose={() => setShowAuthPrompt(false)}
+/>
+```
+
+**Native (App.tsx):**
+```tsx
+const { isLoggedIn } = useAuth();
+// onConnectPress, onWritePress 등에서:
+if (!isLoggedIn) { setShowAuthPrompt(true); return; }
+// stackScreen에 showAuth case 추가
+```
+
+### AuthUser 타입 (`@we/utils`)
+
+```typescript
+interface AuthUser {
+  id: string;
+  name: string;
+  email?: string;
+  avatarColor?: string;
+  provider: 'kakao' | 'apple' | 'google' | 'email';
+}
+```
+
+---
+
 ## 모듈 설계 원칙 (기능 컴포넌트)
 
 모든 기능은 **넣었다 뺐다 할 수 있는 모듈** 단위로 만든다.
@@ -125,6 +249,10 @@ apps/web/{name}    → 앱별 조합
 | `AppLayout` | ✓ | ✓ | `logo`, `tabs`, `theme`, … |
 | `Header` | ✓ | ✓ | `logo`, `icons`, `theme`, … |
 | `BottomNav` | ✓ | ✓ | `tabs`, `theme`, … |
+| `AnnouncementBanner` | ✓ | ✓ | `announcements`, `accentColor`, `onPress` |
+| `DatePickerModal` | ✓ | ✓ | `visible`, `value`, `onConfirm`, `onCancel`, `title`, `maxDate`, `accentColor` |
+| `AuthPromptModal` | ✓ | ✓ | `visible`, `message`, `accentColor`, `onLoginPress`, `onClose` |
+| `AuthFeature` | ✓ | ✓ | `onLogin`, `accentColor` |
 
 ### 새 앱에서 DiaryFeature 사용 예시
 
@@ -133,7 +261,7 @@ apps/web/{name}    → 앱별 조합
 // pages/DiaryPage.tsx
 import { DiaryFeature } from '@we/ui-web';
 import type { Mood } from '@we/utils';
-import { useDiaryEntries } from '../data/diaryStore';
+import { useDiaryEntries } from '../data/diaryRepo';  // diaryStore 대신 diaryRepo 사용
 
 const MOODS: Mood[] = [ /* 앱별 기분 8종 */ ];
 
@@ -157,19 +285,19 @@ export function DiaryPage() {
 import { useState } from 'react';
 import { DiaryFeature } from '@we/ui';
 import type { Mood, DiaryEntry } from '@we/utils';
-import { myDiaryEntries } from '../data/diaryEntries';
+import { getEntries, addEntry } from '../data/diaryRepo';
 
 const MOODS: Mood[] = [ /* 앱별 기분 8종 */ ];
 
 export function DiaryScreen() {
-  const [entries, setEntries] = useState<DiaryEntry[]>(myDiaryEntries);
+  const [entries, setEntries] = useState<DiaryEntry[]>(getEntries());
   return (
     <DiaryFeature
       accentColor="#f4a0a0"
       moods={MOODS}
       moodModalTitle={'오늘의 기분은\n어떠셨나요? 🌸'}
       entries={entries}
-      onAddEntry={e => setEntries(prev => [e, ...prev])}
+      onAddEntry={e => setEntries(addEntry(e))}
     />
   );
 }
@@ -178,6 +306,7 @@ export function DiaryScreen() {
 ### 앱별 diaryStore (Web 전용)
 
 Web에서 DiaryFeature ↔ GalleryFeature 간 실시간 상태 공유를 위해 앱마다 `data/diaryStore.ts`를 만듭니다.
+**페이지에서는 `diaryStore`를 직접 쓰지 않고 `diaryRepo`를 통해 접근합니다.**
 
 ```ts
 // apps/web/{name}/src/data/diaryStore.ts
@@ -232,7 +361,7 @@ export function useDiaryEntries() {
 
 ### packages/utils
 - 플랫폼 무관 순수 함수 + 타입만
-- 현재 exports: `coupleColors`, `petColors`, `AppTheme`, `DiaryEntry`, `Mood`, `CommunityPost`, `createApi`, `fonts`, `formatCurrency`, `sleep`
+- 현재 exports: `coupleColors`, `petColors`, `AppTheme`, `DiaryEntry`, `Mood`, `CommunityPost`, `createApi`, `fonts`, `formatCurrency`, `sleep`, `Announcement`, `CouplePartner`, `CoupleConnection`, `FamilyMember`, `FamilyGroup`, `AuthUser`
 
 ### packages/ui-web
 - **Web 전용** — `react`, `react-dom`, `react-router-dom`, `react-icons` peer dependency
@@ -312,6 +441,8 @@ export function useDiaryEntries() {
 - [ ] `config/theme.ts` — AppTheme 정의 (contentBg: `xxxColors.gray50`)
 - [ ] `config/tabs.tsx` — 탭 목록 (DiaryFeature, GalleryFeature 등 import)
 - [ ] `data/diaryEntries.ts` — 초기 mock 데이터
+- [ ] `data/authStore.ts` — 인증 상태 스토어
+- [ ] `data/diaryRepo.ts` — Repository (로컬 ↔ 원격 라우팅)
 
 ### Web 앱 (`apps/web/{name}/`)
 - [ ] `package.json` name: `@we/web-name`
@@ -322,9 +453,12 @@ export function useDiaryEntries() {
 - [ ] `src/index.css` — 표준 템플릿 적용
 - [ ] `src/config/theme.ts` — AppTheme 정의 (contentBg: `xxxColors.gray50`)
 - [ ] `src/config/tabs.tsx` — 탭 목록
-- [ ] `src/router.tsx` — React Router 라우트
+- [ ] `src/router.tsx` — React Router 라우트 (`/auth` 포함)
 - [ ] `src/data/diaryEntries.ts` — 초기 mock 데이터
 - [ ] `src/data/diaryStore.ts` — DiaryFeature ↔ GalleryFeature 상태 공유용 스토어
+- [ ] `src/data/authStore.ts` — 인증 상태 스토어 (localStorage 영속화)
+- [ ] `src/data/diaryRepo.ts` — Repository (로컬 ↔ 원격 라우팅)
+- [ ] `src/pages/AuthPage.tsx` — `AuthFeature` 래퍼
 
 ---
 
