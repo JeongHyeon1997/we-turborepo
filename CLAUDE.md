@@ -303,39 +303,33 @@ export function DiaryScreen() {
 }
 ```
 
-### 앱별 diaryStore (Web 전용)
+### 앱별 diaryStore (Web + Native 공통)
 
-Web에서 DiaryFeature ↔ GalleryFeature 간 실시간 상태 공유를 위해 앱마다 `data/diaryStore.ts`를 만듭니다.
+DiaryFeature ↔ GalleryFeature 간 실시간 상태 공유를 위해 앱마다 `data/diaryStore.ts`를 Zustand로 만듭니다.
 **페이지에서는 `diaryStore`를 직접 쓰지 않고 `diaryRepo`를 통해 접근합니다.**
 
 ```ts
-// apps/web/{name}/src/data/diaryStore.ts
-import { useState, useEffect } from 'react';
+// apps/{web|app}/{name}/src/data/diaryStore.ts
+import { create } from 'zustand';
 import type { DiaryEntry } from '@we/utils';
 import { myDiaryEntries } from './diaryEntries';
 
-let _entries: DiaryEntry[] = [...myDiaryEntries];
-const _subs = new Set<() => void>();
+export const useDiaryStore = create<{
+  entries: DiaryEntry[];
+  addEntry: (e: DiaryEntry) => void;
+  setEntries: (entries: DiaryEntry[]) => void;
+}>()((set, get) => ({
+  entries: [...myDiaryEntries],
+  addEntry: (entry) => set({ entries: [entry, ...get().entries] }),
+  setEntries: (entries) => set({ entries }),
+}));
 
-export function addEntry(e: DiaryEntry) {
-  _entries = [e, ..._entries];
-  _subs.forEach(fn => fn());
-}
-
-export function useDiaryEntries() {
-  const [entries, setEntries] = useState(_entries);
-  useEffect(() => {
-    const update = () => setEntries([..._entries]);
-    _subs.add(update);
-    return () => { _subs.delete(update); };
-  }, []);
-  return { entries, addEntry };
-}
+// 하위호환 헬퍼
+export const getEntries = () => useDiaryStore.getState().entries;
+export const addEntry = (e: DiaryEntry) => useDiaryStore.getState().addEntry(e);
+export const useDiaryEntries = () =>
+  useDiaryStore((s) => ({ entries: s.entries, addEntry: s.addEntry }));
 ```
-
-> Native는 탭 구조상 cross-tab 실시간 공유가 어렵습니다.
-> GalleryScreen은 static `myDiaryEntries` 를 읽고, DiaryScreen은 자체 useState를 사용합니다.
-> 실시간 공유가 필요하면 Context 또는 Zustand를 사용하세요.
 
 ---
 
@@ -353,6 +347,88 @@ export function useDiaryEntries() {
 
 ---
 
+## API / 상태관리 아키텍처
+
+### 상태관리 — Zustand
+
+모든 앱은 Zustand 스토어를 `data/` 폴더에 둔다.
+
+| 스토어 | 위치 | persist | 용도 |
+|--------|------|---------|------|
+| `useAuthStore` | `data/authStore.ts` | Web: localStorage | user, accessToken, refreshToken, expiresAt |
+| `useDiaryStore` | `data/diaryStore.ts` | 없음 (인메모리) | DiaryFeature ↔ GalleryFeature 공유 |
+| `useCoupleStore` | `data/coupleStore.ts` | 없음 | 커플 연결 정보 (couple 앱만) |
+| `useFamilyStore` | `data/familyStore.ts` | 없음 | 가족 그룹 정보 (pet 앱만) |
+
+**authStore API:**
+```ts
+useAuthStore.getState().login(user, tokens?)  // tokens 포함 시 expiresAt 자동 계산
+useAuthStore.getState().logout()
+useAuthStore.getState().setTokens(tokens)     // 토큰 갱신 시 사용
+// 하위호환 헬퍼
+isLoggedIn()   getUser()   useAuth()  login()  logout()
+```
+
+### HTTP 클라이언트 — $axios
+
+각 앱별 `lib/$axios.ts`에 axios 인스턴스를 둔다. 절대 다른 파일에서 `axios.create`를 직접 쓰지 않는다.
+
+```
+apps/{web|app}/{name}/lib/$axios.ts   ←  이 파일만 axios 인스턴스를 생성
+apps/{web|app}/{name}/api/*.api.ts    ←  $axios를 import해서 API 함수 작성
+```
+
+**환경변수:**
+- Web: `import.meta.env.VITE_API_URL`
+- Native: `process.env.EXPO_PUBLIC_API_URL`
+
+**토큰 갱신 전략 (잠수함 갱신):**
+```
+요청 전:  expiresAt - now < 5분  →  /auth/refresh 선제 호출 후 새 토큰 주입
+요청 후:  401                   →  /auth/refresh 후 원래 요청 재시도
+          401 재시도 실패        →  logout()
+동시 요청: _refreshing Promise로 중복 refresh 방지 (단일 Promise 공유)
+refresh 호출: _plain axios 사용 ($axios interceptor 루프 방지)
+```
+
+### API 함수 — src/api/
+
+```
+src/api/
+├── auth.api.ts          # 전체 앱 공통
+├── user.api.ts          # 전체 앱 공통
+├── diary.api.ts         # 전체 앱 공통
+├── community.api.ts     # 전체 앱 공통
+├── announcement.api.ts  # 전체 앱 공통
+├── couple.api.ts        # couple 앱만
+└── family.api.ts        # pet 앱만
+```
+
+**API 함수 작성 패턴:**
+```ts
+// src/api/diary.api.ts
+import { $axios } from '../lib/$axios';
+import type { ApiResponse, DiaryListQuery, DiaryListResponse, ... } from '@we/utils';
+
+export const getDiaryList = (query: DiaryListQuery) =>
+  $axios.get<ApiResponse<DiaryListResponse>>('/diary', { params: query });
+
+export const createDiary = (req: CreateDiaryRequest) =>
+  $axios.post<ApiResponse<CreateDiaryResponse>>('/diary', req);
+```
+
+**컴포넌트/Hook에서 사용 패턴:**
+```ts
+const fetchList = useCallback(async () => {
+  const { data } = await getDiaryList({ page: 1, size: 20 });
+  setEntries(data.data.items);
+}, []);
+
+useEffect(() => { fetchList(); }, [fetchList]);
+```
+
+---
+
 ## 핵심 규칙
 
 ### packages/ui
@@ -361,7 +437,8 @@ export function useDiaryEntries() {
 
 ### packages/utils
 - 플랫폼 무관 순수 함수 + 타입만
-- 현재 exports: `coupleColors`, `petColors`, `AppTheme`, `DiaryEntry`, `Mood`, `CommunityPost`, `createApi`, `fonts`, `formatCurrency`, `sleep`, `Announcement`, `CouplePartner`, `CoupleConnection`, `FamilyMember`, `FamilyGroup`, `AuthUser`
+- 도메인 타입: `coupleColors`, `petColors`, `AppTheme`, `DiaryEntry`, `Mood`, `CommunityPost`, `createApi`, `fonts`, `formatCurrency`, `sleep`, `Announcement`, `CouplePartner`, `CoupleConnection`, `FamilyMember`, `FamilyGroup`, `AuthUser`
+- API 타입 (`packages/utils/src/types/`): `UserBase`, `AuthTokens`, `LoginRequest`, `DiaryEntryBase`, `CommunityPostBase`, `CommunityCommentBase`, `AnnouncementBase`, `CoupleConnectionBase`, `FamilyGroupBase`, `PageResult`, `ApiResponse`, `ApiError` 등 → `/types` 스킬 참조
 
 ### packages/ui-web
 - **Web 전용** — `react`, `react-dom`, `react-router-dom`, `react-icons` peer dependency
@@ -434,31 +511,34 @@ export function useDiaryEntries() {
 ## 새 앱 추가 시 체크리스트
 
 ### Expo 앱 (`apps/app/{name}/`)
-- [ ] `package.json` name: `@we/name`
+- [ ] `package.json` name: `@we/name`, dependencies: `expo`, `react`, `react-native`, `nativewind`, `expo-image-picker`, `zustand`, `axios`, `@we/ui`, `@we/utils`, `@we/tailwind-config`
 - [ ] `tsconfig.json`: `@we/tsconfig/react-native.json` extend
-- [ ] dependencies: `expo`, `react`, `react-native`, `nativewind`, `expo-image-picker`, `@we/ui`, `@we/utils`, `@we/tailwind-config`
 - [ ] NativeWind 설정 파일 추가
 - [ ] `config/theme.ts` — AppTheme 정의 (contentBg: `xxxColors.gray50`)
 - [ ] `config/tabs.tsx` — 탭 목록 (DiaryFeature, GalleryFeature 등 import)
+- [ ] `lib/$axios.ts` — axios 인스턴스 (EXPO_PUBLIC_API_URL, 토큰 interceptor)
 - [ ] `data/diaryEntries.ts` — 초기 mock 데이터
-- [ ] `data/authStore.ts` — 인증 상태 스토어
+- [ ] `data/authStore.ts` — Zustand 인증 스토어 (인메모리)
+- [ ] `data/diaryStore.ts` — Zustand 일기 스토어
 - [ ] `data/diaryRepo.ts` — Repository (로컬 ↔ 원격 라우팅)
+- [ ] `api/auth.api.ts`, `api/diary.api.ts`, `api/community.api.ts`, `api/announcement.api.ts`
 
 ### Web 앱 (`apps/web/{name}/`)
-- [ ] `package.json` name: `@we/web-name`
+- [ ] `package.json` name: `@we/web-name`, dependencies: `react`, `react-dom`, `react-icons`, `zustand`, `axios`, `@we/ui-web`, `@we/utils`, `@we/tailwind-config`
 - [ ] `tsconfig.json`: `@we/tsconfig/base.json` extend + `jsx: react-jsx`
 - [ ] `tsconfig.node.json`: vite.config.ts용 별도 설정
-- [ ] dependencies: `react`, `react-dom`, `react-icons`, `@we/ui-web`, `@we/utils`, `@we/tailwind-config`
 - [ ] Tailwind + PostCSS 설정 파일
 - [ ] `src/index.css` — 표준 템플릿 적용
 - [ ] `src/config/theme.ts` — AppTheme 정의 (contentBg: `xxxColors.gray50`)
 - [ ] `src/config/tabs.tsx` — 탭 목록
 - [ ] `src/router.tsx` — React Router 라우트 (`/auth` 포함)
+- [ ] `src/lib/$axios.ts` — axios 인스턴스 (VITE_API_URL, 토큰 interceptor)
 - [ ] `src/data/diaryEntries.ts` — 초기 mock 데이터
-- [ ] `src/data/diaryStore.ts` — DiaryFeature ↔ GalleryFeature 상태 공유용 스토어
-- [ ] `src/data/authStore.ts` — 인증 상태 스토어 (localStorage 영속화)
+- [ ] `src/data/authStore.ts` — Zustand 인증 스토어 (localStorage persist)
+- [ ] `src/data/diaryStore.ts` — Zustand 일기 스토어
 - [ ] `src/data/diaryRepo.ts` — Repository (로컬 ↔ 원격 라우팅)
 - [ ] `src/pages/AuthPage.tsx` — `AuthFeature` 래퍼
+- [ ] `src/api/auth.api.ts`, `src/api/diary.api.ts`, `src/api/community.api.ts`, `src/api/announcement.api.ts`
 
 ---
 
@@ -466,6 +546,7 @@ export function useDiaryEntries() {
 
 | 슬래시 커맨드 | 설명 | Expo | Web |
 |--------------|------|------|-----|
+| `/types` | API 타입을 packages/utils/src/types/ 에 추가/수정 | ✓ | ✓ |
 | `/page-structure` | 무거운 Screen/Page를 features/로 분리 | ✓ | ✓ |
 | `/ui-extract` | 재사용 컴포넌트를 components/ui/로 추출 | ✓ | ✓ |
 | `/constants` | 정적 데이터를 constants/data/로 추출 | ✓ | ✓ |

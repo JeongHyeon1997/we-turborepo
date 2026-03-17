@@ -1,24 +1,19 @@
-import { useState, useEffect } from 'react';
+import { create } from 'zustand';
 import type { CoupleConnection } from '@we/utils';
 
-let _connection: CoupleConnection | null = null;
-const _subs = new Set<() => void>();
-
-export function setConnection(c: CoupleConnection | null) {
-  _connection = c;
-  _subs.forEach(fn => fn());
+interface CoupleState {
+  connection: CoupleConnection | null;
+  setConnection: (c: CoupleConnection | null) => void;
 }
 
-export function getConnection() {
-  return _connection;
-}
+export const useCoupleStore = create<CoupleState>()((set) => ({
+  connection: null,
+  setConnection: (connection) => set({ connection }),
+}));
 
-export function useCoupleConnection() {
-  const [connection, setConn] = useState(_connection);
-  useEffect(() => {
-    const update = () => setConn(_connection ? { ..._connection } : null);
-    _subs.add(update);
-    return () => { _subs.delete(update); };
-  }, []);
-  return { connection, setConnection };
-}
+// ── 하위호환 헬퍼 ─────────────────────────────────────────────────────────────
+export const setConnection = (c: CoupleConnection | null) =>
+  useCoupleStore.getState().setConnection(c);
+export const getConnection = () => useCoupleStore.getState().connection;
+export const useCoupleConnection = () =>
+  useCoupleStore((s) => ({ connection: s.connection, setConnection: s.setConnection }));

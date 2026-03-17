@@ -1,32 +1,48 @@
-import { useState, useEffect } from 'react';
-import type { AuthUser } from '@we/utils';
+import { create } from 'zustand';
+import type { AuthUser, AuthTokens } from '@we/utils';
 
-// AsyncStorage 없이 인메모리 스토어 (앱 재시작 시 초기화)
-// TODO: AsyncStorage 추가 시 @react-native-async-storage/async-storage 로 교체
-let _user: AuthUser | null = null;
-const _subs = new Set<() => void>();
-
-function notify() { _subs.forEach(fn => fn()); }
-
-export function login(user: AuthUser) {
-  _user = user;
-  notify();
+// 인메모리 — 앱 재시작 시 초기화 (TODO: AsyncStorage persist 추가)
+interface AuthState {
+  user: AuthUser | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+  /** ms timestamp — 만료 시각 */
+  expiresAt: number | null;
+  login: (user: AuthUser, tokens?: AuthTokens) => void;
+  logout: () => void;
+  setTokens: (tokens: AuthTokens) => void;
 }
 
-export function logout() {
-  _user = null;
-  notify();
-}
+export const useAuthStore = create<AuthState>()((set) => ({
+  user: null,
+  accessToken: null,
+  refreshToken: null,
+  expiresAt: null,
 
-export function isLoggedIn(): boolean { return _user !== null; }
-export function getUser(): AuthUser | null { return _user; }
+  login: (user, tokens) =>
+    set({
+      user,
+      accessToken: tokens?.accessToken ?? null,
+      refreshToken: tokens?.refreshToken ?? null,
+      expiresAt: tokens ? Date.now() + tokens.expiresIn * 1_000 : null,
+    }),
 
-export function useAuth() {
-  const [user, setUser] = useState(_user);
-  useEffect(() => {
-    const update = () => setUser(_user);
-    _subs.add(update);
-    return () => { _subs.delete(update); };
-  }, []);
-  return { user, isLoggedIn: !!user };
-}
+  logout: () =>
+    set({ user: null, accessToken: null, refreshToken: null, expiresAt: null }),
+
+  setTokens: (tokens) =>
+    set({
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      expiresAt: Date.now() + tokens.expiresIn * 1_000,
+    }),
+}));
+
+// ── 하위호환 헬퍼 ─────────────────────────────────────────────────────────────
+export const isLoggedIn = () => !!useAuthStore.getState().user;
+export const getUser = () => useAuthStore.getState().user;
+export const login = (user: AuthUser, tokens?: AuthTokens) =>
+  useAuthStore.getState().login(user, tokens);
+export const logout = () => useAuthStore.getState().logout();
+export const useAuth = () =>
+  useAuthStore((s) => ({ user: s.user, isLoggedIn: !!s.user }));

@@ -1,37 +1,41 @@
-import { useState, useEffect } from 'react';
+import { create } from 'zustand';
 import type { FamilyGroup, FamilyMember } from '@we/utils';
 
-let _group: FamilyGroup | null = null;
-const _subs = new Set<() => void>();
-
-function notify() { _subs.forEach(fn => fn()); }
-
-export function setFamilyGroup(g: FamilyGroup | null) {
-  _group = g;
-  notify();
+interface FamilyState {
+  group: FamilyGroup | null;
+  setFamilyGroup: (g: FamilyGroup | null) => void;
+  addFamilyMember: (member: FamilyMember) => void;
+  removeFamilyMember: (id: string) => void;
 }
 
-export function addFamilyMember(member: FamilyMember) {
-  const today = new Date().toISOString().slice(0, 10);
-  _group = _group
-    ? { ..._group, members: [..._group.members, member] }
-    : { members: [member], groupStartDate: today };
-  notify();
-}
+export const useFamilyStore = create<FamilyState>()((set, get) => ({
+  group: null,
 
-export function removeFamilyMember(id: string) {
-  if (!_group) return;
-  const members = _group.members.filter(m => m.id !== id);
-  _group = members.length === 0 ? null : { ..._group, members };
-  notify();
-}
+  setFamilyGroup: (group) => set({ group }),
 
-export function useFamilyGroup() {
-  const [group, setGroup] = useState(_group);
-  useEffect(() => {
-    const update = () => setGroup(_group ? { ..._group, members: [..._group.members] } : null);
-    _subs.add(update);
-    return () => { _subs.delete(update); };
-  }, []);
-  return { group };
-}
+  addFamilyMember: (member) => {
+    const today = new Date().toISOString().slice(0, 10);
+    const current = get().group;
+    set({
+      group: current
+        ? { ...current, members: [...current.members, member] }
+        : { members: [member], groupStartDate: today },
+    });
+  },
+
+  removeFamilyMember: (id) => {
+    const current = get().group;
+    if (!current) return;
+    const members = current.members.filter((m) => m.id !== id);
+    set({ group: members.length === 0 ? null : { ...current, members } });
+  },
+}));
+
+// ── 하위호환 헬퍼 ─────────────────────────────────────────────────────────────
+export const setFamilyGroup = (g: FamilyGroup | null) =>
+  useFamilyStore.getState().setFamilyGroup(g);
+export const addFamilyMember = (m: FamilyMember) =>
+  useFamilyStore.getState().addFamilyMember(m);
+export const removeFamilyMember = (id: string) =>
+  useFamilyStore.getState().removeFamilyMember(id);
+export const useFamilyGroup = () => useFamilyStore((s) => ({ group: s.group }));

@@ -16,6 +16,7 @@ export const useDiaryStore = create<DiaryState>()((set, get) => ({
 
 // ── 하위호환 헬퍼 ─────────────────────────────────────────────────────────────
 export const getEntries = () => useDiaryStore.getState().entries;
-export const addEntry = (entry: DiaryEntry) => useDiaryStore.getState().addEntry(entry);
-export const useDiaryEntries = () =>
-  useDiaryStore((s) => ({ entries: s.entries, addEntry: s.addEntry }));
+export const addEntry = (entry: DiaryEntry): DiaryEntry[] => {
+  useDiaryStore.getState().addEntry(entry);
+  return useDiaryStore.getState().entries;
+};
