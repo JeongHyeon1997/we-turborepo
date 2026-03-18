@@ -1,43 +1,52 @@
-import type { Timestamps } from './common.types';
-
 // ─── Base (DB Table: users) ───────────────────────────────────────────────────
 
-export interface UserBase extends Timestamps {
+export interface UserBase {
   id: string;
-  name: string;
   email: string | null;
-  avatarColor: string;
-  provider: 'kakao' | 'apple' | 'google' | 'email';
-  providerUserId: string | null;
+  nickname: string;
+  profileImageUrl: string | null;
+  provider: 'GOOGLE' | 'KAKAO' | 'APPLE' | 'NAVER' | 'email';
+  createdAt: string;
 }
 
-// ─── Auth ─────────────────────────────────────────────────────────────────────
+// ─── Auth Requests ────────────────────────────────────────────────────────────
 
-/** POST /auth/login (이메일) */
-export interface LoginRequest {
+/** POST /api/auth/signup */
+export interface SignupRequest {
+  email: string;
+  password: string;
+  nickname: string;
+}
+
+/** POST /api/auth/login (이메일) */
+export interface EmailLoginRequest {
+  type: 'email';
   email: string;
   password: string;
 }
 
-/** POST /auth/login (소셜) */
+/** POST /api/auth/login (소셜) */
 export interface OAuthLoginRequest {
-  provider: 'kakao' | 'apple' | 'google';
+  type: 'oauth';
+  provider: 'GOOGLE' | 'KAKAO' | 'APPLE' | 'NAVER';
   accessToken: string;
 }
 
-/** POST /auth/signup */
-export interface SignupRequest {
-  name: string;
-  email: string;
-  password: string;
-  avatarColor?: string;
-}
+export type LoginRequest = EmailLoginRequest | OAuthLoginRequest;
 
-/** POST /auth/refresh */
+/** POST /api/auth/refresh */
 export interface RefreshTokenRequest {
   refreshToken: string;
 }
 
+/** POST /api/auth/logout */
+export interface LogoutRequest {
+  refreshToken: string;
+}
+
+// ─── Auth Response ────────────────────────────────────────────────────────────
+
+/** POST /api/auth/signup, /api/auth/login, /api/auth/refresh 응답 */
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
@@ -45,21 +54,16 @@ export interface AuthTokens {
   expiresIn: number;
 }
 
-/** POST /auth/login, /auth/refresh 응답 */
-export interface LoginResponse extends AuthTokens {
-  user: UserResponse;
-}
-
 // ─── User CRUD ────────────────────────────────────────────────────────────────
 
-/** GET /users/me 응답 */
-export type UserResponse = Omit<UserBase, 'providerUserId'>;
+/** GET /api/users/me 응답 */
+export type UserResponse = UserBase;
 
-/** PUT /users/me 요청 */
+/** PUT /api/users/me 요청 */
 export interface UpdateUserRequest {
-  name?: string;
-  avatarColor?: string;
+  nickname?: string | null;
+  profileImageUrl?: string | null;
 }
 
-/** PUT /users/me 응답 */
+/** PUT /api/users/me 응답 */
 export type UpdateUserResponse = UserResponse;

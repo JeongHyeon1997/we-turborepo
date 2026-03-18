@@ -1,8 +1,71 @@
-import type { Timestamps, PaginationQuery, PageResult } from './common.types';
+import type { PaginationQuery, PageResult } from './common.types';
 
-// ─── Base (DB Table: diary_entries) ──────────────────────────────────────────
+// ─── Couple Diary ─────────────────────────────────────────────────────────────
 
-export interface DiaryEntryBase extends Timestamps {
+export interface CoupleDiaryEntry {
+  id: string;
+  coupleConnectionId: string;
+  authorId: string;
+  authorNickname: string;
+  title: string | null;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CoupleDiaryListQuery = PaginationQuery;
+export type CoupleDiaryListResponse = PageResult<CoupleDiaryEntry>;
+export type CoupleDiaryDetailResponse = CoupleDiaryEntry;
+
+/** POST /api/couple/diary 요청 */
+export interface CreateCoupleDiaryRequest {
+  title?: string | null;
+  content: string;
+}
+
+/** PUT /api/couple/diary/:id 요청 */
+export interface UpdateCoupleDiaryRequest {
+  title?: string | null;
+  content?: string | null;
+}
+
+// ─── Pet Diary ────────────────────────────────────────────────────────────────
+
+export interface PetDiaryEntry {
+  id: string;
+  petId: string;
+  petName: string;
+  authorId: string;
+  authorNickname: string;
+  title: string | null;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PetDiaryListQuery extends PaginationQuery {
+  petId?: string;
+}
+
+export type PetDiaryListResponse = PageResult<PetDiaryEntry>;
+export type PetDiaryDetailResponse = PetDiaryEntry;
+
+/** POST /api/pet/diary 요청 */
+export interface CreatePetDiaryRequest {
+  petId: string;
+  title?: string | null;
+  content: string;
+}
+
+/** PUT /api/pet/diary/:id 요청 */
+export interface UpdatePetDiaryRequest {
+  title?: string | null;
+  content?: string | null;
+}
+
+// ─── Legacy (DiaryFeature 내부 로컬 저장용, API 타입 아님) ──────────────────────
+
+export interface DiaryEntryBase {
   id: string;
   userId: string;
   title: string;
@@ -11,31 +74,14 @@ export interface DiaryEntryBase extends Timestamps {
   moodLabel: string | null;
   moodColor: string | null;
   imageUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
-// ─── Read ─────────────────────────────────────────────────────────────────────
-
-/** GET /diary 쿼리 */
 export type DiaryListQuery = PaginationQuery;
-
-/** GET /diary 응답 */
 export type DiaryListResponse = PageResult<DiaryEntryBase>;
-
-/** GET /diary/:id 응답 */
 export type DiaryDetailResponse = DiaryEntryBase;
-
-// ─── Write ────────────────────────────────────────────────────────────────────
-
-/** POST /diary 요청 (multipart/form-data 이미지 포함 시) */
 export type CreateDiaryRequest = Omit<DiaryEntryBase, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
-
-/** POST /diary 응답 */
 export type CreateDiaryResponse = DiaryEntryBase;
-
-/** PUT /diary/:id 요청 */
 export type UpdateDiaryRequest = Partial<CreateDiaryRequest>;
-
-/** PUT /diary/:id 응답 */
 export type UpdateDiaryResponse = DiaryEntryBase;
-
-// DELETE /diary/:id → 204 No Content

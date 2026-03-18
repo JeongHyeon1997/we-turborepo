@@ -1,21 +1,21 @@
-import type { Timestamps, PaginationQuery, PageResult } from './common.types';
+import type { PaginationQuery, PageResult } from './common.types';
 
-// ─── Base (DB Table: announcements) ──────────────────────────────────────────
+// ─── Announcement ─────────────────────────────────────────────────────────────
 
-export interface AnnouncementBase extends Timestamps {
+export interface AnnouncementBase {
   id: string;
   title: string;
   content: string;
-  important: boolean;
+  createdAt: string;
 }
 
 // ─── Read ─────────────────────────────────────────────────────────────────────
 
-/** GET /announcements 쿼리 */
+/** GET /api/announcements 쿼리 */
 export type AnnouncementListQuery = PaginationQuery;
 
-/** GET /announcements 응답 */
+/** GET /api/announcements 응답 */
 export type AnnouncementListResponse = PageResult<AnnouncementBase>;
 
-/** GET /announcements/:id 응답 */
+/** GET /api/announcements/:id 응답 */
 export type AnnouncementDetailResponse = AnnouncementBase;

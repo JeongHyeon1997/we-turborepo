@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { AxiosRequestConfig } from 'axios';
 import { useAuthStore } from '../data/authStore';
-import type { ApiResponse, AuthTokens } from '@we/utils';
+import type { AuthTokens } from '@we/utils';
 
 /** 만료 5분 전 선제적 갱신 */
 const REFRESH_THRESHOLD_MS = 5 * 60 * 1_000;
@@ -20,12 +20,12 @@ async function refreshAccessToken(): Promise<string | null> {
     if (!refreshToken) { logout(); return null; }
 
     try {
-      const { data } = await _plain.post<ApiResponse<AuthTokens>>(
-        '/auth/refresh',
+      const { data } = await _plain.post<AuthTokens>(
+        '/api/auth/refresh',
         { refreshToken },
       );
-      setTokens(data.data);
-      return data.data.accessToken;
+      setTokens(data);
+      return data.accessToken;
     } catch {
       logout();
       return null;

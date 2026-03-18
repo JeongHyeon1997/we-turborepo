@@ -10,13 +10,14 @@ export interface PaginationQuery {
   size: number;
 }
 
-/** 페이지네이션 응답 */
+/** 페이지네이션 응답 (Spring Data Page 포맷) */
 export interface PageResult<T> {
-  items: T[];
-  total: number;
+  content: T[];
   page: number;
   size: number;
-  hasNext: boolean;
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
 }
 
 /** 공통 API 응답 래퍼 */

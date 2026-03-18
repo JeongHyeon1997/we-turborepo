@@ -1,60 +1,64 @@
-import type { Timestamps, PaginationQuery, PageResult } from './common.types';
+import type { PaginationQuery, PageResult } from './common.types';
 
-// ─── Base (DB Table: community_posts) ────────────────────────────────────────
+// ─── Post ─────────────────────────────────────────────────────────────────────
 
-export interface CommunityPostBase extends Timestamps {
+export interface CommunityPostBase {
   id: string;
-  userId: string;
-  authorName: string;
-  authorAvatarColor: string;
+  authorId: string;
+  authorNickname: string;
+  title: string;
   content: string;
-  imageUrl: string | null;
+  category: string | null;
   likeCount: number;
   commentCount: number;
+  liked: boolean;
+  createdAt: string;
 }
 
-// ─── Base (DB Table: community_comments) ─────────────────────────────────────
+// ─── Comment ──────────────────────────────────────────────────────────────────
 
-export interface CommunityCommentBase extends Timestamps {
+export interface CommunityCommentBase {
   id: string;
-  postId: string;
-  userId: string;
-  authorName: string;
-  authorAvatarColor: string;
+  authorId: string;
+  authorNickname: string;
   content: string;
+  createdAt: string;
 }
 
-// ─── Base (DB Table: community_reports) ──────────────────────────────────────
+// ─── Report ───────────────────────────────────────────────────────────────────
 
 export type ReportReason = 'spam' | 'obscene' | 'harassment' | 'other';
 
-export interface CommunityReportBase extends Timestamps {
+export interface CommunityReportBase {
   id: string;
   postId: string;
   reporterId: string;
   reason: ReportReason;
   detail: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ─── Post Read ────────────────────────────────────────────────────────────────
 
 /** GET /community/posts 쿼리 */
-export type CommunityListQuery = PaginationQuery;
-
-/** GET /community/posts 응답 (로그인 시 isLiked 포함) */
-export interface CommunityListResponse extends PageResult<CommunityPostBase> {
-  items: (CommunityPostBase & { isLiked?: boolean })[];
+export interface CommunityListQuery extends PaginationQuery {
+  category?: string;
 }
 
+/** GET /community/posts 응답 */
+export type CommunityListResponse = PageResult<CommunityPostBase>;
+
 /** GET /community/posts/:id 응답 */
-export type CommunityDetailResponse = CommunityPostBase & { isLiked?: boolean };
+export type CommunityDetailResponse = CommunityPostBase;
 
 // ─── Post Write ───────────────────────────────────────────────────────────────
 
 /** POST /community/posts 요청 */
 export interface CreatePostRequest {
+  title: string;
   content: string;
-  imageUrl?: string;
+  category?: string | null;
 }
 
 /** POST /community/posts 응답 */
@@ -93,4 +97,6 @@ export type CreateCommentResponse = CommunityCommentBase;
 // ─── Report ───────────────────────────────────────────────────────────────────
 
 /** POST /community/posts/:id/report 요청 */
-export type CreateReportRequest = Pick<CommunityReportBase, 'reason' | 'detail'>;
+export interface CreateReportRequest {
+  reason: string;
+}

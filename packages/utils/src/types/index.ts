@@ -8,18 +8,31 @@ export type {
 
 export type {
   UserBase,
-  LoginRequest,
-  OAuthLoginRequest,
   SignupRequest,
+  EmailLoginRequest,
+  OAuthLoginRequest,
+  LoginRequest,
   RefreshTokenRequest,
+  LogoutRequest,
   AuthTokens,
-  LoginResponse,
   UserResponse,
   UpdateUserRequest,
   UpdateUserResponse,
 } from './user.types';
 
 export type {
+  CoupleDiaryEntry,
+  CoupleDiaryListQuery,
+  CoupleDiaryListResponse,
+  CoupleDiaryDetailResponse,
+  CreateCoupleDiaryRequest,
+  UpdateCoupleDiaryRequest,
+  PetDiaryEntry,
+  PetDiaryListQuery,
+  PetDiaryListResponse,
+  PetDiaryDetailResponse,
+  CreatePetDiaryRequest,
+  UpdatePetDiaryRequest,
   DiaryEntryBase,
   DiaryListQuery,
   DiaryListResponse,
@@ -56,20 +69,25 @@ export type {
 } from './announcement.types';
 
 export type {
-  CoupleConnectionBase,
-  CoupleInviteBase,
+  CouplePartnerInfo,
+  CoupleConnectionResponse,
   CoupleResponse,
   CreateInviteResponse,
   ConfirmCoupleRequest,
   ConfirmCoupleResponse,
   UpdateCoupleRequest,
   UpdateCoupleResponse,
+  CoupleConnectionBase,
+  CoupleInviteBase,
 } from './couple.types';
 
 export type {
-  FamilyGroupBase,
-  FamilyMemberBase,
+  FamilyMemberInfo,
   FamilyGroupResponse,
+  CreateFamilyRequest,
+  InviteFamilyResponse,
   JoinFamilyRequest,
   JoinFamilyResponse,
+  FamilyGroupBase,
+  FamilyMemberBase,
 } from './family.types';
