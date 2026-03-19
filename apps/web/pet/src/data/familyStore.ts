@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useShallow } from 'zustand/react/shallow';
 import type { FamilyGroup, FamilyMember } from '@we/utils';
 
 interface FamilyState {
@@ -38,4 +39,4 @@ export const addFamilyMember = (m: FamilyMember) =>
   useFamilyStore.getState().addFamilyMember(m);
 export const removeFamilyMember = (id: string) =>
   useFamilyStore.getState().removeFamilyMember(id);
-export const useFamilyGroup = () => useFamilyStore((s) => ({ group: s.group }));
+export const useFamilyGroup = () => useFamilyStore(useShallow((s) => ({ group: s.group })));

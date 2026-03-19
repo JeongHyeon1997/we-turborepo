@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useShallow } from 'zustand/react/shallow';
 import type { DiaryEntry } from '@we/utils';
 import { myDiaryEntries } from './diaryEntries';
 
@@ -18,4 +19,4 @@ export const useDiaryStore = create<DiaryState>()((set, get) => ({
 export const getEntries = () => useDiaryStore.getState().entries;
 export const addEntry = (entry: DiaryEntry) => useDiaryStore.getState().addEntry(entry);
 export const useDiaryEntries = () =>
-  useDiaryStore((s) => ({ entries: s.entries, addEntry: s.addEntry }));
+  useDiaryStore(useShallow((s) => ({ entries: s.entries, addEntry: s.addEntry })));

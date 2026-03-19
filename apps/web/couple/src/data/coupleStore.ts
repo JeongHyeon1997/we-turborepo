@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useShallow } from 'zustand/react/shallow';
 import type { CoupleConnection } from '@we/utils';
 
 interface CoupleState {
@@ -16,4 +17,4 @@ export const setConnection = (c: CoupleConnection | null) =>
   useCoupleStore.getState().setConnection(c);
 export const getConnection = () => useCoupleStore.getState().connection;
 export const useCoupleConnection = () =>
-  useCoupleStore((s) => ({ connection: s.connection, setConnection: s.setConnection }));
+  useCoupleStore(useShallow((s) => ({ connection: s.connection, setConnection: s.setConnection })));

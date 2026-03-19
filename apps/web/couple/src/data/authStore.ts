@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { useShallow } from 'zustand/react/shallow';
 import type { AuthUser, AuthTokens } from '@we/utils';
 
 interface AuthState {
@@ -58,4 +59,4 @@ export const login = (user: AuthUser, tokens?: AuthTokens) =>
   useAuthStore.getState().login(user, tokens);
 export const logout = () => useAuthStore.getState().logout();
 export const useAuth = () =>
-  useAuthStore((s) => ({ user: s.user, isLoggedIn: !!s.user }));
+  useAuthStore(useShallow((s) => ({ user: s.user, isLoggedIn: !!s.user })));
