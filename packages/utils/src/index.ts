@@ -16,7 +16,7 @@ export const formatCurrency = (value: number) => {
   }).format(value);
 };
 
-export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+export const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
 export type { AuthUser } from './auth';
 
 export type * from './types';

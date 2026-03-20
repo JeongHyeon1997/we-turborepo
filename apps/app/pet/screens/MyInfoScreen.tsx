@@ -46,8 +46,8 @@ function FamilySection({ group, onConnectPress, onUpdateGroup }: FamilySectionPr
       {
         text: '제거', style: 'destructive',
         onPress: () => {
-          const members = group.members.filter(m => m.id !== member.id);
-          onUpdateGroup(members.length === 0 ? null : { ...group, members });
+          const members = group!.members.filter(m => m.id !== member.id);
+          onUpdateGroup(members.length === 0 ? null : { ...group!, members });
         },
       },
     ]);
