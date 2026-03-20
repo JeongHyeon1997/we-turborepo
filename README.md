@@ -7,7 +7,7 @@ React Native (Expo) + Vite Web 모노레포 구조입니다.
 ### 1. 의존성 설치
 
 ```bash
-yarn install
+bun install
 ```
 
 ### 2. 앱 실행
@@ -16,27 +16,27 @@ yarn install
 
 | 패키지명 | 설명 | 실행 명령어 |
 | :--- | :--- | :--- |
-| `@we/couple` | 커플용 Expo 앱 | `yarn turbo run start --filter=@we/couple` |
-| `@we/pet` | 반려동물용 Expo 앱 | `yarn turbo run start --filter=@we/pet` |
+| `@we/couple` | 커플용 Expo 앱 | `bun turbo run start --filter=@we/couple` |
+| `@we/pet` | 반려동물용 Expo 앱 | `bun turbo run start --filter=@we/pet` |
 
 **Web (Vite)**
 
 | 패키지명 | 설명 | 실행 명령어 |
 | :--- | :--- | :--- |
-| `@we/web-couple` | 커플용 Vite 웹 앱 | `yarn turbo run dev --filter=@we/web-couple` |
-| `@we/web-pet` | 반려동물용 Vite 웹 앱 | `yarn turbo run dev --filter=@we/web-pet` |
+| `@we/web-couple` | 커플용 Vite 웹 앱 | `bun turbo run dev --filter=@we/web-couple` |
+| `@we/web-pet` | 반려동물용 Vite 웹 앱 | `bun turbo run dev --filter=@we/web-pet` |
 
 ### 3. 빌드 / 린트
 
 ```bash
 # 전체 빌드
-yarn turbo run build
+bun turbo run build
 
 # 특정 앱만 빌드
-yarn turbo run build --filter=@we/web-couple
+bun turbo run build --filter=@we/web-couple
 
 # 전체 lint
-yarn turbo run lint
+bun turbo run lint
 ```
 
 ## 프로젝트 구조

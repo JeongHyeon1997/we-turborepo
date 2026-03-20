@@ -2,7 +2,7 @@
 
 ## 프로젝트 개요
 
-React Native (Expo) + Vite Web 모노레포. Yarn workspaces + Turborepo.
+React Native (Expo) + Vite Web 모노레포. Bun workspaces + Turborepo.
 
 ## 디렉토리 구조
 
@@ -453,10 +453,10 @@ useEffect(() => { fetchList(); }, [fetchList]);
 - Web 앱은 `tsconfig.node.json` 별도 존재 (vite.config.ts용)
 
 ### 명령어
-- Expo 앱 실행: `yarn turbo run start --filter=@we/couple`
-- Web 앱 개발: `yarn turbo run dev --filter=@we/web-couple`
-- 전체 빌드: `yarn turbo run build`
-- 전체 lint: `yarn turbo run lint`
+- Expo 앱 실행: `bun turbo run start --filter=@we/couple`
+- Web 앱 개발: `bun turbo run dev --filter=@we/web-couple`
+- 전체 빌드: `bun turbo run build`
+- 전체 lint: `bun turbo run lint`
 
 ---
 

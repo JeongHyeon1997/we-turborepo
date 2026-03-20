@@ -28,10 +28,7 @@ Thumbs.db
 *.swp
 *.swo
 
-# ignore yarnv2 related if any
-.yarn/
-!.yarn/releases
-!.yarn/plugins
-!.yarn/sdks
-!.yarn/versions
-.pnp.*
+# package manager
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
