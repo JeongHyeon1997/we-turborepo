@@ -35,7 +35,7 @@ const stackRoutes = {
   '/auth': '로그인',
 };
 
-export const router = createBrowserRouter(
+export const router: ReturnType<typeof createBrowserRouter> = createBrowserRouter(
   [
     {
       element: (

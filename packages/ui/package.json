@@ -6,9 +6,14 @@
   "scripts": {
     "lint": "eslint \"**/*.ts*\""
   },
+  "dependencies": {
+    "@we/utils": "*"
+  },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "@expo/vector-icons": "*",
+    "expo-image-picker": "*"
   },
   "devDependencies": {
     "@we/eslint-config": "*",
