@@ -18,6 +18,7 @@ bun install
 | :--- | :--- | :--- |
 | `@we/couple` | 커플용 Expo 앱 | `bun turbo run start --filter=@we/couple` |
 | `@we/pet` | 반려동물용 Expo 앱 | `bun turbo run start --filter=@we/pet` |
+| `@we/marriage` | 부부용 Expo 앱 | `bun turbo run start --filter=@we/marriage` |
 
 **Web (Vite)**
 
@@ -25,6 +26,7 @@ bun install
 | :--- | :--- | :--- |
 | `@we/web-couple` | 커플용 Vite 웹 앱 | `bun turbo run dev --filter=@we/web-couple` |
 | `@we/web-pet` | 반려동물용 Vite 웹 앱 | `bun turbo run dev --filter=@we/web-pet` |
+| `@we/web-marriage` | 부부용 Vite 웹 앱 | `bun turbo run dev --filter=@we/web-marriage` |
 
 ### 3. 빌드 / 린트
 
@@ -46,13 +48,17 @@ we-turborepo/
 ├── apps/
 │   ├── app/
 │   │   ├── couple/           # Expo (React Native) 커플 앱 (@we/couple)
-│   │   └── pet/              # Expo (React Native) 반려동물 앱 (@we/pet)
+│   │   ├── pet/              # Expo (React Native) 반려동물 앱 (@we/pet)
+│   │   └── marriage/         # Expo (React Native) 부부 앱 (@we/marriage)
 │   └── web/
-│       ├── couple/           # Vite + React + TypeScript 커플 웹 앱
-│       └── pet/              # Vite + React + TypeScript 반려동물 웹 앱
+│       ├── couple/           # Vite + React + TypeScript 커플 웹 앱 (@we/web-couple)
+│       ├── pet/              # Vite + React + TypeScript 반려동물 웹 앱 (@we/web-pet)
+│       └── marriage/         # Vite + React + TypeScript 부부 웹 앱 (@we/web-marriage)
 ├── packages/
-│   ├── ui/                   # 공통 UI 컴포넌트 패키지 (@we/ui)
-│   ├── utils/                # 공통 유틸리티 패키지 (@we/utils)
+│   ├── ui/                   # React Native 공통 UI 컴포넌트 (@we/ui)
+│   ├── ui-web/               # Web 공통 UI 컴포넌트 (@we/ui-web)
+│   ├── utils/                # 공통 유틸리티 + 타입 (@we/utils)
+│   ├── tailwind-config/      # 공유 Tailwind 설정 (@we/tailwind-config)
 │   ├── tsconfig/             # 공유 TypeScript 설정 (@we/tsconfig)
 │   └── eslint-config/        # 공유 ESLint 설정 (@we/eslint-config)
 ├── package.json
@@ -85,6 +91,18 @@ we-turborepo/
 | 테두리 (블루) | ![#A5C5DB](https://placehold.co/16x16/A5C5DB/A5C5DB.png) | `#A5C5DB` |
 | Brand 핑크 | ![#F7BFCD](https://placehold.co/16x16/F7BFCD/F7BFCD.png) | `#F7BFCD` |
 | 활성 탭 (퍼플) | ![#97A4D9](https://placehold.co/16x16/97A4D9/97A4D9.png) | `#97A4D9` |
+| 비활성 탭 | ![#9ca3af](https://placehold.co/16x16/9ca3af/9ca3af.png) | `#9ca3af` |
+
+### marriage (부부 앱)
+
+> 따뜻한 골드 / 크림 계열 + 로즈골드 포인트
+
+| 역할 | 색상 | 헥스 |
+| :--- | :---: | :--- |
+| 헤더 / 네비 배경 | ![#fffbf5](https://placehold.co/16x16/fffbf5/fffbf5.png) | `#fffbf5` |
+| 헤더 테두리 | ![#fdf4e3](https://placehold.co/16x16/fdf4e3/fdf4e3.png) | `#fdf4e3` |
+| 네비 테두리 | ![#fbedcc](https://placehold.co/16x16/fbedcc/fbedcc.png) | `#fbedcc` |
+| 활성 탭 (로즈골드) | ![#d4a574](https://placehold.co/16x16/d4a574/d4a574.png) | `#d4a574` |
 | 비활성 탭 | ![#9ca3af](https://placehold.co/16x16/9ca3af/9ca3af.png) | `#9ca3af` |
 
 ## 절대 경로 사용

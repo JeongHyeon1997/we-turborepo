@@ -1,0 +1,33 @@
+@font-face {
+  font-family: 'BMJUA';
+  src: url('../../../../packages/assets/fonts/BMJUA_ttf.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'BMHANNAPro';
+  src: url('../../../../packages/assets/fonts/BMHANNAPro.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  #root { display: flex; flex-direction: column; min-height: 100dvh; }
+  body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    font-family: 'BMJUA', sans-serif;
+  }
+  /* 스크롤바 숨김 (스크롤 동작은 유지) */
+  main::-webkit-scrollbar { display: none; }
+  main { scrollbar-width: none; }
+}

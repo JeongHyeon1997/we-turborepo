@@ -1,5 +1,6 @@
 export { default as coupleColors } from './colors/couple';
 export { default as petColors } from './colors/pet';
+export { default as marriageColors } from './colors/marriage';
 export type { AppTheme } from './theme';
 export { createApi } from './lib/createApi';
 export { fonts } from './fonts';

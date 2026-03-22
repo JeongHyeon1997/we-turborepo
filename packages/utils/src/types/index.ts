@@ -82,6 +82,19 @@ export type {
 } from './couple.types';
 
 export type {
+  MarriagePartnerInfo,
+  MarriageConnectionResponse,
+  MarriageResponse,
+  CreateMarriageInviteResponse,
+  ConfirmMarriageRequest,
+  ConfirmMarriageResponse,
+  UpdateMarriageRequest,
+  UpdateMarriageResponse,
+  MarriageConnectionBase,
+  MarriageInviteBase,
+} from './marriage.types';
+
+export type {
   FamilyMemberInfo,
   FamilyGroupResponse,
   CreateFamilyRequest,
