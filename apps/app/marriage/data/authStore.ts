@@ -1,48 +1,11 @@
-import { create } from 'zustand';
+import { createAuthStore } from '@we/utils';
 import type { AuthUser, AuthTokens } from '@we/utils';
 
 // 인메모리 — 앱 재시작 시 초기화 (TODO: AsyncStorage persist 추가)
-interface AuthState {
-  user: AuthUser | null;
-  accessToken: string | null;
-  refreshToken: string | null;
-  /** ms timestamp — 만료 시각 */
-  expiresAt: number | null;
-  login: (user: AuthUser, tokens?: AuthTokens) => void;
-  logout: () => void;
-  setTokens: (tokens: AuthTokens) => void;
-}
+export const useAuthStore = createAuthStore();
 
-export const useAuthStore = create<AuthState>()((set) => ({
-  user: null,
-  accessToken: null,
-  refreshToken: null,
-  expiresAt: null,
-
-  login: (user, tokens) =>
-    set({
-      user,
-      accessToken: tokens?.accessToken ?? null,
-      refreshToken: tokens?.refreshToken ?? null,
-      expiresAt: tokens ? Date.now() + tokens.expiresIn * 1_000 : null,
-    }),
-
-  logout: () =>
-    set({ user: null, accessToken: null, refreshToken: null, expiresAt: null }),
-
-  setTokens: (tokens) =>
-    set({
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
-      expiresAt: Date.now() + tokens.expiresIn * 1_000,
-    }),
-}));
-
-// ── 하위호환 헬퍼 ─────────────────────────────────────────────────────────────
 export const isLoggedIn = () => !!useAuthStore.getState().user;
 export const getUser = () => useAuthStore.getState().user;
-export const login = (user: AuthUser, tokens?: AuthTokens) =>
-  useAuthStore.getState().login(user, tokens);
+export const login = (user: AuthUser, tokens?: AuthTokens) => useAuthStore.getState().login(user, tokens);
 export const logout = () => useAuthStore.getState().logout();
-export const useAuth = () =>
-  useAuthStore((s) => ({ user: s.user, isLoggedIn: !!s.user }));
+export const useAuth = () => useAuthStore((s) => ({ user: s.user, isLoggedIn: !!s.user }));
