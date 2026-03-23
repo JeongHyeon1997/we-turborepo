@@ -95,6 +95,13 @@ export type {
 } from './marriage.types';
 
 export type {
+  PresignedUploadUrlRequest,
+  PresignedUploadUrlResponse,
+  PublicUrlResponse,
+  SignedViewUrlResponse,
+} from './storage.types';
+
+export type {
   FamilyMemberInfo,
   FamilyGroupResponse,
   CreateFamilyRequest,
