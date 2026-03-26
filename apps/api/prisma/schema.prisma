@@ -1,0 +1,367 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["shared", "couple", "pet", "marriage"]
+}
+
+// ─────────────────────────────────────────────
+// shared schema
+// ─────────────────────────────────────────────
+
+model User {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  provider        String   @db.VarChar(20)
+  providerId      String   @map("provider_id") @db.VarChar(255)
+  email           String?  @db.VarChar(255)
+  nickname        String   @db.VarChar(100)
+  profileImageUrl String?  @map("profile_image_url") @db.VarChar(500)
+  passwordHash    String?  @map("password_hash") @db.VarChar(255)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  refreshTokens          RefreshToken[]
+  coupleAsRequester      CoupleConnection[]     @relation("Requester")
+  coupleAsAccepter       CoupleConnection[]     @relation("Accepter")
+  coupleInvites          CoupleInvite[]
+  coupleDiaries          CoupleDiaryEntry[]
+  communityPosts         CoupleCommunityPost[]
+  communityLikes         CoupleCommunityLike[]
+  communityComments      CoupleCommunityComment[]
+  familyMemberships      FamilyGroupMember[]
+  petDiaries             PetDiaryEntry[]
+  petPosts               PetCommunityPost[]
+  petLikes               PetCommunityLike[]
+  petComments            PetCommunityComment[]
+  marriageAsUser1        MarriageConnection[]   @relation("MarriageUser1")
+  marriageAsUser2        MarriageConnection[]   @relation("MarriageUser2")
+  marriageInvites        MarriageInvite[]
+
+  @@unique([provider, providerId])
+  @@map("users")
+  @@schema("shared")
+}
+
+model RefreshToken {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  token     String   @unique @db.VarChar(500)
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+  @@schema("shared")
+}
+
+model Announcement {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title     String   @db.VarChar(200)
+  content   String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("announcements")
+  @@schema("shared")
+}
+
+// ─────────────────────────────────────────────
+// couple schema
+// ─────────────────────────────────────────────
+
+model CoupleConnection {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requesterId     String    @map("requester_id") @db.Uuid
+  accepterId      String    @map("accepter_id") @db.Uuid
+  status          String    @default("PENDING") @db.VarChar(20)
+  connectedAt     DateTime? @map("connected_at") @db.Timestamptz
+  coupleName      String?   @map("couple_name") @db.VarChar(100)
+  anniversaryDate DateTime? @map("anniversary_date") @db.Date
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  requester    User               @relation("Requester", fields: [requesterId], references: [id])
+  accepter     User               @relation("Accepter", fields: [accepterId], references: [id])
+  diaryEntries CoupleDiaryEntry[]
+
+  @@map("couple_connections")
+  @@schema("couple")
+}
+
+model CoupleInvite {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requesterId String   @map("requester_id") @db.Uuid
+  inviteCode  String   @unique @map("invite_code") @db.VarChar(10)
+  expiresAt   DateTime @map("expires_at") @db.Timestamptz
+  used        Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  requester User @relation(fields: [requesterId], references: [id])
+
+  @@map("couple_invites")
+  @@schema("couple")
+}
+
+model CoupleDiaryEntry {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  coupleConnectionId  String   @map("couple_connection_id") @db.Uuid
+  authorId            String   @map("author_id") @db.Uuid
+  title               String?  @db.VarChar(200)
+  content             String
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  coupleConnection CoupleConnection @relation(fields: [coupleConnectionId], references: [id])
+  author           User             @relation(fields: [authorId], references: [id])
+
+  @@map("diary_entries")
+  @@schema("couple")
+}
+
+model CoupleCommunityPost {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  authorId     String   @map("author_id") @db.Uuid
+  title        String   @db.VarChar(200)
+  content      String
+  category     String?  @db.VarChar(50)
+  likeCount    Int      @default(0) @map("like_count")
+  commentCount Int      @default(0) @map("comment_count")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  author   User                     @relation(fields: [authorId], references: [id])
+  likes    CoupleCommunityLike[]
+  comments CoupleCommunityComment[]
+  reports  CoupleCommunityReport[]
+
+  @@map("community_posts")
+  @@schema("couple")
+}
+
+model CoupleCommunityLike {
+  postId    String   @map("post_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  post CoupleCommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User                @relation(fields: [userId], references: [id])
+
+  @@id([postId, userId])
+  @@map("community_likes")
+  @@schema("couple")
+}
+
+model CoupleCommunityComment {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId    String   @map("post_id") @db.Uuid
+  authorId  String   @map("author_id") @db.Uuid
+  content   String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  post   CoupleCommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User                @relation(fields: [authorId], references: [id])
+
+  @@map("community_comments")
+  @@schema("couple")
+}
+
+model CoupleCommunityReport {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId     String   @map("post_id") @db.Uuid
+  reporterId String   @map("reporter_id") @db.Uuid
+  reason     String   @db.VarChar(500)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  post CoupleCommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, reporterId])
+  @@map("community_reports")
+  @@schema("couple")
+}
+
+// ─────────────────────────────────────────────
+// pet schema
+// ─────────────────────────────────────────────
+
+model FamilyGroup {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String   @db.VarChar(100)
+  createdBy String   @map("created_by") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  members FamilyGroupMember[]
+  pets    Pet[]
+  invites FamilyInvite[]
+
+  @@map("family_groups")
+  @@schema("pet")
+}
+
+model FamilyGroupMember {
+  familyGroupId String   @map("family_group_id") @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  role          String   @default("MEMBER") @db.VarChar(20)
+  joinedAt      DateTime @default(now()) @map("joined_at") @db.Timestamptz
+
+  familyGroup FamilyGroup @relation(fields: [familyGroupId], references: [id])
+  user        User        @relation(fields: [userId], references: [id])
+
+  @@id([familyGroupId, userId])
+  @@map("family_group_members")
+  @@schema("pet")
+}
+
+model FamilyInvite {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  familyGroupId String   @map("family_group_id") @db.Uuid
+  inviteCode    String   @unique @map("invite_code") @db.VarChar(10)
+  expiresAt     DateTime @map("expires_at") @db.Timestamptz
+  used          Boolean  @default(false)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  familyGroup FamilyGroup @relation(fields: [familyGroupId], references: [id])
+
+  @@map("family_invites")
+  @@schema("pet")
+}
+
+model Pet {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  familyGroupId   String    @map("family_group_id") @db.Uuid
+  name            String    @db.VarChar(100)
+  species         String?   @db.VarChar(50)
+  breed           String?   @db.VarChar(100)
+  birthDate       DateTime? @map("birth_date") @db.Date
+  profileImageUrl String?   @map("profile_image_url") @db.VarChar(500)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  familyGroup  FamilyGroup     @relation(fields: [familyGroupId], references: [id])
+  diaryEntries PetDiaryEntry[]
+
+  @@map("pets")
+  @@schema("pet")
+}
+
+model PetDiaryEntry {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  petId     String   @map("pet_id") @db.Uuid
+  authorId  String   @map("author_id") @db.Uuid
+  title     String?  @db.VarChar(200)
+  content   String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  pet    Pet  @relation(fields: [petId], references: [id])
+  author User @relation(fields: [authorId], references: [id])
+
+  @@map("diary_entries")
+  @@schema("pet")
+}
+
+model PetCommunityPost {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  authorId     String   @map("author_id") @db.Uuid
+  title        String   @db.VarChar(200)
+  content      String
+  category     String?  @db.VarChar(50)
+  likeCount    Int      @default(0) @map("like_count")
+  commentCount Int      @default(0) @map("comment_count")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  author   User                  @relation(fields: [authorId], references: [id])
+  likes    PetCommunityLike[]
+  comments PetCommunityComment[]
+  reports  PetCommunityReport[]
+
+  @@map("community_posts")
+  @@schema("pet")
+}
+
+model PetCommunityLike {
+  postId    String   @map("post_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  post PetCommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User             @relation(fields: [userId], references: [id])
+
+  @@id([postId, userId])
+  @@map("community_likes")
+  @@schema("pet")
+}
+
+model PetCommunityComment {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId    String   @map("post_id") @db.Uuid
+  authorId  String   @map("author_id") @db.Uuid
+  content   String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  post   PetCommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User             @relation(fields: [authorId], references: [id])
+
+  @@map("community_comments")
+  @@schema("pet")
+}
+
+model PetCommunityReport {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId     String   @map("post_id") @db.Uuid
+  reporterId String   @map("reporter_id") @db.Uuid
+  reason     String   @db.VarChar(500)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  post PetCommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, reporterId])
+  @@map("community_reports")
+  @@schema("pet")
+}
+
+// ─────────────────────────────────────────────
+// marriage schema
+// ─────────────────────────────────────────────
+
+model MarriageConnection {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user1Id         String    @map("user1_id") @db.Uuid
+  user2Id         String    @map("user2_id") @db.Uuid
+  status          String    @default("PENDING") @db.VarChar(20)
+  weddingDate     DateTime? @map("wedding_date") @db.Date
+  shareStartDate  DateTime? @map("share_start_date") @db.Date
+  connectedAt     DateTime? @map("connected_at") @db.Timestamptz
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  user1 User @relation("MarriageUser1", fields: [user1Id], references: [id])
+  user2 User @relation("MarriageUser2", fields: [user2Id], references: [id])
+
+  @@map("marriage_connections")
+  @@schema("marriage")
+}
+
+model MarriageInvite {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  inviterId  String    @map("inviter_id") @db.Uuid
+  inviteCode String    @unique @map("invite_code") @db.VarChar(10)
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz
+  usedAt     DateTime? @map("used_at") @db.Timestamptz
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  inviter User @relation(fields: [inviterId], references: [id])
+
+  @@map("marriage_invites")
+  @@schema("marriage")
+}
