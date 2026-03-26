@@ -32,6 +32,7 @@ packages/
 | `apps/app/pet` | `@we/pet` |
 | `apps/web/couple` | `@we/web-couple` |
 | `apps/web/pet` | `@we/web-pet` |
+| `apps/web/marriage` | `@we/web-marriage` |
 | `apps/api` | `@we/api` |
 
 ---
@@ -209,6 +210,29 @@ marriage.marriage_invites
 api/index.ts    # 서버리스 핸들러 (main.ts의 createApp() 재사용)
 vercel.json     # 모든 요청을 api/index.ts로 라우팅
 ```
+
+---
+
+# 새 앱 추가 체크리스트
+
+## `apps/web/{name}` 추가 시 필수 작업
+
+1. **`vercel.json` 생성** (SPA 새로고침 404 방지)
+
+```json
+{
+  "installCommand": "cd ../../.. && bun install",
+  "buildCommand": "cd ../../.. && bun turbo run build --filter=@we/{package-name}",
+  "outputDirectory": "dist",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
+```
+
+> `rewrites` 누락 시 하위 경로(`/gallery` 등)에서 새로고침하면 Vercel이 404를 반환한다.
+> React Router는 클라이언트 라우터이므로 모든 경로를 `index.html`로 fallback해야 한다.
 
 ---
 

@@ -1,0 +1,9 @@
+{
+  "installCommand": "cd ../../.. && bun install",
+  "buildCommand": "cd ../../.. && bun turbo run build --filter=@we/web-pet",
+  "outputDirectory": "dist",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
