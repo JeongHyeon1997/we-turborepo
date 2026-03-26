@@ -10,6 +10,7 @@ import { PetModule } from './pet/pet.module';
 import { MarriageModule } from './marriage/marriage.module';
 import { StorageModule } from './storage/storage.module';
 import { HealthModule } from './health/health.module';
+import { HomeModule } from './home/home.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 
 @Module({
@@ -24,6 +25,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
     MarriageModule,
     StorageModule,
     HealthModule,
+    HomeModule,
   ],
   providers: [
     {
