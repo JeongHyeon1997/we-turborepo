@@ -63,25 +63,3 @@ export interface UpdatePetDiaryRequest {
   content?: string | null;
 }
 
-// ─── Legacy (DiaryFeature 내부 로컬 저장용, API 타입 아님) ──────────────────────
-
-export interface DiaryEntryBase {
-  id: string;
-  userId: string;
-  title: string;
-  content: string;
-  mood: string | null;
-  moodLabel: string | null;
-  moodColor: string | null;
-  imageUrl: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export type DiaryListQuery = PaginationQuery;
-export type DiaryListResponse = PageResult<DiaryEntryBase>;
-export type DiaryDetailResponse = DiaryEntryBase;
-export type CreateDiaryRequest = Omit<DiaryEntryBase, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
-export type CreateDiaryResponse = DiaryEntryBase;
-export type UpdateDiaryRequest = Partial<CreateDiaryRequest>;
-export type UpdateDiaryResponse = DiaryEntryBase;

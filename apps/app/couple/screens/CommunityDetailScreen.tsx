@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { View, Text, Image, Pressable, ScrollView, Animated, StyleSheet } from 'react-native';
 import { coupleColors } from '@we/utils';
-import type { CommunityPost } from '@we/utils';
+import type { CommunityPostBase } from '@we/utils';
 import { ReportModal } from '@we/ui';
 
 function formatDate(iso: string) {
@@ -10,12 +10,12 @@ function formatDate(iso: string) {
 }
 
 interface Props {
-  post: CommunityPost;
+  post: CommunityPostBase;
 }
 
 export function CommunityDetailScreen({ post }: Props) {
   const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(post.likes);
+  const [likeCount, setLikeCount] = useState(post.likeCount);
   const [showReport, setShowReport] = useState(false);
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -36,11 +36,11 @@ export function CommunityDetailScreen({ post }: Props) {
       <ScrollView contentContainerStyle={s.page}>
         {/* Author */}
         <View style={s.header}>
-          <View style={[s.avatar, { backgroundColor: post.author.avatarColor }]}>
-            <Text style={s.avatarText}>{post.author.name[0]}</Text>
+          <View style={[s.avatar, { backgroundColor: '#E5E7EB' }]}>
+            <Text style={s.avatarText}>{post.authorNickname[0]}</Text>
           </View>
           <View style={s.authorInfo}>
-            <Text style={s.authorName}>{post.author.name}</Text>
+            <Text style={s.authorName}>{post.authorNickname}</Text>
             <Text style={s.date}>{formatDate(post.createdAt)}</Text>
           </View>
           {/* ⋯ 더보기 버튼 */}
@@ -53,8 +53,8 @@ export function CommunityDetailScreen({ post }: Props) {
         <Text style={s.content}>{post.content}</Text>
 
         {/* Image */}
-        {post.image && (
-          <Image source={{ uri: post.image }} style={s.image} resizeMode="cover" />
+        {post.imageUrl && (
+          <Image source={{ uri: post.imageUrl }} style={s.image} resizeMode="cover" />
         )}
 
         {/* Actions */}
@@ -68,7 +68,7 @@ export function CommunityDetailScreen({ post }: Props) {
 
           <Pressable style={s.actionBtn} hitSlop={8}>
             <Text style={s.actionIcon}>💬</Text>
-            <Text style={s.actionCount}>{post.comments}</Text>
+            <Text style={s.actionCount}>{post.commentCount}</Text>
           </Pressable>
 
           <Pressable style={s.actionBtn} hitSlop={8}>

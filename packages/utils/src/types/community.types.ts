@@ -8,6 +8,7 @@ export interface CommunityPostBase {
   authorNickname: string;
   title: string;
   content: string;
+  imageUrl?: string | null;
   category: string | null;
   likeCount: number;
   commentCount: number;

@@ -7,6 +7,7 @@ export interface AnnouncementBase {
   title: string;
   content: string;
   createdAt: string;
+  important?: boolean;
 }
 
 // ─── Read ─────────────────────────────────────────────────────────────────────

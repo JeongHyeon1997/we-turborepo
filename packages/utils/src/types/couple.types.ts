@@ -50,27 +50,3 @@ export type UpdateCoupleResponse = CoupleConnectionResponse;
 
 // DELETE /api/couple → 204 No Content
 
-// ─── Legacy (이전 타입, 하위호환용) ──────────────────────────────────────────
-
-export interface CoupleConnectionBase {
-  id: string;
-  userId: string;
-  partnerId: string;
-  partnerName: string;
-  partnerAvatarColor: string;
-  datingStartDate: string;
-  shareStartDate: string;
-  status: 'pending' | 'connected';
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CoupleInviteBase {
-  id: string;
-  inviterId: string;
-  inviteCode: string;
-  expiresAt: string;
-  usedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-}

@@ -1,6 +1,6 @@
-import type { Announcement } from '@we/utils';
+import type { AnnouncementBase } from '@we/utils';
 
-export const announcements: Announcement[] = [
+export const announcements: AnnouncementBase[] = [
   {
     id: 'ann-1',
     title: '결혼 앱 v1.0 출시 안내',

@@ -4,12 +4,12 @@ import {
   Animated, StyleSheet,
 } from 'react-native';
 import { petColors } from '@we/utils';
-import type { CommunityPost } from '@we/utils';
+import type { CommunityPostBase } from '@we/utils';
 import { AnnouncementBanner, ReportModal } from '@we/ui';
 import { communityPosts as initialPosts } from '../data/communityPosts';
 import { announcements } from '../data/announcements';
 
-type Post = CommunityPost & { liked: boolean };
+type Post = CommunityPostBase;
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -43,12 +43,12 @@ function PostCard({
   return (
     <Pressable style={s.card} onPress={onPress}>
       <View style={s.cardHeader}>
-        <View style={[s.avatar, { backgroundColor: post.author.avatarColor }]}>
-          <Text style={s.avatarText}>{post.author.name[0]}</Text>
+        <View style={[s.avatar, { backgroundColor: '#E5E7EB' }]}>
+          <Text style={s.avatarText}>{post.authorNickname[0]}</Text>
         </View>
         <View style={s.authorInfo}>
           <Pressable onPress={(e) => { e.stopPropagation?.(); onAuthorPress(); }} hitSlop={4}>
-            <Text style={s.authorName}>{post.author.name}</Text>
+            <Text style={s.authorName}>{post.authorNickname}</Text>
           </Pressable>
           <Text style={s.date}>{formatDate(post.createdAt)}</Text>
         </View>
@@ -63,8 +63,8 @@ function PostCard({
 
       <Text style={s.content} numberOfLines={3}>{post.content}</Text>
 
-      {post.image && (
-        <Image source={{ uri: post.image }} style={s.image} resizeMode="cover" />
+      {post.imageUrl && (
+        <Image source={{ uri: post.imageUrl }} style={s.image} resizeMode="cover" />
       )}
 
       <View style={s.actions}>
@@ -72,12 +72,12 @@ function PostCard({
           <Animated.Text style={[s.actionIcon, { transform: [{ scale }] }]}>
             {post.liked ? '❤️' : '🤍'}
           </Animated.Text>
-          <Text style={[s.actionCount, post.liked && { color: '#ef4444' }]}>{post.likes}</Text>
+          <Text style={[s.actionCount, post.liked && { color: '#ef4444' }]}>{post.likeCount}</Text>
         </Pressable>
 
         <Pressable style={s.actionBtn} onPress={onPress} hitSlop={8}>
           <Text style={s.actionIcon}>💬</Text>
-          <Text style={s.actionCount}>{post.comments}</Text>
+          <Text style={s.actionCount}>{post.commentCount}</Text>
         </Pressable>
 
         <Pressable style={s.actionBtn} hitSlop={8}>
@@ -90,22 +90,20 @@ function PostCard({
 }
 
 interface Props {
-  onPostPress: (post: CommunityPost) => void;
+  onPostPress: (post: CommunityPostBase) => void;
   onAuthorPress: (name: string) => void;
   onAnnouncementPress: (id: string) => void;
 }
 
 export function CommunityScreen({ onPostPress, onAuthorPress, onAnnouncementPress }: Props) {
-  const [posts, setPosts] = useState<Post[]>(
-    initialPosts.map(p => ({ ...p, liked: false }))
-  );
+  const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [reportTargetId, setReportTargetId] = useState<string | null>(null);
 
   function toggleLike(id: string) {
     setPosts(prev =>
       prev.map(p =>
         p.id === id
-          ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 }
+          ? { ...p, liked: !p.liked, likeCount: p.liked ? p.likeCount - 1 : p.likeCount + 1 }
           : p
       )
     );
@@ -132,7 +130,7 @@ export function CommunityScreen({ onPostPress, onAuthorPress, onAnnouncementPres
             post={item}
             onLike={() => toggleLike(item.id)}
             onPress={() => onPostPress(item)}
-            onAuthorPress={() => onAuthorPress(item.author.name)}
+            onAuthorPress={() => onAuthorPress(item.authorNickname)}
             onReport={() => setReportTargetId(item.id)}
           />
         )}

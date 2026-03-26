@@ -1,6 +1,6 @@
-import type { Announcement } from '@we/utils';
+import type { AnnouncementBase } from '@we/utils';
 
-export const announcements: Announcement[] = [
+export const announcements: AnnouncementBase[] = [
   {
     id: 'ann-1',
     title: '펫 앱 v2.0 업데이트 안내',

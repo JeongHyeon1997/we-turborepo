@@ -33,14 +33,6 @@ export type {
   PetDiaryDetailResponse,
   CreatePetDiaryRequest,
   UpdatePetDiaryRequest,
-  DiaryEntryBase,
-  DiaryListQuery,
-  DiaryListResponse,
-  DiaryDetailResponse,
-  CreateDiaryRequest,
-  CreateDiaryResponse,
-  UpdateDiaryRequest,
-  UpdateDiaryResponse,
 } from './diary.types';
 
 export type {
@@ -77,8 +69,6 @@ export type {
   ConfirmCoupleResponse,
   UpdateCoupleRequest,
   UpdateCoupleResponse,
-  CoupleConnectionBase,
-  CoupleInviteBase,
 } from './couple.types';
 
 export type {
@@ -108,6 +98,4 @@ export type {
   InviteFamilyResponse,
   JoinFamilyRequest,
   JoinFamilyResponse,
-  FamilyGroupBase,
-  FamilyMemberBase,
 } from './family.types';

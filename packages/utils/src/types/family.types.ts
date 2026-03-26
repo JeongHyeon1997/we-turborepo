@@ -36,22 +36,3 @@ export type JoinFamilyResponse = FamilyGroupResponse;
 // DELETE /api/pet/family → 204 No Content (탈퇴)
 // DELETE /api/pet/family/members/:memberId → 204 No Content (강퇴, OWNER 전용)
 
-// ─── Legacy (이전 타입, 하위호환용) ──────────────────────────────────────────
-
-export interface FamilyGroupBase {
-  id: string;
-  groupStartDate: string;
-  inviteCode: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface FamilyMemberBase {
-  id: string;
-  groupId: string;
-  userId: string;
-  name: string;
-  avatarColor: string;
-  createdAt: string;
-  updatedAt: string;
-}

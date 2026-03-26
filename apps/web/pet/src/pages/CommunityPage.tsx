@@ -1,7 +1,7 @@
 import { useState, useRef, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { petColors } from '@we/utils';
-import type { CommunityPost } from '@we/utils';
+import type { CommunityPostBase } from '@we/utils';
 import { AnnouncementBanner, ReportModal } from '@we/ui-web';
 import { communityPosts as initialPosts } from '../data/communityPosts';
 import { announcements } from '../data/announcements';
@@ -24,7 +24,7 @@ function PostCard({
   onLike,
   onReport,
 }: {
-  post: CommunityPost & { liked: boolean };
+  post: CommunityPostBase;
   onLike: () => void;
   onReport: () => void;
 }) {
@@ -44,13 +44,13 @@ function PostCard({
   return (
     <div style={s.card} onClick={() => navigate(`/community/${post.id}`)}>
       <div style={s.cardHeader}>
-        <Avatar color={post.author.avatarColor} name={post.author.name} />
+        <Avatar color={'#E5E7EB'} name={post.authorNickname} />
         <div style={s.authorInfo}>
           <span
             style={s.authorName}
-            onClick={(e) => { e.stopPropagation(); navigate(`/profile/${encodeURIComponent(post.author.name)}`); }}
+            onClick={(e) => { e.stopPropagation(); navigate(`/profile/${encodeURIComponent(post.authorNickname)}`); }}
           >
-            {post.author.name}
+            {post.authorNickname}
           </span>
           <span style={s.date}>{formatDate(post.createdAt)}</span>
         </div>
@@ -76,8 +76,8 @@ function PostCard({
 
       <p style={s.content}>{post.content}</p>
 
-      {post.image && (
-        <img src={post.image} alt="" style={s.image} />
+      {post.imageUrl && (
+        <img src={post.imageUrl} alt="" style={s.image} />
       )}
 
       <div style={s.actions}>
@@ -90,13 +90,13 @@ function PostCard({
             {post.liked ? '❤️' : '🤍'}
           </span>
           <span style={{ ...s.actionCount, color: post.liked ? '#ef4444' : petColors.gray500 }}>
-            {post.likes}
+            {post.likeCount}
           </span>
         </button>
 
         <button style={s.actionBtn} onClick={(e) => { e.stopPropagation(); navigate(`/community/${post.id}`); }}>
           <span style={{ fontSize: 20 }}>💬</span>
-          <span style={s.actionCount}>{post.comments}</span>
+          <span style={s.actionCount}>{post.commentCount}</span>
         </button>
 
         <button style={s.actionBtn} onClick={(e) => { e.stopPropagation(); navigator.share?.({ url: window.location.href }); }}>
@@ -110,16 +110,14 @@ function PostCard({
 
 export function CommunityPage() {
   const navigate = useNavigate();
-  const [posts, setPosts] = useState<(CommunityPost & { liked: boolean })[]>(
-    initialPosts.map(p => ({ ...p, liked: false }))
-  );
+  const [posts, setPosts] = useState<CommunityPostBase[]>(initialPosts);
   const [reportTargetId, setReportTargetId] = useState<string | null>(null);
 
   function toggleLike(id: string) {
     setPosts(prev =>
       prev.map(p =>
         p.id === id
-          ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 }
+          ? { ...p, liked: !p.liked, likeCount: p.liked ? p.likeCount - 1 : p.likeCount + 1 }
           : p
       )
     );

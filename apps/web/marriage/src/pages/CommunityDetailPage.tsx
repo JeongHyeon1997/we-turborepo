@@ -15,7 +15,7 @@ export function CommunityDetailPage() {
   const post = communityPosts.find(p => p.id === id);
 
   const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(post?.likes ?? 0);
+  const [likeCount, setLikeCount] = useState(post?.likeCount ?? 0);
   const [animating, setAnimating] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showReport, setShowReport] = useState(false);
@@ -38,12 +38,12 @@ export function CommunityDetailPage() {
   return (
     <div style={s.page}>
       <div style={s.header}>
-        <div style={{ ...s.avatar, backgroundColor: post.author.avatarColor }}>
-          <span style={s.avatarText}>{post.author.name[0]}</span>
+        <div style={{ ...s.avatar, backgroundColor: '#E5E7EB' }}>
+          <span style={s.avatarText}>{post.authorNickname[0]}</span>
         </div>
         <div style={s.authorInfo}>
-          <span style={s.authorName} onClick={() => navigate(`/profile/${encodeURIComponent(post.author.name)}`)}>
-            {post.author.name}
+          <span style={s.authorName} onClick={() => navigate(`/profile/${encodeURIComponent(post.authorNickname)}`)}>
+            {post.authorNickname}
           </span>
           <span style={s.date}>{formatDate(post.createdAt)}</span>
         </div>
@@ -64,7 +64,7 @@ export function CommunityDetailPage() {
 
       <p style={s.content}>{post.content}</p>
 
-      {post.image && <img src={post.image} alt="" style={s.image} />}
+      {post.imageUrl && <img src={post.imageUrl} alt="" style={s.image} />}
 
       <div style={s.actions}>
         <button style={s.actionBtn} onClick={handleLike} className={animating ? 'animate-heart-bounce' : ''}>
@@ -75,7 +75,7 @@ export function CommunityDetailPage() {
         </button>
         <button style={s.actionBtn}>
           <span style={{ fontSize: 22 }}>💬</span>
-          <span style={s.actionCount}>{post.comments}</span>
+          <span style={s.actionCount}>{post.commentCount}</span>
         </button>
         <button style={s.actionBtn} onClick={() => navigator.share?.({ url: window.location.href })}>
           <span style={{ fontSize: 22 }}>↗️</span>
