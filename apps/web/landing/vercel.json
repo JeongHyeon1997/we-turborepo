@@ -1,6 +1,6 @@
 {
-  "buildCommand": "bun turbo run build --filter=@we/web-landing",
-  "outputDirectory": "apps/web/landing/dist",
-  "installCommand": "bun install",
+  "installCommand": "cd ../../.. && bun install",
+  "buildCommand": "cd ../../.. && bun turbo run build --filter=@we/web-landing",
+  "outputDirectory": "dist",
   "framework": null
 }
