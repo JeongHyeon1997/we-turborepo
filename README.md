@@ -1,110 +1,154 @@
-# We-Turborepo
+# We Turborepo
 
-React Native (Expo) + Vite Web 모노레포 구조입니다.
+커플 / 펫 / 웨딩 앱을 위한 모노레포. React Native(Expo) + Vite Web + NestJS API.
+
+## 앱 목록
+
+| 패키지 | 설명 | 실행 |
+|--------|------|------|
+| `@we/couple` | 커플 Expo 앱 | `bun turbo run start --filter=@we/couple` |
+| `@we/pet` | 펫 Expo 앱 | `bun turbo run start --filter=@we/pet` |
+| `@we/web-couple` | 커플 웹 앱 (Vite) | `bun turbo run dev --filter=@we/web-couple` |
+| `@we/web-pet` | 펫 웹 앱 (Vite) | `bun turbo run dev --filter=@we/web-pet` |
+| `@we/api` | REST API (NestJS) | `bun turbo run dev --filter=@we/api` |
+
+## 공유 패키지
+
+| 패키지 | 설명 |
+|--------|------|
+| `@we/ui` | React Native 전용 공통 컴포넌트 |
+| `@we/ui-web` | Web 전용 공통 컴포넌트 |
+| `@we/utils` | 공통 타입 + 순수 유틸 (플랫폼 무관) |
+| `@we/tailwind-config` | 공유 Tailwind 테마 |
+| `@we/tsconfig` | 공유 TypeScript 설정 |
+
+## 기술 스택
+
+| 영역 | 기술 |
+|------|------|
+| 패키지 매니저 | Bun + Turborepo |
+| Mobile | Expo (React Native) + NativeWind v4 |
+| Web | Vite + React + Tailwind CSS v3 |
+| API | NestJS 10 + Prisma 5 |
+| DB | Supabase PostgreSQL (multiSchema) |
+| Storage | Supabase Storage (S3 호환) |
+| 인증 | JWT (access + refresh) |
+| 배포 | Vercel (Web + API) |
 
 ## 시작하기
 
-### 1. 의존성 설치
+### 설치
 
 ```bash
 bun install
 ```
 
-### 2. 앱 실행
-
-**Mobile (Expo)**
-
-| 패키지명 | 설명 | 실행 명령어 |
-| :--- | :--- | :--- |
-| `@we/couple` | 커플용 Expo 앱 | `bun turbo run start --filter=@we/couple` |
-| `@we/pet` | 반려동물용 Expo 앱 | `bun turbo run start --filter=@we/pet` |
-| `@we/marriage` | 부부용 Expo 앱 | `bun turbo run start --filter=@we/marriage` |
-
-**Web (Vite)**
-
-| 패키지명 | 설명 | 실행 명령어 |
-| :--- | :--- | :--- |
-| `@we/web-couple` | 커플용 Vite 웹 앱 | `bun turbo run dev --filter=@we/web-couple` |
-| `@we/web-pet` | 반려동물용 Vite 웹 앱 | `bun turbo run dev --filter=@we/web-pet` |
-| `@we/web-marriage` | 부부용 Vite 웹 앱 | `bun turbo run dev --filter=@we/web-marriage` |
-
-### 3. 빌드 / 린트
+### 환경변수 설정
 
 ```bash
-# 전체 빌드
+cp apps/api/.env.example apps/api/.env
+# .env 파일에 Supabase / JWT 값 입력
+```
+
+### 개발 서버
+
+```bash
+bun turbo run dev --filter=@we/api           # API (localhost:3000)
+bun turbo run dev --filter=@we/web-couple    # 커플 웹
+bun turbo run dev --filter=@we/web-pet       # 펫 웹
+bun turbo run start --filter=@we/couple      # 커플 Expo
+bun turbo run start --filter=@we/pet         # 펫 Expo
+```
+
+### DB
+
+```bash
+bun turbo run db:generate --filter=@we/api   # Prisma 클라이언트 생성
+bun turbo run db:migrate --filter=@we/api    # 마이그레이션 배포
+```
+
+### 빌드 / 린트
+
+```bash
 bun turbo run build
-
-# 특정 앱만 빌드
-bun turbo run build --filter=@we/web-couple
-
-# 전체 lint
 bun turbo run lint
 ```
 
+## API 문서
+
+개발 서버 실행 후 `http://localhost:3000/docs`
+
+헬스 체크: `GET http://localhost:3000/api/health`
+
 ## 프로젝트 구조
 
-```text
-we-turborepo/
-├── apps/
-│   ├── app/
-│   │   ├── couple/           # Expo (React Native) 커플 앱 (@we/couple)
-│   │   ├── pet/              # Expo (React Native) 반려동물 앱 (@we/pet)
-│   │   └── marriage/         # Expo (React Native) 부부 앱 (@we/marriage)
-│   └── web/
-│       ├── couple/           # Vite + React + TypeScript 커플 웹 앱 (@we/web-couple)
-│       ├── pet/              # Vite + React + TypeScript 반려동물 웹 앱 (@we/web-pet)
-│       └── marriage/         # Vite + React + TypeScript 부부 웹 앱 (@we/web-marriage)
-├── packages/
-│   ├── ui/                   # React Native 공통 UI 컴포넌트 (@we/ui)
-│   ├── ui-web/               # Web 공통 UI 컴포넌트 (@we/ui-web)
-│   ├── utils/                # 공통 유틸리티 + 타입 (@we/utils)
-│   ├── tailwind-config/      # 공유 Tailwind 설정 (@we/tailwind-config)
-│   ├── tsconfig/             # 공유 TypeScript 설정 (@we/tsconfig)
-│   └── eslint-config/        # 공유 ESLint 설정 (@we/eslint-config)
-├── package.json
-└── turbo.json
+```
+apps/
+├── api/                     # @we/api — NestJS REST API
+│   ├── src/
+│   │   ├── auth/            # 인증 (이메일 + 소셜: Google/Kakao/Naver)
+│   │   ├── user/            # 사용자 프로필
+│   │   ├── couple/          # 커플 연결 + 다이어리 + 커뮤니티
+│   │   ├── pet/             # 펫 가족 + 펫 + 다이어리 + 커뮤니티
+│   │   ├── marriage/        # 웨딩 연결
+│   │   ├── announcement/    # 공지사항
+│   │   ├── storage/         # 파일 업로드 (S3 presigned URL)
+│   │   ├── health/          # 헬스 체크
+│   │   ├── prisma/          # PrismaService
+│   │   └── common/          # 가드, 데코레이터, 필터
+│   ├── prisma/
+│   │   ├── schema.prisma    # DB 스키마 (shared/couple/pet/marriage)
+│   │   └── migrations/
+│   ├── api/index.ts         # Vercel 서버리스 진입점
+│   └── vercel.json
+├── app/
+│   ├── couple/              # @we/couple — Expo 커플 앱
+│   └── pet/                 # @we/pet — Expo 펫 앱
+└── web/
+    ├── couple/              # @we/web-couple — Vite 커플 웹
+    └── pet/                 # @we/web-pet — Vite 펫 웹
+packages/
+├── ui/                      # RN 공통 컴포넌트 (DiaryFeature, GalleryFeature 등)
+├── ui-web/                  # Web 공통 컴포넌트
+├── utils/
+│   └── src/types/           # 공유 API 타입
+└── tailwind-config/
+```
+
+## DB 스키마
+
+Supabase PostgreSQL, 4개 스키마로 분리:
+
+```
+shared   → users, refresh_tokens, announcements
+couple   → couple_connections, couple_invites, diary_entries, community_*
+pet      → family_groups, family_members, family_invites, pets, diary_entries, community_*
+marriage → marriage_connections, marriage_invites
 ```
 
 ## 앱별 메인 컬러
 
-색상 정의 위치: `packages/utils/src/colors/`
+색상 정의: `packages/utils/src/colors/`
 
-### couple (커플 앱)
+### couple — 따뜻한 핑크 + 민트
 
-> 따뜻한 핑크 계열 + 민트 포인트
+| 역할 | 헥스 |
+|------|------|
+| 헤더 / 네비 배경 | `#feefef` |
+| Primary (핑크) | `#f9d0d0` |
+| 활성 탭 (민트) | `#54d8dc` |
 
-| 역할 | 색상 | 헥스 |
-| :--- | :---: | :--- |
-| 헤더 / 네비 배경 | ![#feefef](https://placehold.co/16x16/feefef/feefef.png) | `#feefef` |
-| 네비 테두리 | ![#fce0df](https://placehold.co/16x16/fce0df/fce0df.png) | `#fce0df` |
-| Primary (핑크) | ![#f9d0d0](https://placehold.co/16x16/f9d0d0/f9d0d0.png) | `#f9d0d0` |
-| 활성 탭 (민트) | ![#54d8dc](https://placehold.co/16x16/54d8dc/54d8dc.png) | `#54d8dc` |
-| 비활성 탭 | ![#9ca3af](https://placehold.co/16x16/9ca3af/9ca3af.png) | `#9ca3af` |
+### pet — 차분한 회청색 + 라벤더
 
-### pet (반려동물 앱)
+| 역할 | 헥스 |
+|------|------|
+| 헤더 / 네비 배경 | `#F1F3F5` |
+| 테두리 (블루) | `#A5C5DB` |
+| 활성 탭 (퍼플) | `#97A4D9` |
 
-> 차분한 회청색 계열 + 라벤더 포인트
+### marriage — 골드 / 크림 + 로즈골드
 
-| 역할 | 색상 | 헥스 |
-| :--- | :---: | :--- |
-| 헤더 / 네비 배경 | ![#F1F3F5](https://placehold.co/16x16/F1F3F5/F1F3F5.png) | `#F1F3F5` |
-| 테두리 (블루) | ![#A5C5DB](https://placehold.co/16x16/A5C5DB/A5C5DB.png) | `#A5C5DB` |
-| Brand 핑크 | ![#F7BFCD](https://placehold.co/16x16/F7BFCD/F7BFCD.png) | `#F7BFCD` |
-| 활성 탭 (퍼플) | ![#97A4D9](https://placehold.co/16x16/97A4D9/97A4D9.png) | `#97A4D9` |
-| 비활성 탭 | ![#9ca3af](https://placehold.co/16x16/9ca3af/9ca3af.png) | `#9ca3af` |
-
-### marriage (부부 앱)
-
-> 따뜻한 골드 / 크림 계열 + 로즈골드 포인트
-
-| 역할 | 색상 | 헥스 |
-| :--- | :---: | :--- |
-| 헤더 / 네비 배경 | ![#fffbf5](https://placehold.co/16x16/fffbf5/fffbf5.png) | `#fffbf5` |
-| 헤더 테두리 | ![#fdf4e3](https://placehold.co/16x16/fdf4e3/fdf4e3.png) | `#fdf4e3` |
-| 네비 테두리 | ![#fbedcc](https://placehold.co/16x16/fbedcc/fbedcc.png) | `#fbedcc` |
-| 활성 탭 (로즈골드) | ![#d4a574](https://placehold.co/16x16/d4a574/d4a574.png) | `#d4a574` |
-| 비활성 탭 | ![#9ca3af](https://placehold.co/16x16/9ca3af/9ca3af.png) | `#9ca3af` |
-
-## 절대 경로 사용
-`~`를 사용하여 `src` 폴더에 대한 절대 경로 접근이 가능합니다.
-예: `import { myUtil } from "~/utils/myUtil"`
+| 역할 | 헥스 |
+|------|------|
+| 헤더 / 네비 배경 | `#fffbf5` |
+| 활성 탭 (로즈골드) | `#d4a574` |
