@@ -67,9 +67,4 @@ export const router: ReturnType<typeof createBrowserRouter> = createBrowserRoute
       ],
     },
   ],
-  {
-    future: {
-      v7_relativeSplatPath: true,
-    },
-  },
 );

@@ -75,6 +75,47 @@ bun turbo run db:migrate --filter=@we/api   # 마이그레이션 배포
 
 ---
 
+## 라이브러리 버전 고정 규칙
+
+**모노레포 전체에서 공유 라이브러리는 반드시 동일한 버전을 사용해야 한다.**
+
+bun workspaces는 패키지를 root `node_modules`에 호이스팅한다.
+같은 라이브러리의 **다른 버전이 공존하면 두 개의 인스턴스가 생기고**, React Context·Router 등
+싱글턴 기반 라이브러리는 런타임에 `useLocation() may be used only in the context of a <Router>`
+같은 에러로 터진다 — 빌드는 통과해도 배포 후에야 드러난다.
+
+### 현재 고정 버전 (workspace 전체 통일)
+
+| 라이브러리 | 버전 | 사용 위치 |
+|-----------|------|----------|
+| `react` | `19.1.0` | 모든 웹 앱 |
+| `react-dom` | `19.1.0` | 모든 웹 앱 |
+| `react-router-dom` | `^7.13.2` | 모든 웹 앱 + `@we/ui-web` peerDep |
+| `react-icons` | `^5.0.0` | 모든 웹 앱 + `@we/ui-web` peerDep |
+| `axios` | `^1.7.0` | 모든 웹 앱 |
+| `zustand` | `^5.0.0` | 모든 웹 앱 |
+| `typescript` | `^5.3.3` | 모든 앱/패키지 |
+| `vite` | `^6.3.5` | 모든 웹 앱 |
+| `tailwindcss` | `^3.4.0` | 모든 웹 앱 |
+
+### 새 라이브러리 추가 시 체크리스트
+
+1. **기존 버전 확인**: 다른 앱의 `package.json` 또는 `packages/*/package.json`에 이미 있는지 확인
+2. **버전 통일**: 이미 존재하면 **동일한 버전 범위**를 사용, 임의로 최신 버전 지정 금지
+3. **peerDependency 주의**: `packages/ui-web`·`packages/ui`는 react-router-dom, react-icons 등을
+   peerDep으로 선언 → 소비 앱과 버전이 달라지면 두 인스턴스 충돌 발생
+4. **설치 후 확인**: `bun install` 후 root `node_modules/{lib}/package.json`의 version이
+   의도한 버전인지 확인
+
+```bash
+# 특정 라이브러리의 실제 설치 버전 확인
+cat node_modules/{라이브러리}/package.json | grep '"version"'
+# 각 앱의 선언 버전 한눈에 보기
+grep -r '"react-router-dom"' apps/web/*/package.json packages/*/package.json
+```
+
+---
+
 # BACKEND — NestJS API (`apps/api`)
 
 ## 기술 스택
