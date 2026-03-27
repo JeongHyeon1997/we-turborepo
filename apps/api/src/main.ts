@@ -9,11 +9,7 @@ export async function createApp() {
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useGlobalFilters(new HttpExceptionFilter());
-  app.enableCors({
-    origin: '*',
-    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  });
+  app.enableCors();
 
   const config = new DocumentBuilder()
     .setTitle('We API')
@@ -34,7 +30,4 @@ async function bootstrap() {
   console.log(`Application running on port ${port}`);
 }
 
-// Vercel 서버리스 환경에서는 bootstrap 실행 안 함
-if (!process.env.VERCEL) {
-  bootstrap();
-}
+bootstrap();
