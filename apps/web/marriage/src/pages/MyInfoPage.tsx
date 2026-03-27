@@ -1,9 +1,9 @@
 import { useState, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { marriageColors } from '@we/utils';
-import type { CommunityPost, DiaryEntry } from '@we/utils';
+import type { CommunityPostBase, DiaryEntry } from '@we/utils';
 import { AnnouncementBanner, AuthPromptModal, DatePickerModal } from '@we/ui-web';
-import { useAuth } from '../data/authStore';
+import { useAuth, logout } from '../data/authStore';
 import { communityPosts } from '../data/communityPosts';
 import { myDiaryEntries } from '../data/diaryEntries';
 import { announcements } from '../data/announcements';
@@ -15,7 +15,7 @@ const mockUser = { nickname: myName, profileImage: null as string | null, follow
 
 type FilterType = '전체' | '커뮤니티' | '일기';
 type FeedItem =
-  | { kind: 'community'; data: CommunityPost }
+  | { kind: 'community'; data: CommunityPostBase }
   | { kind: 'diary'; data: DiaryEntry };
 
 function formatDate(iso: string) {
@@ -30,13 +30,13 @@ function daysBetween(isoDate: string) {
   return Math.floor((now.getTime() - start.getTime()) / 86400000) + 1;
 }
 
-function CommunityItem({ post }: { post: CommunityPost }) {
+function CommunityItem({ post }: { post: CommunityPostBase }) {
   return (
     <div style={s.item}>
-      {post.image && <img src={post.image} alt="" style={s.itemThumb} />}
+      {post.imageUrl && <img src={post.imageUrl} alt="" style={s.itemThumb} />}
       <div style={s.itemBody}>
         <p style={s.itemContent}>{post.content}</p>
-        <span style={s.itemMeta}>{formatDate(post.createdAt)} · 🤍 {post.likes}</span>
+        <span style={s.itemMeta}>{formatDate(post.createdAt)} · 🤍 {post.likeCount}</span>
       </div>
       <span style={s.itemBadge('community')}>커뮤니티</span>
     </div>
@@ -155,9 +155,11 @@ function SpouseSection() {
 
 export function MyInfoPage() {
   const navigate = useNavigate();
+  const { user, isLoggedIn } = useAuth();
   const [filter, setFilter] = useState<FilterType>('전체');
 
-  const myCommunityPosts = communityPosts.filter(p => p.author.name === myName);
+  const displayName = user?.name ?? mockUser.nickname;
+  const myCommunityPosts = communityPosts.filter(p => p.authorNickname === myName);
 
   const feed: FeedItem[] = [
     ...(filter !== '일기' ? myCommunityPosts.map(p => ({ kind: 'community' as const, data: p })) : []),
@@ -190,7 +192,7 @@ export function MyInfoPage() {
             </div>
           )}
         </div>
-        <p style={s.nickname}>{mockUser.nickname}</p>
+        <p style={s.nickname}>{displayName}</p>
         <div style={s.statsRow}>
           <div style={s.statItem}>
             <span style={s.statNumber}>{mockUser.followers}</span>
@@ -202,7 +204,20 @@ export function MyInfoPage() {
             <span style={s.statLabel}>팔로잉</span>
           </div>
         </div>
-        <button style={s.editButton}>프로필 편집</button>
+        <button
+          style={s.editButton}
+          onClick={() => isLoggedIn ? navigate('/profile-edit') : navigate('/auth')}
+        >
+          프로필 편집
+        </button>
+        {isLoggedIn && (
+          <button
+            style={s.logoutButton}
+            onClick={() => { if (window.confirm('로그아웃 하시겠어요?')) logout(); }}
+          >
+            로그아웃
+          </button>
+        )}
       </div>
 
       <div style={s.filterRow}>
@@ -285,6 +300,7 @@ const s: Record<string, any> = {
   statLabel: { fontSize: 13, color: marriageColors.gray500, marginTop: 2 } satisfies CSSProperties,
   dividerV: { width: 1, height: 32, backgroundColor: marriageColors.gray200 } satisfies CSSProperties,
   editButton: { padding: '10px 28px', borderRadius: 24, border: `1px solid ${marriageColors.primary400}`, background: 'none', fontSize: 14, fontWeight: 600, color: marriageColors.gray700, cursor: 'pointer', fontFamily: 'BMJUA, sans-serif' } satisfies CSSProperties,
+  logoutButton: { marginTop: 8, padding: '4px 12px', borderRadius: 12, border: 'none', background: 'none', fontSize: 12, color: marriageColors.gray400, cursor: 'pointer', fontFamily: 'BMJUA, sans-serif' } satisfies CSSProperties,
 
   filterRow: { display: 'flex', gap: 8, padding: '0 16px 12px', borderBottom: `1px solid ${marriageColors.gray100}` } satisfies CSSProperties,
   filterBtn: { padding: '7px 16px', borderRadius: 20, border: `1px solid ${marriageColors.gray200}`, background: 'none', fontSize: 13, cursor: 'pointer', color: marriageColors.gray500, fontFamily: 'BMJUA, sans-serif' } satisfies CSSProperties,

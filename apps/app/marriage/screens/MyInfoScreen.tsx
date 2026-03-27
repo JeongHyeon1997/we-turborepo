@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { View, Text, Image, Pressable, FlatList, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { marriageColors } from '@we/utils';
-import type { CommunityPost, DiaryEntry, CoupleConnection } from '@we/utils';
+import type { CommunityPostBase, DiaryEntry } from '@we/utils';
+
+interface CouplePartner { id: string; name: string; avatarColor: string; }
+interface CoupleConnection { partner: CouplePartner; datingStartDate: string; shareStartDate: string; }
 import { AnnouncementBanner, DatePickerModal } from '@we/ui';
 import { communityPosts } from '../data/communityPosts';
 import { myDiaryEntries } from '../data/diaryEntries';
@@ -108,7 +111,7 @@ const mockUser = { nickname: myName, profileImage: null as string | null, follow
 
 type FilterType = '전체' | '커뮤니티' | '일기';
 type FeedItem =
-  | { kind: 'community'; data: CommunityPost }
+  | { kind: 'community'; data: CommunityPostBase }
   | { kind: 'diary'; data: DiaryEntry };
 
 function formatFeedDate(iso: string) {
@@ -116,17 +119,17 @@ function formatFeedDate(iso: string) {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function CommunityItem({ post }: { post: CommunityPost }) {
+function CommunityItem({ post }: { post: CommunityPostBase }) {
   return (
     <View style={s.item}>
-      {post.image && (
+      {post.imageUrl && (
         <View style={s.itemThumb}>
-          <Image source={{ uri: post.image }} style={s.itemThumbImg} resizeMode="cover" />
+          <Image source={{ uri: post.imageUrl }} style={s.itemThumbImg} resizeMode="cover" />
         </View>
       )}
       <View style={s.itemBody}>
         <Text style={s.itemContent} numberOfLines={2}>{post.content}</Text>
-        <Text style={s.itemMeta}>{formatFeedDate(post.createdAt)} · 🤍 {post.likes}</Text>
+        <Text style={s.itemMeta}>{formatFeedDate(post.createdAt)} · 🤍 {post.likeCount}</Text>
       </View>
       <View style={[s.badge, { backgroundColor: marriageColors.primary100 }]}>
         <Text style={s.badgeText}>커뮤니티</Text>
@@ -163,7 +166,7 @@ interface Props {
 export function MyInfoScreen({ onAnnouncementPress, connection, onConnectPress, onUpdateConnection }: Props) {
   const [filter, setFilter] = useState<FilterType>('전체');
 
-  const myCommunityPosts = communityPosts.filter(p => p.author.name === myName);
+  const myCommunityPosts = communityPosts.filter(p => p.authorNickname === myName);
 
   const feed: FeedItem[] = [
     ...(filter !== '일기' ? myCommunityPosts.map(p => ({ kind: 'community' as const, data: p })) : []),
@@ -235,7 +238,7 @@ export function MyInfoScreen({ onAnnouncementPress, connection, onConnectPress, 
       ListEmptyComponent={<Text style={s.empty}>아직 작성한 글이 없어요.</Text>}
       renderItem={({ item }) =>
         item.kind === 'community'
-          ? <CommunityItem post={item.data as CommunityPost} />
+          ? <CommunityItem post={item.data as CommunityPostBase} />
           : <DiaryItem entry={item.data as DiaryEntry} />
       }
     />

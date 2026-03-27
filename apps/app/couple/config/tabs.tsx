@@ -2,7 +2,10 @@ import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { NavTab } from '@we/ui';
 import { coupleColors } from '@we/utils';
-import type { CommunityPost, CoupleConnection } from '@we/utils';
+import type { CommunityPostBase } from '@we/utils';
+
+interface CouplePartner { id: string; name: string; avatarColor: string; }
+interface CoupleConnection { partner: CouplePartner; datingStartDate: string; shareStartDate: string; }
 import { DiaryScreen } from '../screens/DiaryScreen';
 import { GalleryScreen } from '../screens/GalleryScreen';
 import { CommunityScreen } from '../screens/CommunityScreen';
@@ -10,7 +13,7 @@ import { MyInfoScreen } from '../screens/MyInfoScreen';
 
 interface TabCallbacks {
   onSettingsPress: () => void;
-  onPostPress: (post: CommunityPost) => void;
+  onPostPress: (post: CommunityPostBase) => void;
   onAuthorPress: (name: string) => void;
   onAnnouncementPress: (id: string) => void;
   onAnnouncementsListPress: () => void;

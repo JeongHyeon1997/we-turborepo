@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { View, Text, TextInput, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { petColors } from '@we/utils';
-import type { FamilyMember } from '@we/utils';
+
+interface FamilyMember { id: string; name: string; avatarColor: string; }
 
 const ACCENT   = '#97A4D9';
 const MY_CODE  = 'PET-3821';

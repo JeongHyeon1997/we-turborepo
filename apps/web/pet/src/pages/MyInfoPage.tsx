@@ -1,9 +1,9 @@
 import { useState, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { petColors } from '@we/utils';
-import type { CommunityPost } from '@we/utils';
+import type { CommunityPostBase } from '@we/utils';
 import { AnnouncementBanner, DatePickerModal, AuthPromptModal } from '@we/ui-web';
-import { useAuth } from '../data/authStore';
+import { useAuth, logout } from '../data/authStore';
 import { communityPosts } from '../data/communityPosts';
 import { announcements } from '../data/announcements';
 import { useFamilyGroup, setFamilyGroup, removeFamilyMember } from '../data/familyStore';
@@ -23,6 +23,7 @@ function FamilySection() {
   const { isLoggedIn } = useAuth();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [groupStartDate, setGroupStartDate] = useState('2024-01-01');
 
   if (!group) {
     return (
@@ -58,31 +59,31 @@ function FamilySection() {
             <span style={fs.avatarText}>나</span>
           </div>
           {group.members.map(m => (
-            <div key={m.id} style={{ ...fs.avatar, backgroundColor: m.avatarColor }}>
-              <span style={fs.avatarText}>{m.name[0]}</span>
+            <div key={m.userId} style={{ ...fs.avatar, backgroundColor: ACCENT + '55' }}>
+              <span style={fs.avatarText}>{m.nickname[0]}</span>
             </div>
           ))}
         </div>
 
         {/* 함께한 날 */}
-        <p style={fs.daysText}>가족과 함께한지 {daysBetween(group.groupStartDate)}일째 🐾</p>
+        <p style={fs.daysText}>가족과 함께한지 {daysBetween(groupStartDate)}일째 🐾</p>
 
         {/* 시작일 편집 */}
         <button style={fs.dateRow} onClick={() => setShowDatePicker(true)}>
           <span style={fs.dateLabel}>📅 그룹 시작일</span>
-          <span style={fs.dateValue}>{group.groupStartDate.replace(/-/g, '.')}</span>
+          <span style={fs.dateValue}>{groupStartDate.replace(/-/g, '.')}</span>
           <span style={fs.dateEdit}>✏️</span>
         </button>
 
         {/* 멤버 목록 */}
         <div style={fs.memberList}>
           {group.members.map(m => (
-            <div key={m.id} style={fs.memberRow}>
-              <div style={{ ...fs.memberDot, backgroundColor: m.avatarColor }} />
-              <span style={fs.memberName}>{m.name}</span>
+            <div key={m.userId} style={fs.memberRow}>
+              <div style={{ ...fs.memberDot, backgroundColor: ACCENT }} />
+              <span style={fs.memberName}>{m.nickname}</span>
               <button
                 style={fs.removeBtn}
-                onClick={() => { if (window.confirm(`${m.name}님을 가족에서 제거할까요?`)) removeFamilyMember(m.id); }}
+                onClick={() => { if (window.confirm(`${m.nickname}님을 가족에서 제거할까요?`)) removeFamilyMember(m.userId); }}
               >
                 ✕
               </button>
@@ -117,10 +118,10 @@ function FamilySection() {
 
       <DatePickerModal
         visible={showDatePicker}
-        value={group.groupStartDate}
+        value={groupStartDate}
         title="그룹 시작일 선택"
         accentColor={ACCENT}
-        onConfirm={date => { setFamilyGroup({ ...group, groupStartDate: date }); setShowDatePicker(false); }}
+        onConfirm={date => { setGroupStartDate(date); setShowDatePicker(false); }}
         onCancel={() => setShowDatePicker(false)}
       />
     </>
@@ -135,13 +136,13 @@ function formatDate(iso: string) {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function CommunityItem({ post }: { post: CommunityPost }) {
+function CommunityItem({ post }: { post: CommunityPostBase }) {
   return (
     <div style={s.item}>
-      {post.image && <img src={post.image} alt="" style={s.itemThumb} />}
+      {post.imageUrl && <img src={post.imageUrl} alt="" style={s.itemThumb} />}
       <div style={s.itemBody}>
         <p style={s.itemContent}>{post.content}</p>
-        <span style={s.itemMeta}>{formatDate(post.createdAt)} · 🤍 {post.likes}</span>
+        <span style={s.itemMeta}>{formatDate(post.createdAt)} · 🤍 {post.likeCount}</span>
       </div>
     </div>
   );
@@ -149,7 +150,9 @@ function CommunityItem({ post }: { post: CommunityPost }) {
 
 export function MyInfoPage() {
   const navigate = useNavigate();
-  const myCommunityPosts = communityPosts.filter(p => p.author.name === myName);
+  const { user, isLoggedIn } = useAuth();
+  const displayName = user?.name ?? mockUser.nickname;
+  const myCommunityPosts = communityPosts.filter(p => p.authorNickname === myName);
 
   return (
     <div style={s.page}>
@@ -175,7 +178,7 @@ export function MyInfoPage() {
           )}
         </div>
 
-        <p style={s.nickname}>{mockUser.nickname}</p>
+        <p style={s.nickname}>{displayName}</p>
 
         <div style={s.statsRow}>
           <div style={s.statItem}>
@@ -189,7 +192,20 @@ export function MyInfoPage() {
           </div>
         </div>
 
-        <button style={s.editButton}>프로필 편집</button>
+        <button
+          style={s.editButton}
+          onClick={() => isLoggedIn ? navigate('/profile-edit') : navigate('/auth')}
+        >
+          프로필 편집
+        </button>
+        {isLoggedIn && (
+          <button
+            style={s.logoutButton}
+            onClick={() => { if (window.confirm('로그아웃 하시겠어요?')) logout(); }}
+          >
+            로그아웃
+          </button>
+        )}
       </div>
 
       {/* Posts */}
@@ -303,6 +319,12 @@ const s: Record<string, CSSProperties> = {
     background: 'none', fontSize: 14, fontWeight: 600,
     color: petColors.gray700, cursor: 'pointer',
     fontFamily: 'BMJUA, sans-serif',
+  },
+  logoutButton: {
+    marginTop: 8, padding: '4px 12px', borderRadius: 12,
+    border: 'none', background: 'none',
+    fontSize: 12, color: petColors.gray400,
+    cursor: 'pointer', fontFamily: 'BMJUA, sans-serif',
   },
   sectionHeader: {
     display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px',

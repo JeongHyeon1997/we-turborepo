@@ -2,7 +2,7 @@ import { type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IoChevronForward, IoMegaphoneOutline } from 'react-icons/io5';
 import { marriageColors } from '@we/utils';
-import type { Announcement } from '@we/utils';
+import type { AnnouncementBase } from '@we/utils';
 import { announcements } from '../data/announcements';
 
 const ACCENT = '#c9a96e';
@@ -12,7 +12,7 @@ function formatDate(iso: string) {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function AnnouncementItem({ ann }: { ann: Announcement }) {
+function AnnouncementItem({ ann }: { ann: AnnouncementBase }) {
   const navigate = useNavigate();
   return (
     <button style={s.item} onClick={() => navigate(`/announcements/${ann.id}`)}>

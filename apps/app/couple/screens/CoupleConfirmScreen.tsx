@@ -1,6 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { coupleColors } from '@we/utils';
-import type { CouplePartner } from '@we/utils';
+
+interface CouplePartner { id: string; name: string; avatarColor: string; }
 
 const ACCENT = '#f4a0a0';
 

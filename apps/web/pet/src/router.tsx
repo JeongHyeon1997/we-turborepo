@@ -15,6 +15,7 @@ import { AnnouncementDetailPage } from './pages/AnnouncementDetailPage';
 import { FamilyConnectPage } from './pages/FamilyConnectPage';
 import { FamilyConfirmPage } from './pages/FamilyConfirmPage';
 import { AuthPage } from './pages/AuthPage';
+import { ProfileEditPage } from './pages/ProfileEditPage';
 
 const petLogoUrl = new URL('../../../../packages/assets/pet_logo.png', import.meta.url).href;
 
@@ -33,6 +34,7 @@ const stackRoutes = {
   '/family-connect': '가족 초대',
   '/family-confirm': '가족 추가',
   '/auth': '로그인',
+  '/profile-edit': '프로필 수정',
 };
 
 export const router: ReturnType<typeof createBrowserRouter> = createBrowserRouter(
@@ -61,6 +63,7 @@ export const router: ReturnType<typeof createBrowserRouter> = createBrowserRoute
         { path: 'family-connect', element: <FamilyConnectPage /> },
         { path: 'family-confirm', element: <FamilyConfirmPage /> },
         { path: 'auth', element: <AuthPage /> },
+        { path: 'profile-edit', element: <ProfileEditPage /> },
       ],
     },
   ],

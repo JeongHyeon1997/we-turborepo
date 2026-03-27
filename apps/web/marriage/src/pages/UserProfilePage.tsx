@@ -1,7 +1,7 @@
 import { CSSProperties } from 'react';
 import { useParams } from 'react-router-dom';
 import { marriageColors } from '@we/utils';
-import type { CommunityPost } from '@we/utils';
+import type { CommunityPostBase } from '@we/utils';
 import { communityPosts } from '../data/communityPosts';
 import { userProfiles } from '../data/userProfiles';
 
@@ -10,13 +10,13 @@ function formatDate(iso: string) {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function CommunityItem({ post }: { post: CommunityPost }) {
+function CommunityItem({ post }: { post: CommunityPostBase }) {
   return (
     <div style={s.item}>
-      {post.image && <img src={post.image} alt="" style={s.itemThumb} />}
+      {post.imageUrl && <img src={post.imageUrl} alt="" style={s.itemThumb} />}
       <div style={s.itemBody}>
         <p style={s.itemContent}>{post.content}</p>
-        <span style={s.itemMeta}>{formatDate(post.createdAt)} · 🤍 {post.likes}</span>
+        <span style={s.itemMeta}>{formatDate(post.createdAt)} · 🤍 {post.likeCount}</span>
       </div>
     </div>
   );
@@ -26,8 +26,8 @@ export function UserProfilePage() {
   const { name } = useParams<{ name: string }>();
   const decodedName = decodeURIComponent(name ?? '');
   const profile = userProfiles[decodedName];
-  const posts = communityPosts.filter(p => p.author.name === decodedName);
-  const avatarColor = profile?.avatarColor ?? communityPosts.find(p => p.author.name === decodedName)?.author.avatarColor ?? marriageColors.gray200;
+  const posts = communityPosts.filter(p => p.authorNickname === decodedName);
+  const avatarColor = profile?.avatarColor ?? marriageColors.gray200;
 
   if (!decodedName) return <p style={s.empty}>유저를 찾을 수 없어요.</p>;
 

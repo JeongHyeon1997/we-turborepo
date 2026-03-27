@@ -1,7 +1,7 @@
 import { View, Text, Image, FlatList, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { petColors } from '@we/utils';
-import type { CommunityPost } from '@we/utils';
+import type { CommunityPostBase } from '@we/utils';
 import { communityPosts } from '../data/communityPosts';
 import { userProfiles } from '../data/userProfiles';
 
@@ -10,17 +10,17 @@ function formatDate(iso: string) {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function CommunityItem({ post }: { post: CommunityPost }) {
+function CommunityItem({ post }: { post: CommunityPostBase }) {
   return (
     <View style={s.item}>
-      {post.image && (
+      {post.imageUrl && (
         <View style={s.itemThumb}>
-          <Image source={{ uri: post.image }} style={s.itemThumbImg} resizeMode="cover" />
+          <Image source={{ uri: post.imageUrl }} style={s.itemThumbImg} resizeMode="cover" />
         </View>
       )}
       <View style={s.itemBody}>
         <Text style={s.itemContent} numberOfLines={2}>{post.content}</Text>
-        <Text style={s.itemMeta}>{formatDate(post.createdAt)} · 🤍 {post.likes}</Text>
+        <Text style={s.itemMeta}>{formatDate(post.createdAt)} · 🤍 {post.likeCount}</Text>
       </View>
     </View>
   );
@@ -32,9 +32,8 @@ interface Props {
 
 export function UserProfileScreen({ authorName }: Props) {
   const profile = userProfiles[authorName];
-  const posts = communityPosts.filter(p => p.author.name === authorName);
+  const posts = communityPosts.filter(p => p.authorNickname === authorName);
   const avatarColor = profile?.avatarColor
-    ?? communityPosts.find(p => p.author.name === authorName)?.author.avatarColor
     ?? petColors.gray200;
 
   const Header = (

@@ -5,7 +5,10 @@ import { useFonts } from 'expo-font';
 import { AppLayout, AuthFeature, AuthPromptModal } from '@we/ui';
 import { createTabs } from './config/tabs';
 import { theme } from './config/theme';
-import type { CommunityPost, Announcement, CoupleConnection, CouplePartner, AuthUser } from '@we/utils';
+import type { CommunityPostBase, AnnouncementBase, AuthUser } from '@we/utils';
+
+interface CouplePartner { id: string; name: string; avatarColor: string; }
+interface CoupleConnection { partner: CouplePartner; datingStartDate: string; shareStartDate: string; }
 import { SettingsScreen } from './screens/SettingsScreen';
 import { CommunityDetailScreen } from './screens/CommunityDetailScreen';
 import { UserProfileScreen } from './screens/UserProfileScreen';
@@ -37,10 +40,10 @@ export default function App() {
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 
   const [showSettings, setShowSettings] = useState(false);
-  const [communityPost, setCommunityPost] = useState<CommunityPost | null>(null);
+  const [communityPost, setCommunityPost] = useState<CommunityPostBase | null>(null);
   const [profileName, setProfileName] = useState<string | null>(null);
   const [showAnnouncements, setShowAnnouncements] = useState(false);
-  const [announcementDetail, setAnnouncementDetail] = useState<Announcement | null>(null);
+  const [announcementDetail, setAnnouncementDetail] = useState<AnnouncementBase | null>(null);
   const [connection, setConnection] = useState<CoupleConnection | null>(null);
   const [showCoupleConnect, setShowCoupleConnect] = useState(false);
   const [confirmPartner, setConfirmPartner] = useState<CouplePartner | null>(null);

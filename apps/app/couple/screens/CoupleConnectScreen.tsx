@@ -3,7 +3,8 @@ import {
   View, Text, TextInput, Pressable, ScrollView, StyleSheet, Platform,
 } from 'react-native';
 import { coupleColors } from '@we/utils';
-import type { CouplePartner } from '@we/utils';
+
+interface CouplePartner { id: string; name: string; avatarColor: string; }
 
 const ACCENT    = '#f4a0a0';
 const MY_CODE   = 'WE-7429';

@@ -1,7 +1,7 @@
 import { View, Text, Pressable, FlatList, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { petColors } from '@we/utils';
-import type { Announcement } from '@we/utils';
+import type { AnnouncementBase } from '@we/utils';
 import { announcements } from '../data/announcements';
 
 const ACCENT = '#97A4D9';
@@ -12,10 +12,10 @@ function formatDate(iso: string) {
 }
 
 interface Props {
-  onPress: (ann: Announcement) => void;
+  onPress: (ann: AnnouncementBase) => void;
 }
 
-function AnnouncementItem({ ann, onPress }: { ann: Announcement; onPress: () => void }) {
+function AnnouncementItem({ ann, onPress }: { ann: AnnouncementBase; onPress: () => void }) {
   return (
     <Pressable style={s.item} onPress={onPress}>
       <View style={[s.iconBox, { backgroundColor: ACCENT + '28' }]}>

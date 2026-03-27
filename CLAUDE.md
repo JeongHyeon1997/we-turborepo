@@ -48,10 +48,30 @@ bun turbo run start --filter=@we/couple     # Expo
 # 빌드
 bun turbo run build --filter=@we/api
 
+# 웹 앱 빌드 체크 (Vercel 배포 전 반드시 통과해야 함)
+bun turbo run build --filter=@we/web-couple
+bun turbo run build --filter=@we/web-pet
+bun turbo run build --filter=@we/web-marriage
+
 # DB
 bun turbo run db:generate --filter=@we/api  # Prisma 클라이언트 생성
 bun turbo run db:migrate --filter=@we/api   # 마이그레이션 배포
 ```
+
+## 작업 완료 전 빌드 체크 규칙
+
+**코드 수정 후 반드시 영향받는 앱의 빌드를 실행해 TypeScript 오류를 확인한다.**
+
+| 수정 대상 | 실행할 빌드 체크 |
+|-----------|-----------------|
+| `packages/utils` 타입 변경 | 웹 3개 앱 전부 |
+| `packages/ui-web` 컴포넌트 변경 | 웹 3개 앱 전부 |
+| `packages/ui` 컴포넌트 변경 | (네이티브 — 빌드 체크 생략 가능) |
+| `apps/web/{name}` 변경 | 해당 앱 1개 |
+| `apps/api` 변경 | `@we/api` |
+
+> `packages/` 하위 공유 패키지를 수정했을 때 소비자 앱을 빌드 검증하지 않으면,
+> 타입 변경이 전파되지 않아 Vercel 배포에서 처음 오류가 드러난다.
 
 ---
 

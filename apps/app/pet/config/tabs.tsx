@@ -2,7 +2,10 @@ import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { NavTab } from '@we/ui';
 import { petColors } from '@we/utils';
-import type { CommunityPost, FamilyGroup } from '@we/utils';
+import type { CommunityPostBase } from '@we/utils';
+
+interface FamilyMember { id: string; name: string; avatarColor: string; }
+interface FamilyGroup { members: FamilyMember[]; groupStartDate: string; }
 import { MyPetScreen } from '../screens/MyPetScreen';
 import { GalleryScreen } from '../screens/GalleryScreen';
 import { CommunityScreen } from '../screens/CommunityScreen';
@@ -10,7 +13,7 @@ import { MyInfoScreen } from '../screens/MyInfoScreen';
 
 interface TabCallbacks {
   onSettingsPress: () => void;
-  onPostPress: (post: CommunityPost) => void;
+  onPostPress: (post: CommunityPostBase) => void;
   onAuthorPress: (name: string) => void;
   onAnnouncementPress: (id: string) => void;
   onAnnouncementsListPress: () => void;

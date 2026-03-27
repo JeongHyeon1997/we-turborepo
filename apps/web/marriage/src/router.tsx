@@ -15,6 +15,7 @@ import { AnnouncementDetailPage } from './pages/AnnouncementDetailPage';
 import { CoupleConnectPage } from './pages/CoupleConnectPage';
 import { CoupleConfirmPage } from './pages/CoupleConfirmPage';
 import { AuthPage } from './pages/AuthPage';
+import { ProfileEditPage } from './pages/ProfileEditPage';
 
 const logo = (
   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -31,6 +32,7 @@ const stackRoutes = {
   '/couple-connect': '배우자 연결',
   '/couple-confirm': '배우자 연결',
   '/auth': '로그인',
+  '/profile-edit': '프로필 수정',
 };
 
 export const router: ReturnType<typeof createBrowserRouter> = createBrowserRouter(
@@ -59,6 +61,7 @@ export const router: ReturnType<typeof createBrowserRouter> = createBrowserRoute
         { path: 'couple-connect', element: <CoupleConnectPage /> },
         { path: 'couple-confirm', element: <CoupleConfirmPage /> },
         { path: 'auth', element: <AuthPage /> },
+        { path: 'profile-edit', element: <ProfileEditPage /> },
       ],
     },
   ],

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import type { Announcement } from '@we/utils';
+import type { AnnouncementBase } from '@we/utils';
 
 const N = {
   gray100: '#f3f4f6', gray400: '#9ca3af', gray800: '#1f2937', white: '#ffffff',
@@ -13,7 +13,7 @@ function formatDate(iso: string) {
 }
 
 export interface AnnouncementBannerProps {
-  announcements: Announcement[];
+  announcements: AnnouncementBase[];
   accentColor: string;
   onPress: (id: string) => void;
 }

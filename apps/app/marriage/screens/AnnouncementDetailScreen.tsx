@@ -1,6 +1,6 @@
 import { ScrollView, View, Text, StyleSheet } from 'react-native';
 import { marriageColors } from '@we/utils';
-import type { Announcement } from '@we/utils';
+import type { AnnouncementBase } from '@we/utils';
 
 const ACCENT = '#c9a96e';
 
@@ -10,7 +10,7 @@ function formatDate(iso: string) {
 }
 
 interface Props {
-  announcement: Announcement;
+  announcement: AnnouncementBase;
 }
 
 export function AnnouncementDetailScreen({ announcement: ann }: Props) {

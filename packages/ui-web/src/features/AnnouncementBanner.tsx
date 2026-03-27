@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { IoMegaphoneOutline, IoChevronForward } from 'react-icons/io5';
-import type { Announcement } from '@we/utils';
+import type { AnnouncementBase } from '@we/utils';
 
 const N = {
   gray100: '#f3f4f6', gray400: '#9ca3af', gray800: '#1f2937', white: '#ffffff',
@@ -26,7 +26,7 @@ function formatDate(iso: string) {
 }
 
 export interface AnnouncementBannerProps {
-  announcements: Announcement[];
+  announcements: AnnouncementBase[];
   accentColor: string;
   onPress: (id: string) => void;
 }

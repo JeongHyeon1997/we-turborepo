@@ -1,6 +1,8 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { petColors } from '@we/utils';
-import type { FamilyMember, FamilyGroup } from '@we/utils';
+
+interface FamilyMember { id: string; name: string; avatarColor: string; }
+interface FamilyGroup { members: FamilyMember[]; groupStartDate: string; }
 
 const ACCENT = '#97A4D9';
 
