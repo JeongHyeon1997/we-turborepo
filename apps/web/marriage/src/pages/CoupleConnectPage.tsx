@@ -1,18 +1,27 @@
-import { useState, type CSSProperties } from 'react';
+import { useState, useEffect, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { marriageColors } from '@we/utils';
+import { requestMarriageInvite } from '../api/couple.api';
 
-const MY_CODE = 'WE-M429';
 const ACCENT = '#c9a96e';
 
 export function CoupleConnectPage() {
   const navigate = useNavigate();
+  const [myCode, setMyCode] = useState('');
   const [inputCode, setInputCode] = useState('');
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
+  const [loadingCode, setLoadingCode] = useState(true);
+
+  useEffect(() => {
+    requestMarriageInvite()
+      .then(res => setMyCode(res.data.inviteCode))
+      .catch(() => setError('초대 코드를 불러오지 못했어요.'))
+      .finally(() => setLoadingCode(false));
+  }, []);
 
   function handleCopy() {
-    navigator.clipboard?.writeText(MY_CODE);
+    navigator.clipboard?.writeText(myCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -20,7 +29,7 @@ export function CoupleConnectPage() {
   function handleSubmit() {
     const code = inputCode.trim().toUpperCase();
     if (!code) { setError('코드를 입력해주세요.'); return; }
-    if (code === MY_CODE) { setError('내 코드는 입력할 수 없어요.'); return; }
+    if (code === myCode) { setError('내 코드는 입력할 수 없어요.'); return; }
     setError('');
     navigate(`/couple-confirm?code=${encodeURIComponent(code)}`);
   }
@@ -36,10 +45,13 @@ export function CoupleConnectPage() {
       <div style={s.section}>
         <p style={s.sectionLabel}>내 초대 코드</p>
         <div style={s.codeBox}>
-          <span style={s.codeText}>{MY_CODE}</span>
+          <span style={s.codeText}>
+            {loadingCode ? '불러오는 중...' : myCode}
+          </span>
           <button
             style={{ ...s.copyBtn, backgroundColor: copied ? marriageColors.primary200 : ACCENT + '22', color: copied ? marriageColors.gray700 : ACCENT }}
             onClick={handleCopy}
+            disabled={loadingCode}
           >
             {copied ? '복사됨 ✓' : '복사'}
           </button>

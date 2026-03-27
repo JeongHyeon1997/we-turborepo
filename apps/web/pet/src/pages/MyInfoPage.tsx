@@ -41,7 +41,7 @@ function FamilySection() {
           visible={showAuthPrompt}
           message="가족 연결은 회원만 이용할 수 있어요"
           accentColor="#97A4D9"
-          onLoginPress={() => { setShowAuthPrompt(false); navigate('/auth'); }}
+          onLoginPress={() => { setShowAuthPrompt(false); navigate('/auth', { state: { from: '/family-connect' } }); }}
           onClose={() => setShowAuthPrompt(false)}
         />
       </>
@@ -110,7 +110,7 @@ function FamilySection() {
         visible={showAuthPrompt}
         message="가족 연결은 회원만 이용할 수 있어요"
         accentColor="#97A4D9"
-        onLoginPress={() => { setShowAuthPrompt(false); navigate('/auth'); }}
+        onLoginPress={() => { setShowAuthPrompt(false); navigate('/auth', { state: { from: '/family-connect' } }); }}
         onClose={() => setShowAuthPrompt(false)}
       />
 
@@ -144,7 +144,7 @@ export function MyInfoPage() {
           <span style={s.authEmoji}>🔒</span>
           <p style={s.authTitle}>로그인이 필요해요</p>
           <p style={s.authSub}>내 정보를 보려면 로그인해주세요.</p>
-          <button style={s.authButton} onClick={() => navigate('/auth')}>
+          <button style={s.authButton} onClick={() => navigate('/auth', { state: { from: '/my-info' } })}>
             로그인 / 회원가입
           </button>
         </div>

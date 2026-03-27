@@ -79,15 +79,15 @@ function SpouseSection() {
           visible={showAuthPrompt}
           message="배우자 연결은 회원만 이용할 수 있어요"
           accentColor={ACCENT}
-          onLoginPress={() => { setShowAuthPrompt(false); navigate('/auth'); }}
+          onLoginPress={() => { setShowAuthPrompt(false); navigate('/auth', { state: { from: '/couple-connect' } }); }}
           onClose={() => setShowAuthPrompt(false)}
         />
       </>
     );
   }
 
-  const { partner, anniversaryDate, connectedAt } = connection;
-  const weddingDays = anniversaryDate ? daysBetween(anniversaryDate) : 1;
+  const { partner, weddingDate, shareStartDate } = connection;
+  const weddingDays = weddingDate ? daysBetween(weddingDate) : 1;
 
   return (
     <>
@@ -117,7 +117,7 @@ function SpouseSection() {
         <button style={s.infoRow} onClick={() => setPickerType('share')}>
           <span style={s.infoEmoji}>📖</span>
           <span style={s.infoText}>
-            <strong style={{ color: ACCENT }}>{connectedAt ? formatDate(connectedAt) : '-'}</strong>부터 일기 공유중
+            <strong style={{ color: ACCENT }}>{shareStartDate ? formatDate(shareStartDate) : '-'}</strong>부터 일기 공유중
           </span>
           <span style={s.infoEdit}>날짜 변경 ✏️</span>
         </button>
@@ -132,18 +132,18 @@ function SpouseSection() {
 
       <DatePickerModal
         visible={pickerType === 'wedding'}
-        value={anniversaryDate ?? ''}
+        value={weddingDate ?? ''}
         title="결혼 기념일"
         accentColor={ACCENT}
-        onConfirm={date => { setConnection({ ...connection, anniversaryDate: date }); setPickerType(null); }}
+        onConfirm={date => { setConnection({ ...connection, weddingDate: date }); setPickerType(null); }}
         onCancel={() => setPickerType(null)}
       />
       <DatePickerModal
         visible={pickerType === 'share'}
-        value={connectedAt ?? ''}
+        value={shareStartDate ?? ''}
         title="일기 공유 시작일"
         accentColor={ACCENT}
-        onConfirm={date => { setConnection({ ...connection, connectedAt: date }); setPickerType(null); }}
+        onConfirm={date => { setConnection({ ...connection, shareStartDate: date }); setPickerType(null); }}
         onCancel={() => setPickerType(null)}
       />
     </>
@@ -168,7 +168,7 @@ export function MyInfoPage() {
           <span style={s.authEmoji}>🔒</span>
           <p style={s.authTitle}>로그인이 필요해요</p>
           <p style={s.authSub}>내 정보를 보려면 로그인해주세요.</p>
-          <button style={s.authButton} onClick={() => navigate('/auth')}>
+          <button style={s.authButton} onClick={() => navigate('/auth', { state: { from: '/my-info' } })}>
             로그인 / 회원가입
           </button>
         </div>

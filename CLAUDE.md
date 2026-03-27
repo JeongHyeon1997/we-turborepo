@@ -13,7 +13,9 @@ apps/
 │   └── pet/          # @we/pet
 ├── web/              # Vite + React + TypeScript 웹 앱
 │   ├── couple/       # @we/web-couple
-│   └── pet/          # @we/web-pet
+│   ├── pet/          # @we/web-pet
+│   ├── marriage/     # @we/web-marriage
+│   └── landing/      # @we/web-landing — 서비스 소개 랜딩페이지
 └── api/              # @we/api — NestJS REST API (Vercel 배포)
 packages/
 ├── ui/               # @we/ui — React Native 전용 공유 UI
@@ -33,6 +35,7 @@ packages/
 | `apps/web/couple` | `@we/web-couple` |
 | `apps/web/pet` | `@we/web-pet` |
 | `apps/web/marriage` | `@we/web-marriage` |
+| `apps/web/landing` | `@we/web-landing` |
 | `apps/api` | `@we/api` |
 
 ---

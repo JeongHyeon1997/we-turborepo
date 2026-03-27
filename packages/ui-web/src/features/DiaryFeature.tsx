@@ -467,7 +467,7 @@ const s: Record<string, CSSProperties> = {
 
   toggleWrap: { display:'flex', justifyContent:'center', padding:'14px 0 10px', flexShrink:0 },
   toggleRow: { display:'flex', backgroundColor:N.gray100, borderRadius:10, padding:3, gap:2 },
-  toggleBtn: { display:'flex', alignItems:'center', gap:5, padding:'7px 16px', borderRadius:8, border:'none', background:'none', cursor:'pointer' },
+  toggleBtn: { display:'flex', alignItems:'center', gap:5, padding:'7px 16px', borderRadius:8, border:'none', backgroundColor:'transparent', cursor:'pointer' },
   toggleText: { fontSize:13, color:N.gray400 },
 
   list: { flex:1, display:'flex', flexDirection:'column', gap:12, padding:'0 16px 90px', overflowY:'auto', scrollbarWidth:'none' },

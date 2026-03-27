@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
-import type { CoupleConnectionResponse } from '@we/utils';
+import type { MarriageConnectionResponse } from '@we/utils';
 
 interface MarriageState {
-  connection: CoupleConnectionResponse | null;
-  setConnection: (c: CoupleConnectionResponse | null) => void;
+  connection: MarriageConnectionResponse | null;
+  setConnection: (c: MarriageConnectionResponse | null) => void;
 }
 
 export const useMarriageStore = create<MarriageState>()((set) => ({
@@ -12,8 +12,7 @@ export const useMarriageStore = create<MarriageState>()((set) => ({
   setConnection: (connection) => set({ connection }),
 }));
 
-// ── 하위호환 헬퍼 ─────────────────────────────────────────────────────────────
-export const setConnection = (c: CoupleConnectionResponse | null) =>
+export const setConnection = (c: MarriageConnectionResponse | null) =>
   useMarriageStore.getState().setConnection(c);
 export const getConnection = () => useMarriageStore.getState().connection;
 export const useCoupleConnectionResponse = () =>

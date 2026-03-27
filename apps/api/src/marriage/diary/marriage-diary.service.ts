@@ -7,26 +7,31 @@ import { CreateMarriageDiaryDto, UpdateMarriageDiaryDto } from './dto/diary.dto'
 export class MarriageDiaryService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private async getActiveConnection(userId: string) {
-    const conn = await this.prisma.marriageConnection.findFirst({
+  /** 연결된 배우자가 있으면 반환, 없으면 null */
+  private async findActiveConnection(userId: string) {
+    return this.prisma.marriageConnection.findFirst({
       where: { status: 'ACTIVE', OR: [{ user1Id: userId }, { user2Id: userId }] },
     });
-    if (!conn) throw new BadRequestException('연결된 결혼 파트너가 없습니다');
-    return conn;
   }
 
   async getList(userId: string, page: number, size: number): Promise<PageResponse<any>> {
-    const conn = await this.getActiveConnection(userId);
+    const conn = await this.findActiveConnection(userId);
     const skip = page * size;
+
+    // 연결된 배우자가 있으면 공유 일기 전체, 없으면 내 일기만
+    const where = conn
+      ? { marriageConnectionId: conn.id }
+      : { authorId: userId };
+
     const [items, total] = await Promise.all([
       this.prisma.marriageDiaryEntry.findMany({
-        where: { marriageConnectionId: conn.id },
+        where,
         include: { author: true },
         orderBy: { createdAt: 'desc' },
         skip,
         take: size,
       }),
-      this.prisma.marriageDiaryEntry.count({ where: { marriageConnectionId: conn.id } }),
+      this.prisma.marriageDiaryEntry.count({ where }),
     ]);
     return PageResponse.of(items, total, page, size);
   }
@@ -34,21 +39,27 @@ export class MarriageDiaryService {
   async getOne(userId: string, id: string) {
     const entry = await this.prisma.marriageDiaryEntry.findUnique({
       where: { id },
-      include: { author: true, marriageConnection: true },
+      include: { author: true },
     });
     if (!entry) throw new BadRequestException('다이어리를 찾을 수 없습니다');
-    const conn = entry.marriageConnection;
-    if (conn.user1Id !== userId && conn.user2Id !== userId) {
-      throw new BadRequestException('접근 권한이 없습니다');
+
+    // 내 글이면 항상 접근 가능
+    if (entry.authorId === userId) return entry;
+
+    // 연결된 배우자의 공유 글이면 접근 가능
+    if (entry.marriageConnectionId) {
+      const conn = await this.findActiveConnection(userId);
+      if (conn && conn.id === entry.marriageConnectionId) return entry;
     }
-    return entry;
+
+    throw new BadRequestException('접근 권한이 없습니다');
   }
 
   async create(userId: string, dto: CreateMarriageDiaryDto) {
-    const conn = await this.getActiveConnection(userId);
+    const conn = await this.findActiveConnection(userId);
     return this.prisma.marriageDiaryEntry.create({
       data: {
-        marriageConnectionId: conn.id,
+        marriageConnectionId: conn?.id ?? null,
         authorId: userId,
         title: dto.title,
         content: dto.content,

@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthFeature } from '@we/ui-web';
 import { login as storeLogin, useAuthStore } from '../data/authStore';
 import { signup as signupApi, login as loginApi } from '../api/auth.api';
@@ -8,13 +8,15 @@ const ACCENT = '#97A4D9';
 
 export function AuthPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from: string = (location.state as { from?: string } | null)?.from ?? '/my-info';
 
   async function handleEmailLogin(email: string, password: string) {
     const { data: tokens } = await loginApi({ type: 'email', email, password });
     useAuthStore.getState().setTokens(tokens);
     const { data: profile } = await getMe();
     storeLogin({ id: profile.id, name: profile.nickname, email: profile.email ?? undefined, provider: 'email', avatarColor: ACCENT }, tokens);
-    navigate(-1);
+    navigate(from, { replace: true });
   }
 
   async function handleEmailSignup(nickname: string, email: string, password: string) {
@@ -22,7 +24,7 @@ export function AuthPage() {
     useAuthStore.getState().setTokens(tokens);
     const { data: profile } = await getMe();
     storeLogin({ id: profile.id, name: profile.nickname, email: profile.email ?? undefined, provider: 'email', avatarColor: ACCENT }, tokens);
-    navigate(-1);
+    navigate(from, { replace: true });
   }
 
   return (

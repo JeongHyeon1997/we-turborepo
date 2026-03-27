@@ -7,26 +7,31 @@ import { PageResponse } from '../../common/dto/page-response.dto';
 export class CoupleDiaryService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private async getActiveConnection(userId: string) {
-    const conn = await this.prisma.coupleConnection.findFirst({
+  /** 연결된 커플이 있으면 반환, 없으면 null */
+  private async findActiveConnection(userId: string) {
+    return this.prisma.coupleConnection.findFirst({
       where: { status: 'ACTIVE', OR: [{ requesterId: userId }, { accepterId: userId }] },
     });
-    if (!conn) throw new BadRequestException('연결된 커플이 없습니다');
-    return conn;
   }
 
   async getList(userId: string, page: number, size: number): Promise<PageResponse<any>> {
-    const conn = await this.getActiveConnection(userId);
+    const conn = await this.findActiveConnection(userId);
     const skip = page * size;
+
+    // 연결된 커플이 있으면 공유 일기 전체, 없으면 내 일기만
+    const where = conn
+      ? { coupleConnectionId: conn.id }
+      : { authorId: userId };
+
     const [items, total] = await Promise.all([
       this.prisma.coupleDiaryEntry.findMany({
-        where: { coupleConnectionId: conn.id },
+        where,
         include: { author: true },
         orderBy: { createdAt: 'desc' },
         skip,
         take: size,
       }),
-      this.prisma.coupleDiaryEntry.count({ where: { coupleConnectionId: conn.id } }),
+      this.prisma.coupleDiaryEntry.count({ where }),
     ]);
     return PageResponse.of(items, total, page, size);
   }
@@ -34,21 +39,27 @@ export class CoupleDiaryService {
   async getOne(userId: string, id: string) {
     const entry = await this.prisma.coupleDiaryEntry.findUnique({
       where: { id },
-      include: { author: true, coupleConnection: true },
+      include: { author: true },
     });
     if (!entry) throw new BadRequestException('다이어리를 찾을 수 없습니다');
-    const conn = entry.coupleConnection;
-    if (conn.requesterId !== userId && conn.accepterId !== userId) {
-      throw new BadRequestException('접근 권한이 없습니다');
+
+    // 내 글이면 항상 접근 가능
+    if (entry.authorId === userId) return entry;
+
+    // 연결된 커플의 공유 글이면 접근 가능
+    if (entry.coupleConnectionId) {
+      const conn = await this.findActiveConnection(userId);
+      if (conn && conn.id === entry.coupleConnectionId) return entry;
     }
-    return entry;
+
+    throw new BadRequestException('접근 권한이 없습니다');
   }
 
   async create(userId: string, dto: CreateDiaryDto) {
-    const conn = await this.getActiveConnection(userId);
+    const conn = await this.findActiveConnection(userId);
     return this.prisma.coupleDiaryEntry.create({
       data: {
-        coupleConnectionId: conn.id,
+        coupleConnectionId: conn?.id ?? null,
         authorId: userId,
         title: dto.title,
         content: dto.content,
