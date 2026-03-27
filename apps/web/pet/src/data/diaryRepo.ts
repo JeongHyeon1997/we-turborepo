@@ -5,7 +5,6 @@ import { useDiaryEntries as useLocalStore } from './diaryStore';
 import { usePetStore } from './petStore';
 import { getDiaryList, createDiary, updateDiary, deleteDiary } from '../api/diary.api';
 
-// API 응답 → 로컬 DiaryEntry 변환
 function toLocal(e: PetDiaryEntry): DiaryEntry {
   return {
     id: e.id,
@@ -21,15 +20,14 @@ function toLocal(e: PetDiaryEntry): DiaryEntry {
 const remote: DiaryRemoteApi = {
   fetchEntries: async () => {
     const petId = usePetStore.getState().selectedPetId;
-    if (!petId) return [];
-    const res = await getDiaryList({ petId, page: 0, size: 100 });
+    // petId 없으면 서버가 내 일기 전체 반환
+    const res = await getDiaryList({ petId: petId ?? undefined, page: 0, size: 100 });
     return res.data.content.map(toLocal);
   },
   createEntry: async (data) => {
     const petId = usePetStore.getState().selectedPetId;
-    if (!petId) throw new Error('펫을 선택해주세요');
     const res = await createDiary({
-      petId,
+      petId: petId ?? undefined,
       title: data.title || null,
       content: data.content,
       mood: data.mood ?? null,
@@ -47,13 +45,8 @@ const remote: DiaryRemoteApi = {
   },
 };
 
-// petId 없으면 로컬 모드로 동작 — 그룹/펫 미등록 시에도 일기 작성 가능
 const repo = createDiaryRepo({
-  useIsLoggedIn: () => {
-    const loggedIn = useAuthStore((s) => !!s.user);
-    const petId = usePetStore((s) => s.selectedPetId);
-    return loggedIn && !!petId;
-  },
+  useIsLoggedIn: () => useAuthStore((s) => !!s.user),
   useLocalStore,
   remote,
 });

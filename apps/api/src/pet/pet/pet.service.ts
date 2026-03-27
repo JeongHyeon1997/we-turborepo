@@ -6,27 +6,33 @@ import { CreatePetDto, UpdatePetDto } from './dto/pet.dto';
 export class PetService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private async getUserGroupId(userId: string): Promise<string> {
+  private async getUserGroupId(userId: string): Promise<string | null> {
     const member = await this.prisma.familyGroupMember.findFirst({ where: { userId } });
-    if (!member) throw new BadRequestException('가족 그룹이 없습니다');
-    return member.familyGroupId;
+    return member?.familyGroupId ?? null;
+  }
+
+  private async requireGroupId(userId: string): Promise<string> {
+    const groupId = await this.requireGroupId(userId);
+    if (!groupId) throw new BadRequestException('가족 그룹이 없습니다');
+    return groupId;
   }
 
   async getList(userId: string) {
-    const familyGroupId = await this.getUserGroupId(userId);
+    const familyGroupId = await this.requireGroupId(userId);
+    if (!familyGroupId) return [];
     return this.prisma.pet.findMany({ where: { familyGroupId } });
   }
 
   async getOne(userId: string, id: string) {
     const pet = await this.prisma.pet.findUnique({ where: { id } });
     if (!pet) throw new BadRequestException('펫을 찾을 수 없습니다');
-    const familyGroupId = await this.getUserGroupId(userId);
+    const familyGroupId = await this.requireGroupId(userId);
     if (pet.familyGroupId !== familyGroupId) throw new BadRequestException('접근 권한이 없습니다');
     return pet;
   }
 
   async create(userId: string, dto: CreatePetDto) {
-    const familyGroupId = await this.getUserGroupId(userId);
+    const familyGroupId = await this.requireGroupId(userId);
     return this.prisma.pet.create({
       data: {
         familyGroupId,

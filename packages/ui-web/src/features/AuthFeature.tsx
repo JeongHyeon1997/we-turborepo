@@ -122,7 +122,7 @@ export function AuthFeature({ onEmailLogin, onEmailSignup, accentColor = '#f4a0a
           <label style={s.fieldLabel}>비밀번호</label>
           <div style={s.pwWrap}>
             <input
-              style={{ ...s.input, paddingRight: 44 }}
+              style={{ ...s.input, paddingRight: 44, ...(!showPw && { fontFamily: 'system-ui, sans-serif' }) }}
               type={showPw ? 'text' : 'password'}
               placeholder="6자 이상"
               value={password}
@@ -173,7 +173,7 @@ function FormField({
     <div>
       <label style={s.fieldLabel}>{label}</label>
       <input
-        style={s.input}
+        style={{ ...s.input, ...(type === 'password' && { fontFamily: 'system-ui, sans-serif' }) }}
         type={type}
         placeholder={placeholder}
         value={value}

@@ -64,7 +64,7 @@ export type PetDiaryDetailResponse = PetDiaryEntry;
 
 /** POST /api/pet/diary 요청 */
 export interface CreatePetDiaryRequest {
-  petId: string;
+  petId?: string;
   title?: string | null;
   content: string;
   mood?: string | null;

@@ -258,7 +258,7 @@ model Pet {
 
 model PetDiaryEntry {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  petId     String   @map("pet_id") @db.Uuid
+  petId     String?  @map("pet_id") @db.Uuid
   authorId  String   @map("author_id") @db.Uuid
   title     String?  @db.VarChar(200)
   content   String
@@ -268,8 +268,8 @@ model PetDiaryEntry {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  pet    Pet  @relation(fields: [petId], references: [id])
-  author User @relation(fields: [authorId], references: [id])
+  pet    Pet?  @relation(fields: [petId], references: [id])
+  author User  @relation(fields: [authorId], references: [id])
 
   @@map("diary_entries")
   @@schema("pet")

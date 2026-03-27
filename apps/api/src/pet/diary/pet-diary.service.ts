@@ -3,7 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { PageResponse } from '../../common/dto/page-response.dto';
 
 export class CreatePetDiaryDto {
-  petId: string;
+  petId?: string;
   title?: string;
   content: string;
   mood?: string;
@@ -23,17 +23,30 @@ export class UpdatePetDiaryDto {
 export class PetDiaryService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getList(userId: string, petId: string, page: number, size: number): Promise<PageResponse<any>> {
+  private async getFamilyGroupId(userId: string): Promise<string | null> {
+    const member = await this.prisma.familyGroupMember.findFirst({ where: { userId } });
+    return member?.familyGroupId ?? null;
+  }
+
+  /**
+   * 가족 그룹 있음 + petId → 해당 펫의 공유 일기 (가족 전체)
+   * 가족 그룹 없음 or petId 없음 → 내가 작성한 일기만
+   */
+  async getList(userId: string, petId: string | undefined, page: number, size: number): Promise<PageResponse<any>> {
     const skip = page * size;
+    const familyGroupId = await this.getFamilyGroupId(userId);
+
+    const where = familyGroupId && petId ? { petId } : { authorId: userId };
+
     const [items, total] = await Promise.all([
       this.prisma.petDiaryEntry.findMany({
-        where: { petId },
+        where,
         include: { author: true },
         orderBy: { createdAt: 'desc' },
         skip,
         take: size,
       }),
-      this.prisma.petDiaryEntry.count({ where: { petId } }),
+      this.prisma.petDiaryEntry.count({ where }),
     ]);
     return PageResponse.of(items, total, page, size);
   }
@@ -41,13 +54,22 @@ export class PetDiaryService {
   async getOne(userId: string, id: string) {
     const entry = await this.prisma.petDiaryEntry.findUnique({ where: { id }, include: { author: true } });
     if (!entry) throw new BadRequestException('다이어리를 찾을 수 없습니다');
+
+    // 가족 그룹 있으면 같은 그룹 접근 허용, 없으면 본인 것만
+    const familyGroupId = await this.getFamilyGroupId(userId);
+    if (familyGroupId && entry.petId) {
+      const pet = await this.prisma.pet.findUnique({ where: { id: entry.petId } });
+      if (pet?.familyGroupId !== familyGroupId) throw new BadRequestException('접근 권한이 없습니다');
+    } else if (entry.authorId !== userId) {
+      throw new BadRequestException('접근 권한이 없습니다');
+    }
     return entry;
   }
 
   async create(userId: string, dto: CreatePetDiaryDto) {
     return this.prisma.petDiaryEntry.create({
       data: {
-        petId: dto.petId,
+        petId: dto.petId ?? null,
         authorId: userId,
         title: dto.title,
         content: dto.content,

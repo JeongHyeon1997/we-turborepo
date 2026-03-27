@@ -13,7 +13,7 @@ export class PetDiaryController {
   @ApiOperation({ summary: '펫 다이어리 목록' })
   getList(
     @CurrentUser() userId: string,
-    @Query('petId') petId: string,
+    @Query('petId') petId?: string,
     @Query('page') page = '0',
     @Query('size') size = '20',
   ) {
