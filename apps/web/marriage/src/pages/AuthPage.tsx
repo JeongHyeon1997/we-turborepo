@@ -1,15 +1,36 @@
 import { useNavigate } from 'react-router-dom';
 import { AuthFeature } from '@we/ui-web';
-import type { AuthUser } from '@we/utils';
-import { login } from '../data/authStore';
+import { login as storeLogin, useAuthStore } from '../data/authStore';
+import { signup as signupApi, login as loginApi } from '../api/auth.api';
+import { getMe } from '../api/user.api';
+
+const ACCENT = '#c9a96e';
 
 export function AuthPage() {
   const navigate = useNavigate();
 
-  function handleLogin(user: AuthUser) {
-    login(user);
+  async function handleEmailLogin(email: string, password: string) {
+    const { data: tokens } = await loginApi({ type: 'email', email, password });
+    useAuthStore.getState().setTokens(tokens);
+    const { data: profile } = await getMe();
+    storeLogin({ id: profile.id, name: profile.nickname, email: profile.email ?? undefined, provider: 'email', avatarColor: ACCENT }, tokens);
     navigate(-1);
   }
 
-  return <AuthFeature onLogin={handleLogin} accentColor="#c9a96e" appName="우리, 결혼" />;
+  async function handleEmailSignup(nickname: string, email: string, password: string) {
+    const { data: tokens } = await signupApi({ email, password, nickname });
+    useAuthStore.getState().setTokens(tokens);
+    const { data: profile } = await getMe();
+    storeLogin({ id: profile.id, name: profile.nickname, email: profile.email ?? undefined, provider: 'email', avatarColor: ACCENT }, tokens);
+    navigate(-1);
+  }
+
+  return (
+    <AuthFeature
+      onEmailLogin={handleEmailLogin}
+      onEmailSignup={handleEmailSignup}
+      accentColor={ACCENT}
+      appName="우리, 결혼"
+    />
+  );
 }

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
-import type { AuthUser } from '@we/utils';
 
 const N = {
   white: '#ffffff',
@@ -18,44 +17,55 @@ const N = {
 };
 
 export interface AuthFeatureProps {
-  onLogin: (user: AuthUser) => void;
+  /** 이메일 로그인 — 실패 시 Error throw */
+  onEmailLogin: (email: string, password: string) => Promise<void>;
+  /** 이메일 회원가입 — 실패 시 Error throw */
+  onEmailSignup: (nickname: string, email: string, password: string) => Promise<void>;
   accentColor?: string;
   appName?: string;
 }
 
 type Mode = 'login' | 'signup';
 
-export function AuthFeature({ onLogin, accentColor = '#f4a0a0', appName }: AuthFeatureProps) {
-  const [mode, setMode] = useState<Mode>('login');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+export function AuthFeature({ onEmailLogin, onEmailSignup, accentColor = '#f4a0a0', appName }: AuthFeatureProps) {
+  const [mode,     setMode]     = useState<Mode>('login');
+  const [nickname, setNickname] = useState('');
+  const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const [showPw, setShowPw] = useState(false);
-  const [error, setError] = useState('');
+  const [confirm,  setConfirm]  = useState('');
+  const [showPw,   setShowPw]   = useState(false);
+  const [error,    setError]    = useState('');
+  const [loading,  setLoading]  = useState(false);
 
   function switchMode(next: Mode) {
     setMode(next);
     setError('');
-    setName('');
+    setNickname('');
     setEmail('');
     setPassword('');
     setConfirm('');
   }
 
-  function handleEmailSubmit() {
+  async function handleSubmit() {
     setError('');
-    if (mode === 'signup' && !name.trim()) { setError('이름을 입력해주세요'); return; }
+    if (mode === 'signup' && !nickname.trim()) { setError('닉네임을 입력해주세요'); return; }
     if (!email.includes('@') || !email.includes('.')) { setError('올바른 이메일을 입력해주세요'); return; }
     if (password.length < 6) { setError('비밀번호는 6자 이상이어야 해요'); return; }
     if (mode === 'signup' && password !== confirm) { setError('비밀번호가 일치하지 않아요'); return; }
-    onLogin({
-      id: `mock-email-${Date.now()}`,
-      name: mode === 'signup' ? name.trim() : '이메일유저',
-      provider: 'email',
-      email,
-      avatarColor: accentColor,
-    });
+
+    setLoading(true);
+    try {
+      if (mode === 'login') {
+        await onEmailLogin(email, password);
+      } else {
+        await onEmailSignup(nickname.trim(), email, password);
+      }
+    } catch (err: unknown) {
+      const e = err as { message?: string };
+      setError(e.message ?? '오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   const accentLight = accentColor + '18';
@@ -63,7 +73,7 @@ export function AuthFeature({ onLogin, accentColor = '#f4a0a0', appName }: AuthF
 
   return (
     <div style={s.page}>
-      {/* ── 상단 인사 ─────────────────────────────── */}
+      {/* ── 상단 ───────────────────────────────────── */}
       <div style={s.hero}>
         <div style={{ ...s.heroIcon, backgroundColor: accentLight, borderColor: accentMid }}>
           <span style={{ fontSize: 32 }}>🤝</span>
@@ -74,63 +84,27 @@ export function AuthFeature({ onLogin, accentColor = '#f4a0a0', appName }: AuthF
         <p style={s.heroSub}>가입하면 데이터가 안전하게 백업돼요</p>
       </div>
 
-      {/* ── 소셜 로그인 ───────────────────────────── */}
-      <div style={s.socialGroup}>
-        <SocialButton
-          label="카카오로 계속하기"
-          bg="#FEE500"
-          color="#3C1E1E"
-          icon="💬"
-          onClick={() => onLogin({ id: 'mock-kakao', name: '카카오유저', provider: 'kakao', avatarColor: accentColor })}
-        />
-        <SocialButton
-          label="Apple로 계속하기"
-          bg="#000"
-          color={N.white}
-          icon="🍎"
-          onClick={() => onLogin({ id: 'mock-apple', name: '애플유저', provider: 'apple', avatarColor: accentColor })}
-        />
-        <SocialButton
-          label="Google로 계속하기"
-          bg={N.white}
-          color={N.gray700}
-          icon="G"
-          border={N.gray200}
-          onClick={() => onLogin({ id: 'mock-google', name: '구글유저', provider: 'google', avatarColor: accentColor })}
-        />
-      </div>
-
-      {/* ── 구분선 ────────────────────────────────── */}
-      <div style={s.dividerRow}>
-        <div style={s.dividerLine} />
-        <span style={s.dividerText}>또는 이메일로</span>
-        <div style={s.dividerLine} />
-      </div>
-
       {/* ── 로그인 / 회원가입 탭 ──────────────────── */}
       <div style={s.tabRow}>
-        <button
-          style={{ ...s.tab, ...(mode === 'login' ? { ...s.tabActive, borderBottomColor: accentColor, color: accentColor } : {}) }}
-          onClick={() => switchMode('login')}
-        >
-          로그인
-        </button>
-        <button
-          style={{ ...s.tab, ...(mode === 'signup' ? { ...s.tabActive, borderBottomColor: accentColor, color: accentColor } : {}) }}
-          onClick={() => switchMode('signup')}
-        >
-          회원가입
-        </button>
+        {(['login', 'signup'] as Mode[]).map((m) => (
+          <button
+            key={m}
+            style={{ ...s.tab, ...(mode === m ? { ...s.tabActive, borderBottomColor: accentColor, color: accentColor } : {}) }}
+            onClick={() => switchMode(m)}
+          >
+            {m === 'login' ? '로그인' : '회원가입'}
+          </button>
+        ))}
       </div>
 
       {/* ── 폼 ───────────────────────────────────── */}
       <div style={s.form}>
         {mode === 'signup' && (
           <FormField
-            label="이름"
+            label="닉네임"
             placeholder="홍길동"
-            value={name}
-            onChange={setName}
+            value={nickname}
+            onChange={setNickname}
             accentColor={accentColor}
           />
         )}
@@ -141,24 +115,20 @@ export function AuthFeature({ onLogin, accentColor = '#f4a0a0', appName }: AuthF
           value={email}
           onChange={setEmail}
           accentColor={accentColor}
+          onEnter={handleSubmit}
         />
         <div>
           <label style={s.fieldLabel}>비밀번호</label>
           <div style={s.pwWrap}>
             <input
-              style={{ ...s.input, paddingRight: 40 }}
+              style={{ ...s.input, paddingRight: 44 }}
               type={showPw ? 'text' : 'password'}
               placeholder="6자 이상"
               value={password}
-              onChange={e => setPassword(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') handleEmailSubmit(); }}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); }}
             />
-            <button
-              style={s.pwToggle}
-              type="button"
-              onClick={() => setShowPw(v => !v)}
-              tabIndex={-1}
-            >
+            <button style={s.pwToggle} type="button" onClick={() => setShowPw((v) => !v)} tabIndex={-1}>
               {showPw ? '🙈' : '👁'}
             </button>
           </div>
@@ -171,33 +141,18 @@ export function AuthFeature({ onLogin, accentColor = '#f4a0a0', appName }: AuthF
             value={confirm}
             onChange={setConfirm}
             accentColor={accentColor}
+            onEnter={handleSubmit}
           />
         )}
 
-        {/* 에러 메시지 */}
         {error && <p style={s.errorText}>{error}</p>}
 
-        {/* 제출 버튼 */}
         <button
-          style={{ ...s.submitBtn, backgroundColor: accentColor }}
-          onClick={handleEmailSubmit}
+          style={{ ...s.submitBtn, backgroundColor: accentColor, opacity: loading ? 0.7 : 1 }}
+          onClick={handleSubmit}
+          disabled={loading}
         >
-          {mode === 'login' ? '로그인' : '가입하기'}
-        </button>
-
-        {mode === 'login' && (
-          <button style={s.forgotBtn}>비밀번호를 잊으셨나요?</button>
-        )}
-      </div>
-
-      {/* ── 개발용 ────────────────────────────────── */}
-      <div style={s.devSection}>
-        <div style={s.devDivider} />
-        <button
-          style={s.devBtn}
-          onClick={() => onLogin({ id: 'dev-001', name: '테스트유저', avatarColor: accentColor, provider: 'email' })}
-        >
-          🛠 개발용 빠른 로그인
+          {loading ? '잠시만요...' : mode === 'login' ? '로그인' : '가입하기'}
         </button>
       </div>
     </div>
@@ -206,34 +161,12 @@ export function AuthFeature({ onLogin, accentColor = '#f4a0a0', appName }: AuthF
 
 /* ─── 서브 컴포넌트 ───────────────────────────────────────── */
 
-function SocialButton({
-  label, bg, color, icon, border, onClick,
-}: {
-  label: string; bg: string; color: string; icon: string; border?: string; onClick: () => void;
-}) {
-  return (
-    <button
-      style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-        width: '100%', padding: '13px 0', borderRadius: 12,
-        background: bg, color, cursor: 'pointer',
-        border: border ? `1px solid ${border}` : 'none',
-        fontSize: 15, fontFamily: 'BMJUA, sans-serif',
-        transition: 'opacity 0.15s',
-      }}
-      onClick={onClick}
-    >
-      <span style={{ fontSize: 16, lineHeight: 1 }}>{icon}</span>
-      {label}
-    </button>
-  );
-}
-
 function FormField({
-  label, placeholder, type = 'text', value, onChange, accentColor,
+  label, placeholder, type = 'text', value, onChange, accentColor, onEnter,
 }: {
   label: string; placeholder?: string; type?: string;
   value: string; onChange: (v: string) => void; accentColor: string;
+  onEnter?: () => void;
 }) {
   return (
     <div>
@@ -243,9 +176,10 @@ function FormField({
         type={type}
         placeholder={placeholder}
         value={value}
-        onChange={e => onChange(e.target.value)}
-        onFocus={e => { e.currentTarget.style.borderColor = accentColor; }}
-        onBlur={e => { e.currentTarget.style.borderColor = N.gray200; }}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={(e) => { e.currentTarget.style.borderColor = accentColor; }}
+        onBlur={(e) => { e.currentTarget.style.borderColor = N.gray200; }}
+        onKeyDown={(e) => { if (e.key === 'Enter') onEnter?.(); }}
       />
     </div>
   );
@@ -257,12 +191,11 @@ const s: Record<string, CSSProperties> = {
   page: {
     display: 'flex', flexDirection: 'column',
     maxWidth: 420, margin: '0 auto',
-    padding: '24px 20px 40px',
-    gap: 0,
+    padding: '32px 20px 40px',
   },
   hero: {
     display: 'flex', flexDirection: 'column', alignItems: 'center',
-    textAlign: 'center', paddingBottom: 28,
+    textAlign: 'center', paddingBottom: 32,
   },
   heroIcon: {
     width: 72, height: 72, borderRadius: '50%',
@@ -277,19 +210,9 @@ const s: Record<string, CSSProperties> = {
     fontSize: 13, color: N.gray400, margin: 0,
     fontFamily: 'BMHANNAPro, sans-serif',
   },
-  socialGroup: { display: 'flex', flexDirection: 'column', gap: 10 },
-  dividerRow: {
-    display: 'flex', alignItems: 'center', gap: 10,
-    margin: '20px 0',
-  },
-  dividerLine: { flex: 1, height: 1, backgroundColor: N.gray200 },
-  dividerText: {
-    fontSize: 12, color: N.gray400, whiteSpace: 'nowrap',
-    fontFamily: 'BMHANNAPro, sans-serif',
-  },
   tabRow: {
     display: 'flex', borderBottom: `2px solid ${N.gray100}`,
-    marginBottom: 20,
+    marginBottom: 24,
   },
   tab: {
     flex: 1, padding: '10px 0',
@@ -300,7 +223,7 @@ const s: Record<string, CSSProperties> = {
     marginBottom: -2, transition: 'color 0.15s, border-color 0.15s',
   },
   tabActive: { fontWeight: 700 },
-  form: { display: 'flex', flexDirection: 'column', gap: 12 },
+  form: { display: 'flex', flexDirection: 'column', gap: 14 },
   fieldLabel: {
     display: 'block', fontSize: 12, fontWeight: 600,
     color: N.gray500, marginBottom: 6,
@@ -320,26 +243,15 @@ const s: Record<string, CSSProperties> = {
     fontSize: 16, padding: '0 2px',
   },
   errorText: {
-    margin: 0, fontSize: 12, color: N.red,
+    margin: 0, fontSize: 13, color: N.red,
     fontFamily: 'BMHANNAPro, sans-serif',
-    padding: '8px 12px', borderRadius: 8,
+    padding: '10px 14px', borderRadius: 8,
     backgroundColor: '#fef2f2',
   },
   submitBtn: {
     width: '100%', padding: '14px 0', borderRadius: 12, border: 'none',
     fontSize: 16, fontFamily: 'BMJUA, sans-serif',
     color: N.white, cursor: 'pointer', marginTop: 4,
-  },
-  forgotBtn: {
-    background: 'none', border: 'none', cursor: 'pointer',
-    fontSize: 12, color: N.gray400, fontFamily: 'BMHANNAPro, sans-serif',
-    textAlign: 'center', textDecoration: 'underline',
-  },
-  devSection: { display: 'flex', flexDirection: 'column', gap: 10, marginTop: 28 },
-  devDivider: { height: 1, backgroundColor: N.gray100 },
-  devBtn: {
-    background: 'none', border: `1px dashed ${N.gray200}`,
-    borderRadius: 10, padding: '11px 0', cursor: 'pointer',
-    fontSize: 13, color: N.gray400, fontFamily: 'BMHANNAPro, sans-serif',
+    transition: 'opacity 0.15s',
   },
 };

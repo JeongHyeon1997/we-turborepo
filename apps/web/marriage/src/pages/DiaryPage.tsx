@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { DiaryFeature, AnnouncementBanner } from '@we/ui-web';
 import type { Mood } from '@we/utils';
-import { useDiaryEntries } from '../data/diaryStore';
+import { useDiaryEntries } from '../data/diaryRepo';
 import { announcements } from '../data/announcements';
 
 const MOODS: Mood[] = [
@@ -17,7 +17,7 @@ const MOODS: Mood[] = [
 
 export function DiaryPage() {
   const navigate = useNavigate();
-  const { entries, addEntry } = useDiaryEntries();
+  const { entries, loading, addEntry, updateEntry, deleteEntry } = useDiaryEntries();
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       <AnnouncementBanner
@@ -31,7 +31,10 @@ export function DiaryPage() {
           moods={MOODS}
           moodModalTitle={'오늘의 기분은\n어떠셨나요? 💍'}
           entries={entries}
+          loading={loading}
           onAddEntry={addEntry}
+          onUpdateEntry={updateEntry}
+          onDeleteEntry={deleteEntry}
         />
       </div>
     </div>

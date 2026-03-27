@@ -1,7 +1,7 @@
 import { IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-export class CreateDiaryDto {
+export class CreateMarriageDiaryDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -27,7 +27,7 @@ export class CreateDiaryDto {
   moodColor?: string;
 }
 
-export class UpdateDiaryDto {
+export class UpdateMarriageDiaryDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

@@ -42,6 +42,7 @@ model User {
   marriageAsUser1        MarriageConnection[]   @relation("MarriageUser1")
   marriageAsUser2        MarriageConnection[]   @relation("MarriageUser2")
   marriageInvites        MarriageInvite[]
+  marriageDiaries        MarriageDiaryEntry[]
 
   @@unique([provider, providerId])
   @@map("users")
@@ -115,6 +116,9 @@ model CoupleDiaryEntry {
   authorId            String   @map("author_id") @db.Uuid
   title               String?  @db.VarChar(200)
   content             String
+  mood                String?  @db.VarChar(10)
+  moodLabel           String?  @map("mood_label") @db.VarChar(50)
+  moodColor           String?  @map("mood_color") @db.VarChar(20)
   createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -258,6 +262,9 @@ model PetDiaryEntry {
   authorId  String   @map("author_id") @db.Uuid
   title     String?  @db.VarChar(200)
   content   String
+  mood      String?  @db.VarChar(10)
+  moodLabel String?  @map("mood_label") @db.VarChar(50)
+  moodColor String?  @map("mood_color") @db.VarChar(20)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -347,6 +354,7 @@ model MarriageConnection {
 
   user1 User @relation("MarriageUser1", fields: [user1Id], references: [id])
   user2 User @relation("MarriageUser2", fields: [user2Id], references: [id])
+  diaryEntries MarriageDiaryEntry[]
 
   @@map("marriage_connections")
   @@schema("marriage")
@@ -364,5 +372,24 @@ model MarriageInvite {
   inviter User @relation(fields: [inviterId], references: [id])
 
   @@map("marriage_invites")
+  @@schema("marriage")
+}
+
+model MarriageDiaryEntry {
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  marriageConnectionId String   @map("marriage_connection_id") @db.Uuid
+  authorId             String   @map("author_id") @db.Uuid
+  title                String?  @db.VarChar(200)
+  content              String
+  mood                 String?  @db.VarChar(10)
+  moodLabel            String?  @map("mood_label") @db.VarChar(50)
+  moodColor            String?  @map("mood_color") @db.VarChar(20)
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  marriageConnection MarriageConnection @relation(fields: [marriageConnectionId], references: [id])
+  author             User               @relation(fields: [authorId], references: [id])
+
+  @@map("diary_entries")
   @@schema("marriage")
 }

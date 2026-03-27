@@ -8,6 +8,7 @@ export { createAuthStore } from './stores/authStore';
 export type { AuthState } from './stores/authStore';
 export { createDiaryStore } from './stores/diaryStore';
 export { createDiaryRepo } from './stores/diaryRepo';
+export type { DiaryRemoteApi, DiaryRepoDeps } from './stores/diaryRepo';
 export { fonts } from './fonts';
 export type { DiaryEntry, Mood } from './diary';
 

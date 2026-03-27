@@ -33,6 +33,12 @@ export type {
   PetDiaryDetailResponse,
   CreatePetDiaryRequest,
   UpdatePetDiaryRequest,
+  MarriageDiaryEntry,
+  MarriageDiaryListQuery,
+  MarriageDiaryListResponse,
+  MarriageDiaryDetailResponse,
+  CreateMarriageDiaryRequest,
+  UpdateMarriageDiaryRequest,
 } from './diary.types';
 
 export type {
@@ -99,3 +105,5 @@ export type {
   JoinFamilyRequest,
   JoinFamilyResponse,
 } from './family.types';
+
+export type { PetInfo } from './pet.types';

@@ -1,7 +1,7 @@
 import { useState, useRef, type CSSProperties, type ChangeEvent } from 'react';
 import {
   IoListOutline, IoCalendarOutline, IoChevronBack,
-  IoChevronForward, IoAdd, IoClose,
+  IoChevronForward, IoAdd, IoClose, IoPencil, IoTrash,
 } from 'react-icons/io5';
 import type { DiaryEntry, Mood } from '@we/utils';
 
@@ -14,7 +14,7 @@ const N = {
 };
 
 // ─── 타입 ─────────────────────────────────────────────────────────────────────
-interface CreateForm { mood: Mood; title: string; content: string; image: string | null; }
+type CreateFormData = { mood: Mood; title: string; content: string; image: string | null };
 type ViewMode = 'list' | 'calendar';
 
 export interface DiaryFeatureProps {
@@ -26,8 +26,14 @@ export interface DiaryFeatureProps {
   moodModalTitle: string;
   /** controlled: 항목 목록 */
   entries: DiaryEntry[];
-  /** controlled: 새 항목 추가 콜백 */
-  onAddEntry: (entry: DiaryEntry) => void;
+  /** API 로딩 중 여부 */
+  loading?: boolean;
+  /** 새 항목 추가 (id·createdAt 없이 데이터만 전달) */
+  onAddEntry: (data: Omit<DiaryEntry, 'id' | 'createdAt'>) => void | Promise<void>;
+  /** 항목 수정 (본인 항목만 호출됨) */
+  onUpdateEntry?: (id: string, patch: { title: string; content: string }) => void | Promise<void>;
+  /** 항목 삭제 (본인 항목만 호출됨) */
+  onDeleteEntry?: (id: string) => void | Promise<void>;
 }
 
 // ─── 달력 헬퍼 ────────────────────────────────────────────────────────────────
@@ -97,15 +103,23 @@ const card: Record<string, CSSProperties> = {
 };
 
 // ─── DiaryFeature ─────────────────────────────────────────────────────────────
-export function DiaryFeature({ accentColor, moods, moodModalTitle, entries, onAddEntry }: DiaryFeatureProps) {
+export function DiaryFeature({
+  accentColor, moods, moodModalTitle, entries, loading,
+  onAddEntry, onUpdateEntry, onDeleteEntry,
+}: DiaryFeatureProps) {
   const today = new Date();
   const [viewMode,      setViewMode]      = useState<ViewMode>('list');
   const [calYear,       setCalYear]       = useState(today.getFullYear());
   const [calMonth,      setCalMonth]      = useState(today.getMonth());
   const [selectedDay,   setSelectedDay]   = useState<number | null>(null);
   const [showMoodModal, setShowMoodModal] = useState(false);
-  const [createForm,    setCreateForm]    = useState<CreateForm | null>(null);
+  const [createForm,    setCreateForm]    = useState<CreateFormData | null>(null);
+  const [submitting,    setSubmitting]    = useState(false);
   const [detailEntry,   setDetailEntry]   = useState<DiaryEntry | null>(null);
+  const [isEditing,     setIsEditing]     = useState(false);
+  const [editTitle,     setEditTitle]     = useState('');
+  const [editContent,   setEditContent]   = useState('');
+  const [actionBusy,    setActionBusy]    = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const entryMap = buildEntryMap(entries);
@@ -133,24 +147,65 @@ export function DiaryFeature({ accentColor, moods, moodModalTitle, entries, onAd
     setCreateForm(prev => prev ? { ...prev, image: URL.createObjectURL(file) } : prev);
   }
 
-  function submitDiary() {
+  async function submitDiary() {
     if (!createForm) return;
     if (!createForm.title.trim() || !createForm.content.trim()) { alert('제목과 내용을 입력해주세요.'); return; }
-    onAddEntry({
-      id: Date.now().toString(),
-      title: createForm.title.trim(),
-      content: createForm.content.trim(),
-      mood: createForm.mood.emoji,
-      moodLabel: createForm.mood.label,
-      moodColor: createForm.mood.color,
-      image: createForm.image,
-      createdAt: new Date().toISOString(),
-    });
-    setCreateForm(null);
+    setSubmitting(true);
+    try {
+      await onAddEntry({
+        title: createForm.title.trim(),
+        content: createForm.content.trim(),
+        mood: createForm.mood.emoji,
+        moodLabel: createForm.mood.label,
+        moodColor: createForm.mood.color,
+        image: createForm.image,
+      });
+      setCreateForm(null);
+    } catch {
+      alert('저장에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
-  const selectedDayKey     = selectedDay != null ? `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(selectedDay).padStart(2,'0')}` : null;
-  const selectedEntries    = selectedDayKey ? (entryMap[selectedDayKey] ?? []) : [];
+  function openEdit() {
+    if (!detailEntry) return;
+    setEditTitle(detailEntry.title ?? '');
+    setEditContent(detailEntry.content);
+    setIsEditing(true);
+  }
+
+  async function submitEdit() {
+    if (!detailEntry || !onUpdateEntry) return;
+    if (!editTitle.trim() || !editContent.trim()) { alert('제목과 내용을 입력해주세요.'); return; }
+    setActionBusy(true);
+    try {
+      await onUpdateEntry(detailEntry.id, { title: editTitle.trim(), content: editContent.trim() });
+      setDetailEntry(prev => prev ? { ...prev, title: editTitle.trim(), content: editContent.trim() } : prev);
+      setIsEditing(false);
+    } catch {
+      alert('수정에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!detailEntry || !onDeleteEntry) return;
+    if (!window.confirm('일기를 삭제할까요?')) return;
+    setActionBusy(true);
+    try {
+      await onDeleteEntry(detailEntry.id);
+      setDetailEntry(null);
+    } catch {
+      alert('삭제에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
+  const selectedDayKey  = selectedDay != null ? `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(selectedDay).padStart(2,'0')}` : null;
+  const selectedEntries = selectedDayKey ? (entryMap[selectedDayKey] ?? []) : [];
 
   // 뷰 토글 버튼
   const Toggle = (
@@ -177,13 +232,25 @@ export function DiaryFeature({ accentColor, moods, moodModalTitle, entries, onAd
     <div style={s.page}>
       {Toggle}
 
-      {/* ── 목록 뷰 ─────────────────────────────────────────── */}
-      {viewMode === 'list' ? (
-        <div style={s.list}>
-          {entries.map(e => <DiaryCard key={e.id} entry={e} onClick={() => setDetailEntry(e)} />)}
+      {/* ── 로딩 ─────────────────────────────────────────── */}
+      {loading && (
+        <div style={s.loadingWrap}>
+          <div style={{ ...s.loadingDot, backgroundColor: accentColor }} />
+          <div style={{ ...s.loadingDot, backgroundColor: accentColor, animationDelay: '0.15s' }} />
+          <div style={{ ...s.loadingDot, backgroundColor: accentColor, animationDelay: '0.3s' }} />
         </div>
-      ) : (
-        /* ── 캘린더 뷰 ─────────────────────────────────────── */
+      )}
+
+      {/* ── 목록 뷰 ─────────────────────────────────────────── */}
+      {!loading && viewMode === 'list' ? (
+        <div style={s.list}>
+          {entries.length === 0 && (
+            <p style={s.emptyText}>아직 일기가 없어요. + 버튼을 눌러 첫 일기를 써보세요!</p>
+          )}
+          {entries.map(e => <DiaryCard key={e.id} entry={e} onClick={() => { setDetailEntry(e); setIsEditing(false); }} />)}
+        </div>
+      ) : !loading ? (
+        /* ── 캘린더 뷰 ─────────────────────────────────── */
         <div style={s.calWrap}>
           <div style={s.calMonthNav}>
             <button style={s.calNavBtn} onClick={prevMonth}><IoChevronBack size={22} color={N.gray600} /></button>
@@ -228,42 +295,88 @@ export function DiaryFeature({ accentColor, moods, moodModalTitle, entries, onAd
                 {selectedEntries.length === 0
                   ? <p style={s.selectedDayEmpty}>이 날의 일기가 없어요</p>
                   : <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-                      {selectedEntries.map(e => <DiaryCard key={e.id} entry={e} onClick={() => setDetailEntry(e)} />)}
+                      {selectedEntries.map(e => <DiaryCard key={e.id} entry={e} onClick={() => { setDetailEntry(e); setIsEditing(false); }} />)}
                     </div>}
               </div>
             ) : <p style={s.selectedDayEmpty}>날짜를 선택하면 일기를 볼 수 있어요</p>}
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* ── FAB ───────────────────────────────────────────────── */}
-      <button style={{ ...s.fab, backgroundColor: accentColor }} onClick={() => setShowMoodModal(true)}>
-        <IoAdd size={28} color="#fff" />
-      </button>
+      {!loading && (
+        <button style={{ ...s.fab, backgroundColor: accentColor }} onClick={() => setShowMoodModal(true)}>
+          <IoAdd size={28} color="#fff" />
+        </button>
+      )}
 
       {/* ── 상세 모달 ─────────────────────────────────────────── */}
       {detailEntry && (
-        <div style={s.overlay} onClick={() => setDetailEntry(null)}>
+        <div style={s.overlay} onClick={() => { setDetailEntry(null); setIsEditing(false); }}>
           <div style={s.detailModal} onClick={e => e.stopPropagation()}>
             {detailEntry.moodColor && <div style={{ height:6, backgroundColor:detailEntry.moodColor, flexShrink:0 }} />}
             <div style={s.detailHeader}>
               <span style={s.detailDate}>{formatDate(detailEntry.createdAt)}</span>
               <div style={s.detailHeaderRight}>
-                {detailEntry.mood && (
+                {detailEntry.mood && !isEditing && (
                   <div style={{ ...card.badge, backgroundColor: (detailEntry.moodColor ?? '#ccc') + '33' }}>
                     <span>{detailEntry.mood}</span>
                     {detailEntry.moodLabel && <span style={{ ...card.badgeLabel, color: detailEntry.moodColor ?? N.gray600 }}>{detailEntry.moodLabel}</span>}
                   </div>
                 )}
-                <button style={s.iconBtn} onClick={() => setDetailEntry(null)}><IoClose size={20} color={N.gray400} /></button>
+                {onUpdateEntry && !isEditing && (
+                  <button style={s.iconBtn} onClick={openEdit} title="수정">
+                    <IoPencil size={17} color={N.gray400} />
+                  </button>
+                )}
+                {onDeleteEntry && !isEditing && (
+                  <button style={s.iconBtn} onClick={handleDelete} disabled={actionBusy} title="삭제">
+                    <IoTrash size={17} color={actionBusy ? N.gray300 : '#ef4444'} />
+                  </button>
+                )}
+                <button style={s.iconBtn} onClick={() => { setDetailEntry(null); setIsEditing(false); }}>
+                  <IoClose size={20} color={N.gray400} />
+                </button>
               </div>
             </div>
-            <div style={s.detailBody}>
-              <p style={s.detailTitle}>{detailEntry.title}</p>
-              <div style={s.divider} />
-              <p style={s.detailContent}>{detailEntry.content}</p>
-              {detailEntry.image && <img src={detailEntry.image} alt="" style={s.detailImg} />}
-            </div>
+
+            {isEditing ? (
+              /* ── 수정 모드 ── */
+              <div style={s.editBody}>
+                <input
+                  style={s.editTitleInput}
+                  value={editTitle}
+                  onChange={e => setEditTitle(e.target.value)}
+                  maxLength={50}
+                  placeholder="제목"
+                />
+                <div style={s.divider} />
+                <textarea
+                  style={s.editContentInput}
+                  value={editContent}
+                  onChange={e => setEditContent(e.target.value)}
+                  placeholder="내용"
+                />
+                <div style={s.editActions}>
+                  <button style={s.cancelBtn} onClick={() => setIsEditing(false)}>취소</button>
+                  <button
+                    style={{ ...s.submitBtn, color: accentColor, opacity: actionBusy ? 0.5 : 1 }}
+                    onClick={submitEdit}
+                    disabled={actionBusy}
+                  >
+                    {actionBusy ? '저장 중...' : '저장'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* ── 읽기 모드 ── */
+              <div style={s.detailBody}>
+                <p style={s.detailTitle}>{detailEntry.title}</p>
+                <div style={s.divider} />
+                <p style={s.detailContent}>{detailEntry.content}</p>
+                {detailEntry.image && <img src={detailEntry.image} alt="" style={s.detailImg} />}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -294,7 +407,13 @@ export function DiaryFeature({ accentColor, moods, moodModalTitle, entries, onAd
             <div style={s.createHeader}>
               <button style={s.cancelBtn} onClick={() => setCreateForm(null)}>취소</button>
               <span style={s.createTitle}>일기 작성</span>
-              <button style={{ ...s.submitBtn, color: accentColor }} onClick={submitDiary}>등록</button>
+              <button
+                style={{ ...s.submitBtn, color: accentColor, opacity: submitting ? 0.5 : 1 }}
+                onClick={submitDiary}
+                disabled={submitting}
+              >
+                {submitting ? '저장 중...' : '등록'}
+              </button>
             </div>
             <div style={s.createBody}>
               <div style={{ ...s.moodRow, backgroundColor: createForm.mood.color+'18' }}>
@@ -341,6 +460,11 @@ export function DiaryFeature({ accentColor, moods, moodModalTitle, entries, onAd
 const s: Record<string, CSSProperties> = {
   page: { height:'100%', display:'flex', flexDirection:'column', overflow:'hidden', backgroundColor:N.gray50 },
 
+  loadingWrap: { display:'flex', justifyContent:'center', alignItems:'center', gap:8, padding:'40px 0' },
+  loadingDot: { width:10, height:10, borderRadius:5, animation:'bounce 0.9s ease-in-out infinite' },
+
+  emptyText: { textAlign:'center', color:N.gray400, fontSize:13, margin:'40px 16px', lineHeight:1.8 },
+
   toggleWrap: { display:'flex', justifyContent:'center', padding:'14px 0 10px', flexShrink:0 },
   toggleRow: { display:'flex', backgroundColor:N.gray100, borderRadius:10, padding:3, gap:2 },
   toggleBtn: { display:'flex', alignItems:'center', gap:5, padding:'7px 16px', borderRadius:8, border:'none', background:'none', cursor:'pointer' },
@@ -369,7 +493,7 @@ const s: Record<string, CSSProperties> = {
   overlay: { position:'fixed', inset:0, backgroundColor:'rgba(0,0,0,0.45)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:200 },
   detailModal: { backgroundColor:N.white, borderRadius:20, width:'92%', maxWidth:480, maxHeight:'85vh', display:'flex', flexDirection:'column', overflow:'hidden' },
   detailHeader: { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 12px 12px 16px', borderBottom:`1px solid ${N.gray100}`, flexShrink:0 },
-  detailHeaderRight: { display:'flex', alignItems:'center', gap:8 },
+  detailHeaderRight: { display:'flex', alignItems:'center', gap:6 },
   iconBtn: { background:'none', border:'none', cursor:'pointer', padding:6, borderRadius:20, display:'flex', alignItems:'center', justifyContent:'center' },
   detailBody: { flex:1, overflowY:'auto', padding:'14px 16px 20px' },
   detailDate: { fontSize:13, color:N.gray400 },
@@ -377,6 +501,11 @@ const s: Record<string, CSSProperties> = {
   divider: { height:1, backgroundColor:N.gray100, margin:'8px 0' },
   detailContent: { margin:0, fontSize:15, lineHeight:1.8, color:N.gray700, fontFamily:'BMHANNAPro, sans-serif' },
   detailImg: { width:'100%', aspectRatio:'3/2', objectFit:'cover', display:'block', marginTop:16, borderRadius:10 },
+
+  editBody: { flex:1, overflowY:'auto', padding:'14px 16px 8px', display:'flex', flexDirection:'column', gap:0 },
+  editTitleInput: { width:'100%', border:'none', outline:'none', fontSize:18, fontFamily:'BMJUA, sans-serif', color:N.gray800, padding:'8px 0', boxSizing:'border-box' },
+  editContentInput: { width:'100%', flex:1, minHeight:160, border:'none', outline:'none', resize:'none', fontSize:15, fontFamily:'BMHANNAPro, sans-serif', color:N.gray700, lineHeight:1.7, padding:'4px 0', boxSizing:'border-box' },
+  editActions: { display:'flex', justifyContent:'flex-end', gap:8, padding:'12px 0 4px', flexShrink:0 },
 
   moodModal: { backgroundColor:N.white, borderRadius:24, padding:28, width:'88%', maxWidth:360 },
   moodModalTitle: { margin:'0 0 22px', fontSize:20, fontFamily:'BMJUA, sans-serif', color:N.gray800, textAlign:'center', lineHeight:1.55 },

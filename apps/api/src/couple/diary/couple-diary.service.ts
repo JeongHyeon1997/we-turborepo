@@ -47,7 +47,15 @@ export class CoupleDiaryService {
   async create(userId: string, dto: CreateDiaryDto) {
     const conn = await this.getActiveConnection(userId);
     return this.prisma.coupleDiaryEntry.create({
-      data: { coupleConnectionId: conn.id, authorId: userId, title: dto.title, content: dto.content },
+      data: {
+        coupleConnectionId: conn.id,
+        authorId: userId,
+        title: dto.title,
+        content: dto.content,
+        mood: dto.mood,
+        moodLabel: dto.moodLabel,
+        moodColor: dto.moodColor,
+      },
       include: { author: true },
     });
   }
@@ -58,7 +66,13 @@ export class CoupleDiaryService {
     if (entry.authorId !== userId) throw new BadRequestException('수정 권한이 없습니다');
     return this.prisma.coupleDiaryEntry.update({
       where: { id },
-      data: { ...(dto.title !== undefined && { title: dto.title }), ...(dto.content && { content: dto.content }) },
+      data: {
+        ...(dto.title !== undefined && { title: dto.title }),
+        ...(dto.content !== undefined && { content: dto.content }),
+        ...(dto.mood !== undefined && { mood: dto.mood }),
+        ...(dto.moodLabel !== undefined && { moodLabel: dto.moodLabel }),
+        ...(dto.moodColor !== undefined && { moodColor: dto.moodColor }),
+      },
       include: { author: true },
     });
   }
