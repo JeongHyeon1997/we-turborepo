@@ -4,14 +4,11 @@ import { marriageColors } from '@we/utils';
 import type { CommunityPostBase, DiaryEntry } from '@we/utils';
 import { AnnouncementBanner, AuthPromptModal, DatePickerModal } from '@we/ui-web';
 import { useAuth, logout } from '../data/authStore';
-import { communityPosts } from '../data/communityPosts';
-import { myDiaryEntries } from '../data/diaryEntries';
 import { announcements } from '../data/announcements';
 import { useCoupleConnectionResponse, setConnection } from '../data/coupleStore';
+import { useDiaryEntries } from '../data/diaryStore';
 
 const ACCENT = '#c9a96e';
-const myName = '우리부부';
-const mockUser = { nickname: myName, profileImage: null as string | null, followers: 84, following: 42 };
 
 type FilterType = '전체' | '커뮤니티' | '일기';
 type FeedItem =
@@ -157,13 +154,31 @@ export function MyInfoPage() {
   const navigate = useNavigate();
   const { user, isLoggedIn } = useAuth();
   const [filter, setFilter] = useState<FilterType>('전체');
+  const { entries: diaryEntries } = useDiaryEntries();
 
-  const displayName = user?.name ?? mockUser.nickname;
-  const myCommunityPosts = communityPosts.filter(p => p.authorNickname === myName);
+  if (!isLoggedIn) {
+    return (
+      <div style={s.page}>
+        <AnnouncementBanner
+          announcements={announcements}
+          accentColor={ACCENT}
+          onPress={(id) => navigate(`/announcements/${id}`)}
+        />
+        <div style={s.authPrompt}>
+          <span style={s.authEmoji}>🔒</span>
+          <p style={s.authTitle}>로그인이 필요해요</p>
+          <p style={s.authSub}>내 정보를 보려면 로그인해주세요.</p>
+          <button style={s.authButton} onClick={() => navigate('/auth')}>
+            로그인 / 회원가입
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const feed: FeedItem[] = [
-    ...(filter !== '일기' ? myCommunityPosts.map(p => ({ kind: 'community' as const, data: p })) : []),
-    ...(filter !== '커뮤니티' ? myDiaryEntries.map(e => ({ kind: 'diary' as const, data: e })) : []),
+    ...(filter !== '일기' ? ([] as CommunityPostBase[]).map(p => ({ kind: 'community' as const, data: p })) : []),
+    ...(filter !== '커뮤니티' ? diaryEntries.map(e => ({ kind: 'diary' as const, data: e })) : []),
   ].sort((a, b) => b.data.createdAt.localeCompare(a.data.createdAt));
 
   const filters: FilterType[] = ['전체', '커뮤니티', '일기'];
@@ -182,42 +197,22 @@ export function MyInfoPage() {
 
       <div style={s.profileSection}>
         <div style={s.avatarWrap}>
-          {mockUser.profileImage ? (
-            <img src={mockUser.profileImage} alt="프로필" style={s.avatar} />
-          ) : (
-            <div style={s.avatarPlaceholder}>
-              <svg width={48} height={48} viewBox="0 0 24 24" fill={marriageColors.gray400}>
-                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-              </svg>
-            </div>
-          )}
-        </div>
-        <p style={s.nickname}>{displayName}</p>
-        <div style={s.statsRow}>
-          <div style={s.statItem}>
-            <span style={s.statNumber}>{mockUser.followers}</span>
-            <span style={s.statLabel}>팔로워</span>
-          </div>
-          <div style={s.dividerV} />
-          <div style={s.statItem}>
-            <span style={s.statNumber}>{mockUser.following}</span>
-            <span style={s.statLabel}>팔로잉</span>
+          <div style={s.avatarPlaceholder}>
+            <svg width={48} height={48} viewBox="0 0 24 24" fill={marriageColors.gray400}>
+              <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+            </svg>
           </div>
         </div>
-        <button
-          style={s.editButton}
-          onClick={() => isLoggedIn ? navigate('/profile-edit') : navigate('/auth')}
-        >
+        <p style={s.nickname}>{user!.name}</p>
+        <button style={s.editButton} onClick={() => navigate('/profile-edit')}>
           프로필 편집
         </button>
-        {isLoggedIn && (
-          <button
-            style={s.logoutButton}
-            onClick={() => { if (window.confirm('로그아웃 하시겠어요?')) logout(); }}
-          >
-            로그아웃
-          </button>
-        )}
+        <button
+          style={s.logoutButton}
+          onClick={() => { if (window.confirm('로그아웃 하시겠어요?')) logout(); }}
+        >
+          로그아웃
+        </button>
       </div>
 
       <div style={s.filterRow}>
@@ -319,4 +314,9 @@ const s: Record<string, any> = {
     color: marriageColors.gray600, fontFamily: 'BMJUA, sans-serif', alignSelf: 'flex-start',
   }) satisfies CSSProperties,
   empty: { textAlign: 'center', padding: 40, color: marriageColors.gray400, fontFamily: 'BMJUA, sans-serif', fontSize: 14 } satisfies CSSProperties,
+  authPrompt: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px', gap: 12 } satisfies CSSProperties,
+  authEmoji: { fontSize: 48 } satisfies CSSProperties,
+  authTitle: { fontSize: 20, fontWeight: 700, color: marriageColors.gray800, margin: 0, fontFamily: 'BMJUA, sans-serif' } satisfies CSSProperties,
+  authSub: { fontSize: 14, color: marriageColors.gray500, margin: 0, fontFamily: 'BMHANNAPro, sans-serif' } satisfies CSSProperties,
+  authButton: { marginTop: 8, padding: '12px 32px', borderRadius: 24, backgroundColor: ACCENT, border: 'none', color: '#fff', fontSize: 15, fontWeight: 700, fontFamily: 'BMJUA, sans-serif', cursor: 'pointer' } satisfies CSSProperties,
 };

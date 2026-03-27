@@ -1,10 +1,8 @@
 import { useState, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { petColors } from '@we/utils';
-import type { CommunityPostBase } from '@we/utils';
 import { AnnouncementBanner, DatePickerModal, AuthPromptModal } from '@we/ui-web';
 import { useAuth, logout } from '../data/authStore';
-import { communityPosts } from '../data/communityPosts';
 import { announcements } from '../data/announcements';
 import { useFamilyGroup, setFamilyGroup, removeFamilyMember } from '../data/familyStore';
 
@@ -128,31 +126,31 @@ function FamilySection() {
   );
 }
 
-const myName = '우리아이';
-const mockUser = { nickname: myName, profileImage: null as string | null, followers: 84, following: 32 };
 
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
-}
-
-function CommunityItem({ post }: { post: CommunityPostBase }) {
-  return (
-    <div style={s.item}>
-      {post.imageUrl && <img src={post.imageUrl} alt="" style={s.itemThumb} />}
-      <div style={s.itemBody}>
-        <p style={s.itemContent}>{post.content}</p>
-        <span style={s.itemMeta}>{formatDate(post.createdAt)} · 🤍 {post.likeCount}</span>
-      </div>
-    </div>
-  );
-}
 
 export function MyInfoPage() {
   const navigate = useNavigate();
   const { user, isLoggedIn } = useAuth();
-  const displayName = user?.name ?? mockUser.nickname;
-  const myCommunityPosts = communityPosts.filter(p => p.authorNickname === myName);
+
+  if (!isLoggedIn) {
+    return (
+      <div style={s.page}>
+        <AnnouncementBanner
+          announcements={announcements}
+          accentColor="#97A4D9"
+          onPress={(id) => navigate(`/announcements/${id}`)}
+        />
+        <div style={s.authPrompt}>
+          <span style={s.authEmoji}>🔒</span>
+          <p style={s.authTitle}>로그인이 필요해요</p>
+          <p style={s.authSub}>내 정보를 보려면 로그인해주세요.</p>
+          <button style={s.authButton} onClick={() => navigate('/auth')}>
+            로그인 / 회원가입
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={s.page}>
@@ -167,56 +165,33 @@ export function MyInfoPage() {
       {/* Profile header */}
       <div style={s.profileSection}>
         <div style={s.avatarWrap}>
-          {mockUser.profileImage ? (
-            <img src={mockUser.profileImage} alt="프로필" style={s.avatar} />
-          ) : (
-            <div style={s.avatarPlaceholder}>
-              <svg width={48} height={48} viewBox="0 0 24 24" fill={petColors.gray400}>
-                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-              </svg>
-            </div>
-          )}
-        </div>
-
-        <p style={s.nickname}>{displayName}</p>
-
-        <div style={s.statsRow}>
-          <div style={s.statItem}>
-            <span style={s.statNumber}>{mockUser.followers}</span>
-            <span style={s.statLabel}>팔로워</span>
-          </div>
-          <div style={s.divider} />
-          <div style={s.statItem}>
-            <span style={s.statNumber}>{mockUser.following}</span>
-            <span style={s.statLabel}>팔로잉</span>
+          <div style={s.avatarPlaceholder}>
+            <svg width={48} height={48} viewBox="0 0 24 24" fill={petColors.gray400}>
+              <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+            </svg>
           </div>
         </div>
 
-        <button
-          style={s.editButton}
-          onClick={() => isLoggedIn ? navigate('/profile-edit') : navigate('/auth')}
-        >
+        <p style={s.nickname}>{user!.name}</p>
+
+        <button style={s.editButton} onClick={() => navigate('/profile-edit')}>
           프로필 편집
         </button>
-        {isLoggedIn && (
-          <button
-            style={s.logoutButton}
-            onClick={() => { if (window.confirm('로그아웃 하시겠어요?')) logout(); }}
-          >
-            로그아웃
-          </button>
-        )}
+        <button
+          style={s.logoutButton}
+          onClick={() => { if (window.confirm('로그아웃 하시겠어요?')) logout(); }}
+        >
+          로그아웃
+        </button>
       </div>
 
       {/* Posts */}
       <div style={s.sectionHeader}>
         <span style={s.sectionTitle}>커뮤니티 글</span>
-        <span style={s.sectionCount}>{myCommunityPosts.length}</span>
       </div>
 
       <div style={s.feed}>
-        {myCommunityPosts.length === 0 && <p style={s.empty}>아직 작성한 글이 없어요.</p>}
-        {myCommunityPosts.map(post => <CommunityItem key={post.id} post={post} />)}
+        <p style={s.empty}>아직 작성한 글이 없어요.</p>
       </div>
     </div>
   );
@@ -354,4 +329,9 @@ const s: Record<string, CSSProperties> = {
     textAlign: 'center', padding: 40,
     color: petColors.gray400, fontFamily: 'BMJUA, sans-serif', fontSize: 14,
   },
+  authPrompt: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px', gap: 12 },
+  authEmoji: { fontSize: 48 },
+  authTitle: { fontSize: 20, fontWeight: 700, color: petColors.gray800, margin: 0, fontFamily: 'BMJUA, sans-serif' },
+  authSub: { fontSize: 14, color: petColors.gray500, margin: 0, fontFamily: 'BMHANNAPro, sans-serif' },
+  authButton: { marginTop: 8, padding: '12px 32px', borderRadius: 24, backgroundColor: ACCENT, border: 'none', color: '#fff', fontSize: 15, fontWeight: 700, fontFamily: 'BMJUA, sans-serif', cursor: 'pointer' },
 };
