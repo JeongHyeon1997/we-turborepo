@@ -30,4 +30,7 @@ async function bootstrap() {
   console.log(`Application running on port ${port}`);
 }
 
-bootstrap();
+// Vercel serverless에서 import될 때는 실행하지 않음 (직접 실행 시에만 동작)
+if (require.main === module) {
+  bootstrap();
+}
