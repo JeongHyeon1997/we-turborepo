@@ -1,14 +1,13 @@
 import { useState } from 'react';
-import { View, Text, Image, Pressable, Alert, FlatList, StyleSheet } from 'react-native';
+import { View, Text, Pressable, Alert, FlatList, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { petColors } from '@we/utils';
-import type { CommunityPostBase } from '@we/utils';
 
 interface FamilyMember { id: string; name: string; avatarColor: string; }
 interface FamilyGroup { members: FamilyMember[]; groupStartDate: string; }
 import { AnnouncementBanner, DatePickerModal } from '@we/ui';
-import { communityPosts } from '../data/communityPosts';
 import { announcements } from '../data/announcements';
+import { useAuth, logout } from '../data/authStore';
 
 const ACCENT = '#97A4D9';
 
@@ -120,29 +119,6 @@ function FamilySection({ group, onConnectPress, onUpdateGroup }: FamilySectionPr
   );
 }
 
-const myName = '우리아이';
-const mockUser = { nickname: myName, profileImage: null as string | null, followers: 84, following: 32 };
-
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
-}
-
-function CommunityItem({ post }: { post: CommunityPostBase }) {
-  return (
-    <View style={s.item}>
-      {post.imageUrl && (
-        <View style={s.itemThumb}>
-          <Image source={{ uri: post.imageUrl }} style={s.itemThumbImg} resizeMode="cover" />
-        </View>
-      )}
-      <View style={s.itemBody}>
-        <Text style={s.itemContent} numberOfLines={2}>{post.content}</Text>
-        <Text style={s.itemMeta}>{formatDate(post.createdAt)} · 🤍 {post.likeCount}</Text>
-      </View>
-    </View>
-  );
-}
 
 interface Props {
   onAnnouncementPress: (id: string) => void;
@@ -152,7 +128,24 @@ interface Props {
 }
 
 export function MyInfoScreen({ onAnnouncementPress, group, onConnectPress, onUpdateGroup }: Props) {
-  const myCommunityPosts = communityPosts.filter(p => p.authorNickname === myName);
+  const { user, isLoggedIn } = useAuth();
+
+  if (!isLoggedIn) {
+    return (
+      <View style={s.authWrap}>
+        <AnnouncementBanner
+          announcements={announcements}
+          accentColor="#97A4D9"
+          onPress={onAnnouncementPress}
+        />
+        <View style={s.authPrompt}>
+          <Ionicons name="lock-closed-outline" size={48} color={petColors.gray300} />
+          <Text style={s.authTitle}>로그인이 필요해요</Text>
+          <Text style={s.authSub}>내 정보를 보려면 로그인해주세요.</Text>
+        </View>
+      </View>
+    );
+  }
 
   const Header = (
     <View>
@@ -169,48 +162,27 @@ export function MyInfoScreen({ onAnnouncementPress, group, onConnectPress, onUpd
         />
       </View>
       <View style={s.profileSection}>
-        <View style={s.avatarWrap}>
-          {mockUser.profileImage ? (
-            <Image source={{ uri: mockUser.profileImage }} style={s.avatar} />
-          ) : (
-            <View style={[s.avatar, s.avatarPlaceholder]}>
-              <Ionicons name="person" size={48} color={petColors.gray400} />
-            </View>
-          )}
+        <View style={[s.avatar, s.avatarPlaceholder]}>
+          <Ionicons name="person" size={48} color={petColors.gray400} />
         </View>
-        <Text style={s.nickname}>{mockUser.nickname}</Text>
-        <View style={s.statsRow}>
-          <View style={s.statItem}>
-            <Text style={s.statNumber}>{mockUser.followers}</Text>
-            <Text style={s.statLabel}>팔로워</Text>
-          </View>
-          <View style={s.divider} />
-          <View style={s.statItem}>
-            <Text style={s.statNumber}>{mockUser.following}</Text>
-            <Text style={s.statLabel}>팔로잉</Text>
-          </View>
-        </View>
+        <Text style={s.nickname}>{user!.name}</Text>
         <Pressable style={({ pressed }) => [s.editButton, pressed && s.editButtonPressed]}>
           <Text style={s.editButtonText}>프로필 편집</Text>
         </Pressable>
-      </View>
-
-      <View style={s.sectionHeader}>
-        <Text style={s.sectionTitle}>커뮤니티 글</Text>
-        <View style={s.sectionBadge}>
-          <Text style={s.sectionBadgeText}>{myCommunityPosts.length}</Text>
-        </View>
+        <Pressable onPress={() => logout()} style={s.logoutButton}>
+          <Text style={s.logoutButtonText}>로그아웃</Text>
+        </Pressable>
       </View>
     </View>
   );
 
   return (
     <FlatList
-      data={myCommunityPosts}
-      keyExtractor={item => item.id}
+      data={[]}
+      keyExtractor={() => ''}
       ListHeaderComponent={Header}
       ListEmptyComponent={<Text style={s.empty}>아직 작성한 글이 없어요.</Text>}
-      renderItem={({ item }) => <CommunityItem post={item} />}
+      renderItem={() => null}
     />
   );
 }
@@ -301,4 +273,10 @@ const s = StyleSheet.create({
   itemContent: { fontSize: 13, fontFamily: 'BMHANNAPro', color: petColors.gray600, marginBottom: 4 },
   itemMeta: { fontSize: 12, color: petColors.gray400 },
   empty: { textAlign: 'center', padding: 40, color: petColors.gray400, fontFamily: 'BMJUA', fontSize: 14 },
+  authWrap: { flex: 1 },
+  authPrompt: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 48, gap: 12 },
+  authTitle: { fontSize: 20, fontFamily: 'BMJUA', color: petColors.gray800 },
+  authSub: { fontSize: 14, fontFamily: 'BMHANNAPro', color: petColors.gray500, textAlign: 'center' },
+  logoutButton: { marginTop: 8, paddingVertical: 4, paddingHorizontal: 12 },
+  logoutButtonText: { fontSize: 12, fontFamily: 'BMJUA', color: petColors.gray400 },
 });

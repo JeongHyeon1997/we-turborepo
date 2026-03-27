@@ -7,9 +7,9 @@ import type { CommunityPostBase, DiaryEntry } from '@we/utils';
 interface CouplePartner { id: string; name: string; avatarColor: string; }
 interface CoupleConnection { partner: CouplePartner; datingStartDate: string; shareStartDate: string; }
 import { AnnouncementBanner, DatePickerModal } from '@we/ui';
-import { communityPosts } from '../data/communityPosts';
-import { myDiaryEntries } from '../data/diaryEntries';
 import { announcements } from '../data/announcements';
+import { useAuth, logout } from '../data/authStore';
+import { useDiaryEntries } from '../data/diaryStore';
 
 const ACCENT = '#f4a0a0';
 
@@ -116,37 +116,14 @@ function CoupleSection({ connection, onConnectPress, onUpdateConnection }: Coupl
   );
 }
 
-const myName = '우리커플';
-const mockUser = { nickname: myName, profileImage: null as string | null, followers: 128, following: 64 };
-
-type FilterType = '전체' | '커뮤니티' | '일기';
-type FeedItem =
-  | { kind: 'community'; data: CommunityPostBase }
-  | { kind: 'diary'; data: DiaryEntry };
+type FilterType = '전체' | '일기';
+type FeedItem = { kind: 'diary'; data: DiaryEntry };
 
 function formatFeedDate(iso: string) {
   const d = new Date(iso);
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function CommunityItem({ post }: { post: CommunityPostBase }) {
-  return (
-    <View style={s.item}>
-      {post.imageUrl && (
-        <View style={s.itemThumb}>
-          <Image source={{ uri: post.imageUrl }} style={s.itemThumbImg} resizeMode="cover" />
-        </View>
-      )}
-      <View style={s.itemBody}>
-        <Text style={s.itemContent} numberOfLines={2}>{post.content}</Text>
-        <Text style={s.itemMeta}>{formatFeedDate(post.createdAt)} · 🤍 {post.likeCount}</Text>
-      </View>
-      <View style={[s.badge, { backgroundColor: coupleColors.primary100 }]}>
-        <Text style={s.badgeText}>커뮤니티</Text>
-      </View>
-    </View>
-  );
-}
 
 function DiaryItem({ entry }: { entry: DiaryEntry }) {
   return (
@@ -174,16 +151,29 @@ interface Props {
 }
 
 export function MyInfoScreen({ onAnnouncementPress, connection, onConnectPress, onUpdateConnection }: Props) {
+  const { user, isLoggedIn } = useAuth();
+  const { entries: diaryEntries } = useDiaryEntries();
   const [filter, setFilter] = useState<FilterType>('전체');
 
-  const myCommunityPosts = communityPosts.filter(p => p.authorNickname === myName);
+  const feed: FeedItem[] = diaryEntries.map(e => ({ kind: 'diary' as const, data: e }));
+  const filters: FilterType[] = ['전체', '일기'];
 
-  const feed: FeedItem[] = [
-    ...(filter !== '일기' ? myCommunityPosts.map(p => ({ kind: 'community' as const, data: p })) : []),
-    ...(filter !== '커뮤니티' ? myDiaryEntries.map(e => ({ kind: 'diary' as const, data: e })) : []),
-  ].sort((a, b) => b.data.createdAt.localeCompare(a.data.createdAt));
-
-  const filters: FilterType[] = ['전체', '커뮤니티', '일기'];
+  if (!isLoggedIn) {
+    return (
+      <View style={s.authWrap}>
+        <AnnouncementBanner
+          announcements={announcements}
+          accentColor="#f4a0a0"
+          onPress={onAnnouncementPress}
+        />
+        <View style={s.authPrompt}>
+          <Ionicons name="lock-closed-outline" size={48} color={coupleColors.gray300} />
+          <Text style={s.authTitle}>로그인이 필요해요</Text>
+          <Text style={s.authSub}>내 정보를 보려면 로그인해주세요.</Text>
+        </View>
+      </View>
+    );
+  }
 
   const Header = (
     <View>
@@ -192,7 +182,6 @@ export function MyInfoScreen({ onAnnouncementPress, connection, onConnectPress, 
         accentColor="#f4a0a0"
         onPress={onAnnouncementPress}
       />
-      {/* Couple connection section */}
       <View style={s.coupleSection}>
         <CoupleSection
           connection={connection}
@@ -200,35 +189,19 @@ export function MyInfoScreen({ onAnnouncementPress, connection, onConnectPress, 
           onUpdateConnection={onUpdateConnection}
         />
       </View>
-      {/* Profile */}
       <View style={s.profileSection}>
-        <View style={s.avatarWrap}>
-          {mockUser.profileImage ? (
-            <Image source={{ uri: mockUser.profileImage }} style={s.avatar} />
-          ) : (
-            <View style={[s.avatar, s.avatarPlaceholder]}>
-              <Ionicons name="person" size={48} color={coupleColors.gray400} />
-            </View>
-          )}
+        <View style={[s.avatar, s.avatarPlaceholder]}>
+          <Ionicons name="person" size={48} color={coupleColors.gray400} />
         </View>
-        <Text style={s.nickname}>{mockUser.nickname}</Text>
-        <View style={s.statsRow}>
-          <View style={s.statItem}>
-            <Text style={s.statNumber}>{mockUser.followers}</Text>
-            <Text style={s.statLabel}>팔로워</Text>
-          </View>
-          <View style={s.divider} />
-          <View style={s.statItem}>
-            <Text style={s.statNumber}>{mockUser.following}</Text>
-            <Text style={s.statLabel}>팔로잉</Text>
-          </View>
-        </View>
+        <Text style={s.nickname}>{user!.name}</Text>
         <Pressable style={({ pressed }) => [s.editButton, pressed && s.editButtonPressed]}>
           <Text style={s.editButtonText}>프로필 편집</Text>
         </Pressable>
+        <Pressable onPress={() => logout()} style={s.logoutButton}>
+          <Text style={s.logoutButtonText}>로그아웃</Text>
+        </Pressable>
       </View>
 
-      {/* Filter */}
       <View style={s.filterRow}>
         {filters.map(f => (
           <Pressable
@@ -249,11 +222,7 @@ export function MyInfoScreen({ onAnnouncementPress, connection, onConnectPress, 
       keyExtractor={item => item.data.id}
       ListHeaderComponent={Header}
       ListEmptyComponent={<Text style={s.empty}>아직 작성한 글이 없어요.</Text>}
-      renderItem={({ item }) =>
-        item.kind === 'community'
-          ? <CommunityItem post={item.data as CommunityPostBase} />
-          : <DiaryItem entry={item.data as DiaryEntry} />
-      }
+      renderItem={({ item }) => <DiaryItem entry={item.data as DiaryEntry} />}
     />
   );
 }
@@ -335,4 +304,10 @@ const s = StyleSheet.create({
   badge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, alignSelf: 'flex-start' },
   badgeText: { fontSize: 11, fontFamily: 'BMJUA', color: coupleColors.gray600 },
   empty: { textAlign: 'center', padding: 40, color: coupleColors.gray400, fontFamily: 'BMJUA', fontSize: 14 },
+  authWrap: { flex: 1 },
+  authPrompt: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 48, gap: 12 },
+  authTitle: { fontSize: 20, fontFamily: 'BMJUA', color: coupleColors.gray800 },
+  authSub: { fontSize: 14, fontFamily: 'BMHANNAPro', color: coupleColors.gray500, textAlign: 'center' },
+  logoutButton: { marginTop: 8, paddingVertical: 4, paddingHorizontal: 12 },
+  logoutButtonText: { fontSize: 12, fontFamily: 'BMJUA', color: coupleColors.gray400 },
 });
