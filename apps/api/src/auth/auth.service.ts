@@ -23,8 +23,8 @@ export class AuthService {
     @Inject(SOCIAL_CLIENTS) private readonly socialClients: SocialClient[],
   ) {
     this.clientMap = new Map(socialClients.map((c) => [c.provider, c]));
-    this.accessExpiryMs = config.get<number>('JWT_ACCESS_EXPIRY_MS', 3_600_000);
-    this.refreshExpiryMs = config.get<number>('JWT_REFRESH_EXPIRY_MS', 2_592_000_000);
+    this.accessExpiryMs = Number(config.get('JWT_ACCESS_EXPIRY_MS', 3_600_000));
+    this.refreshExpiryMs = Number(config.get('JWT_REFRESH_EXPIRY_MS', 2_592_000_000));
   }
 
   async signup(dto: SignupDto): Promise<TokenResponse> {
