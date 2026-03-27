@@ -7,7 +7,7 @@ import { useAuth, logout } from '../data/authStore';
 import { communityPosts } from '../data/communityPosts';
 import { myDiaryEntries } from '../data/diaryEntries';
 import { announcements } from '../data/announcements';
-import { useCoupleConnection, setConnection } from '../data/coupleStore';
+import { useCoupleConnectionResponse, setConnection } from '../data/coupleStore';
 
 const ACCENT = '#c9a96e';
 const myName = '우리부부';
@@ -59,7 +59,7 @@ function DiaryItem({ entry }: { entry: DiaryEntry }) {
 
 function SpouseSection() {
   const navigate = useNavigate();
-  const { connection } = useCoupleConnection();
+  const { connection } = useCoupleConnectionResponse();
   const { isLoggedIn } = useAuth();
   const [pickerType, setPickerType] = useState<'wedding' | 'share' | null>(null);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
@@ -89,8 +89,8 @@ function SpouseSection() {
     );
   }
 
-  const { partner, datingStartDate, shareStartDate } = connection;
-  const weddingDays = daysBetween(datingStartDate);
+  const { partner, anniversaryDate, connectedAt } = connection;
+  const weddingDays = anniversaryDate ? daysBetween(anniversaryDate) : 1;
 
   return (
     <>
@@ -100,13 +100,13 @@ function SpouseSection() {
             <span style={s.pairAvatarText}>나</span>
           </div>
           <span style={s.pairHeart}>💍</span>
-          <div style={{ ...s.pairAvatar, backgroundColor: partner.avatarColor + '99' }}>
-            <span style={s.pairAvatarText}>{partner.name[0]}</span>
+          <div style={{ ...s.pairAvatar, backgroundColor: ACCENT + '99' }}>
+            <span style={s.pairAvatarText}>{partner.nickname[0]}</span>
           </div>
         </div>
 
         <p style={s.coupleTitle}>
-          <span style={{ color: ACCENT }}>{partner.name}</span>님과 함께
+          <span style={{ color: ACCENT }}>{partner.nickname}</span>님과 함께
         </p>
 
         <button style={s.infoRow} onClick={() => setPickerType('wedding')}>
@@ -120,14 +120,14 @@ function SpouseSection() {
         <button style={s.infoRow} onClick={() => setPickerType('share')}>
           <span style={s.infoEmoji}>📖</span>
           <span style={s.infoText}>
-            <strong style={{ color: ACCENT }}>{formatDate(shareStartDate)}</strong>부터 일기 공유중
+            <strong style={{ color: ACCENT }}>{connectedAt ? formatDate(connectedAt) : '-'}</strong>부터 일기 공유중
           </span>
           <span style={s.infoEdit}>날짜 변경 ✏️</span>
         </button>
 
         <button
           style={s.disconnectBtn}
-          onClick={() => { if (window.confirm(`${partner.name}님과 연결을 끊을까요?`)) setConnection(null); }}
+          onClick={() => { if (window.confirm(`${partner.nickname}님과 연결을 끊을까요?`)) setConnection(null); }}
         >
           연결 끊기
         </button>
@@ -135,18 +135,18 @@ function SpouseSection() {
 
       <DatePickerModal
         visible={pickerType === 'wedding'}
-        value={datingStartDate}
+        value={anniversaryDate ?? ''}
         title="결혼 기념일"
         accentColor={ACCENT}
-        onConfirm={date => { setConnection({ ...connection, datingStartDate: date }); setPickerType(null); }}
+        onConfirm={date => { setConnection({ ...connection, anniversaryDate: date }); setPickerType(null); }}
         onCancel={() => setPickerType(null)}
       />
       <DatePickerModal
         visible={pickerType === 'share'}
-        value={shareStartDate}
+        value={connectedAt ?? ''}
         title="일기 공유 시작일"
         accentColor={ACCENT}
-        onConfirm={date => { setConnection({ ...connection, shareStartDate: date }); setPickerType(null); }}
+        onConfirm={date => { setConnection({ ...connection, connectedAt: date }); setPickerType(null); }}
         onCancel={() => setPickerType(null)}
       />
     </>

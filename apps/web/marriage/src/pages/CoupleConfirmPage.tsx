@@ -1,16 +1,18 @@
 import { type CSSProperties } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { marriageColors } from '@we/utils';
+import type { CouplePartnerInfo } from '@we/utils';
 import { setConnection } from '../data/coupleStore';
 
-const ACCENT = '#c9a96e';
-const today = () => new Date().toISOString().slice(0, 10);
+const ACCENT        = '#c9a96e';
+const PARTNER_COLOR = '#d4a574';
+const today         = () => new Date().toISOString().slice(0, 10);
 
-function resolvePartner(code: string) {
+function resolvePartner(code: string): CouplePartnerInfo {
   return {
     id: code,
-    name: '다솔이',
-    avatarColor: '#d4a574',
+    nickname: '다솔이',
+    profileImageUrl: null,
   };
 }
 
@@ -37,9 +39,12 @@ export function CoupleConfirmPage() {
 
   function handleAccept() {
     setConnection({
+      id: code,
+      status: 'ACTIVE',
       partner,
-      datingStartDate: today(),
-      shareStartDate: today(),
+      coupleName: null,
+      anniversaryDate: today(),
+      connectedAt: new Date().toISOString(),
     });
     navigate('/my-info', { replace: true });
   }
@@ -54,16 +59,16 @@ export function CoupleConfirmPage() {
         <div style={s.avatarRow}>
           <Avatar color={marriageColors.primary300} name="나" />
           <span style={s.heart}>💍</span>
-          <Avatar color={partner.avatarColor} name={partner.name} />
+          <Avatar color={PARTNER_COLOR} name={partner.nickname} />
         </div>
 
-        <h2 style={s.title}>{partner.name}님과 부부이신가요?</h2>
+        <h2 style={s.title}>{partner.nickname}님과 부부이신가요?</h2>
         <p style={s.sub}>초대 코드 <strong style={{ color: ACCENT }}>{code}</strong>로 연결 요청이 왔어요.</p>
 
         <div style={s.partnerInfo}>
           <div style={s.partnerRow}>
-            <div style={{ ...s.partnerDot, backgroundColor: partner.avatarColor }} />
-            <span style={s.partnerName}>{partner.name}</span>
+            <div style={{ ...s.partnerDot, backgroundColor: PARTNER_COLOR }} />
+            <span style={s.partnerName}>{partner.nickname}</span>
           </div>
         </div>
 

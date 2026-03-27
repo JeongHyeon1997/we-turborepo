@@ -1,15 +1,25 @@
 import { type CSSProperties } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { petColors } from '@we/utils';
+import type { FamilyMemberInfo } from '@we/utils';
 import { addFamilyMember, useFamilyGroup } from '../data/familyStore';
 
 const ACCENT = '#97A4D9';
 
 const MEMBER_COLORS = ['#97A4D9', '#f4a0a0', '#85c1a0', '#f0b86e', '#c9a0e8', '#80c8e0'];
 
-function resolveMember(code: string) {
-  const idx = code.charCodeAt(code.length - 1) % MEMBER_COLORS.length;
-  return { id: code, name: '가족', avatarColor: MEMBER_COLORS[idx] };
+function memberColor(userId: string): string {
+  return MEMBER_COLORS[userId.charCodeAt(userId.length - 1) % MEMBER_COLORS.length];
+}
+
+function resolveMember(code: string): FamilyMemberInfo {
+  return {
+    userId: code,
+    nickname: '가족',
+    profileImageUrl: null,
+    role: 'MEMBER',
+    joinedAt: new Date().toISOString(),
+  };
 }
 
 function Avatar({ color, name, size = 64 }: { color: string; name: string; size?: number }) {
@@ -51,14 +61,14 @@ export function FamilyConfirmPage() {
         <div style={s.avatarRow}>
           <Avatar color={ACCENT + '88'} name="나" />
           {group?.members.slice(0, 3).map(m => (
-            <Avatar key={m.id} color={m.avatarColor} name={m.name} size={48} />
+            <Avatar key={m.userId} color={memberColor(m.userId)} name={m.nickname} size={48} />
           ))}
           <span style={s.plus}>+</span>
-          <Avatar color={newMember.avatarColor} name={newMember.name} />
+          <Avatar color={memberColor(newMember.userId)} name={newMember.nickname} />
         </div>
 
         <h2 style={s.title}>
-          <span style={{ color: ACCENT }}>{newMember.name}</span>님을<br />가족으로 추가할까요?
+          <span style={{ color: ACCENT }}>{newMember.nickname}</span>님을<br />가족으로 추가할까요?
         </h2>
         <p style={s.sub}>
           초대 코드 <strong style={{ color: ACCENT }}>{code}</strong>로 연결 요청이 왔어요.
@@ -69,8 +79,8 @@ export function FamilyConfirmPage() {
         )}
 
         <div style={s.newMemberInfo}>
-          <div style={{ ...s.memberDot, backgroundColor: newMember.avatarColor }} />
-          <span style={s.memberName}>{newMember.name}</span>
+          <div style={{ ...s.memberDot, backgroundColor: memberColor(newMember.userId) }} />
+          <span style={s.memberName}>{newMember.nickname}</span>
         </div>
 
         <div style={s.btnRow}>
