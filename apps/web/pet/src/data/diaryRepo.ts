@@ -47,8 +47,13 @@ const remote: DiaryRemoteApi = {
   },
 };
 
+// petId 없으면 로컬 모드로 동작 — 그룹/펫 미등록 시에도 일기 작성 가능
 const repo = createDiaryRepo({
-  useIsLoggedIn: () => useAuthStore((s) => !!s.user),
+  useIsLoggedIn: () => {
+    const loggedIn = useAuthStore((s) => !!s.user);
+    const petId = usePetStore((s) => s.selectedPetId);
+    return loggedIn && !!petId;
+  },
   useLocalStore,
   remote,
 });

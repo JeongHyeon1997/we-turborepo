@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
+import { IoEye, IoEyeOff } from 'react-icons/io5';
 
 const N = {
   white: '#ffffff',
@@ -129,7 +130,7 @@ export function AuthFeature({ onEmailLogin, onEmailSignup, accentColor = '#f4a0a
               onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); }}
             />
             <button style={s.pwToggle} type="button" onClick={() => setShowPw((v) => !v)} tabIndex={-1}>
-              {showPw ? '🙈' : '👁'}
+              {showPw ? <IoEyeOff size={18} color={N.gray400} /> : <IoEye size={18} color={N.gray400} />}
             </button>
           </div>
         </div>
@@ -235,6 +236,9 @@ const s: Record<string, CSSProperties> = {
     fontSize: 14, fontFamily: 'BMHANNAPro, sans-serif',
     outline: 'none', transition: 'border-color 0.15s',
     backgroundColor: N.white, color: N.gray800,
+    // 브라우저 자동완성이 글자색을 덮어쓰는 현상 방지
+    WebkitTextFillColor: N.gray800,
+    WebkitBoxShadow: `0 0 0 1000px ${N.white} inset`,
   },
   pwWrap: { position: 'relative' },
   pwToggle: {

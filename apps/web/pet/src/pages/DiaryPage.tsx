@@ -70,14 +70,6 @@ export function DiaryPage() {
         </div>
       )}
 
-      {/* ── 펫 없음 안내 (로그인 + 펫 없음) ── */}
-      {isLoggedIn && pets.length === 0 && !loading && (
-        <div style={s.noPetWrap}>
-          <span style={s.noPetIcon}>🐾</span>
-          <p style={s.noPetText}>아직 등록된 반려동물이 없어요.</p>
-          <p style={s.noPetSub}>내 정보 탭에서 반려동물을 등록해보세요!</p>
-        </div>
-      )}
 
       <div style={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
         <DiaryFeature
