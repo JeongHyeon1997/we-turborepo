@@ -26,3 +26,7 @@ export const updateDiary = (id: string, req: { title?: string | null; content?: 
 /** DELETE /api/couple/diary/:id 🔒 */
 export const deleteDiary = (id: string) =>
   $axios.delete<void>(`/api/couple/diary/${id}`);
+
+/** GET /api/couple/diary/gallery 🔒 — 이미지 첨부 일기만 */
+export const getDiaryGallery = (page = 0, size = 30) =>
+  $axios.get<CoupleDiaryListResponse>('/api/couple/diary/gallery', { params: { page, size } });

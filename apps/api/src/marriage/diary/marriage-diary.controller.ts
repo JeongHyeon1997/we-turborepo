@@ -20,6 +20,12 @@ export class MarriageDiaryController {
     return this.marriageDiaryService.getList(userId, Number(page), Number(size));
   }
 
+  @Get('gallery')
+  @ApiOperation({ summary: '결혼 갤러리 (이미지 첨부 일기만)' })
+  getGallery(@CurrentUser() userId: string, @Query('page') page = '0', @Query('size') size = '30') {
+    return this.marriageDiaryService.getGallery(userId, Number(page), Number(size));
+  }
+
   @Get(':id')
   @ApiOperation({ summary: '결혼 다이어리 상세' })
   getOne(@CurrentUser() userId: string, @Param('id') id: string) {

@@ -30,6 +30,27 @@ export class PetDiaryService {
     return member?.familyGroupId ?? null;
   }
 
+  /** 이미지가 있는 일기만 (갤러리용) — 가족 그룹 전체 사진 */
+  async getGallery(userId: string, page: number, size: number): Promise<PageResponse<any>> {
+    const skip = page * size;
+    const familyGroupId = await this.getFamilyGroupId(userId);
+    const baseWhere = familyGroupId
+      ? { pet: { familyGroupId } }
+      : { authorId: userId };
+    const where = { ...baseWhere, imageUrl: { not: null } };
+    const [items, total] = await Promise.all([
+      this.prisma.petDiaryEntry.findMany({
+        where,
+        include: { author: true },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: size,
+      }),
+      this.prisma.petDiaryEntry.count({ where }),
+    ]);
+    return PageResponse.of(items, total, page, size);
+  }
+
   /**
    * 가족 그룹 있음 + petId → 해당 펫의 공유 일기 (가족 전체)
    * 가족 그룹 없음 or petId 없음 → 내가 작성한 일기만

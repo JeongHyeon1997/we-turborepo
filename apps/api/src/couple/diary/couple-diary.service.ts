@@ -14,6 +14,24 @@ export class CoupleDiaryService {
     });
   }
 
+  async getGallery(userId: string, page: number, size: number): Promise<PageResponse<any>> {
+    const conn = await this.findActiveConnection(userId);
+    const skip = page * size;
+    const baseWhere = conn ? { coupleConnectionId: conn.id } : { authorId: userId };
+    const where = { ...baseWhere, imageUrl: { not: null } };
+    const [items, total] = await Promise.all([
+      this.prisma.coupleDiaryEntry.findMany({
+        where,
+        include: { author: true },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: size,
+      }),
+      this.prisma.coupleDiaryEntry.count({ where }),
+    ]);
+    return PageResponse.of(items, total, page, size);
+  }
+
   async getList(userId: string, page: number, size: number): Promise<PageResponse<any>> {
     const conn = await this.findActiveConnection(userId);
     const skip = page * size;
