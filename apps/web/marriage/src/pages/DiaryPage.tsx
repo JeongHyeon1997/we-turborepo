@@ -3,7 +3,7 @@ import { DiaryFeature, AnnouncementBanner } from '@we/ui-web';
 import type { Mood } from '@we/utils';
 import { useDiaryEntries } from '../data/diaryRepo';
 import { announcements } from '../data/announcements';
-import { getPresignedUploadUrl, getFileUrl } from '../api/storage.api';
+import { uploadFile } from '../api/storage.api';
 
 const MOODS: Mood[] = [
   { emoji: '😊', label: '행복해요', color: '#FFD93D' },
@@ -17,14 +17,7 @@ const MOODS: Mood[] = [
 ];
 
 async function uploadDiaryImage(file: File): Promise<string> {
-  const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg';
-  const { data: presigned } = await getPresignedUploadUrl({
-    folder: 'marriage/diary',
-    resourceId: Date.now().toString(),
-    fileName: `image.${ext}`,
-  });
-  await fetch(presigned.uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
-  return getFileUrl(presigned.path);
+  return uploadFile(file, 'marriage/diary', Date.now().toString());
 }
 
 export function DiaryPage() {

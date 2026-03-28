@@ -51,6 +51,25 @@ export class StorageService {
     return { uploadUrl, path, expiresIn: this.expirySeconds };
   }
 
+  async uploadFile(
+    folder: string,
+    resourceId: string,
+    fileName: string,
+    buffer: Buffer,
+    mimeType: string,
+  ): Promise<{ path: string }> {
+    const sanitized = fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = `${folder}/${resourceId}/${sanitized}`;
+    const command = new PutObjectCommand({
+      Bucket: this.bucket,
+      Key: path,
+      Body: buffer,
+      ContentType: mimeType,
+    });
+    await this.s3.send(command);
+    return { path };
+  }
+
   getPublicUrl(path: string) {
     return { publicUrl: `${this.publicUrl}/${this.bucket}/${path}` };
   }

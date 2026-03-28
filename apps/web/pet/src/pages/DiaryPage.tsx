@@ -7,7 +7,7 @@ import { usePets, setPets, setSelectedPetId } from '../data/petStore';
 import { useDiaryEntries } from '../data/diaryRepo';
 import { getPets } from '../api/pet.api';
 import { announcements } from '../data/announcements';
-import { getPresignedUploadUrl, getFileUrl } from '../api/storage.api';
+import { uploadFile } from '../api/storage.api';
 
 const MOODS: Mood[] = [
   { emoji: '🎉', label: '신났어요',   color: '#FFD93D' },
@@ -23,14 +23,7 @@ const MOODS: Mood[] = [
 const ACCENT = '#97A4D9';
 
 async function uploadDiaryImage(file: File): Promise<string> {
-  const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg';
-  const { data: presigned } = await getPresignedUploadUrl({
-    folder: 'pet/diary',
-    resourceId: Date.now().toString(),
-    fileName: `image.${ext}`,
-  });
-  await fetch(presigned.uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
-  return getFileUrl(presigned.path);
+  return uploadFile(file, 'pet/diary', Date.now().toString());
 }
 
 export function DiaryPage() {

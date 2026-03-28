@@ -9,8 +9,9 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
-    "turbo": "latest",
-    "prettier": "latest"
+    "@types/multer": "^2.1.0",
+    "prettier": "latest",
+    "turbo": "latest"
   },
   "workspaces": [
     "apps/app/*",
