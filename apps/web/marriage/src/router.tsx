@@ -27,6 +27,7 @@ const logo = (
 
 const stackRoutes = {
   '/settings': '설정',
+  '/community/write': '새 게시물',
   '/community/*': '커뮤니티',
   '/profile/*': '프로필',
   '/announcements*': '공지사항',

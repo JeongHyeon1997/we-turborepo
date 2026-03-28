@@ -27,7 +27,6 @@ export function CommunityWritePage() {
     <CommunityWriteFeature
       accentColor="#f4a0a0"
       onSubmit={handleSubmit}
-      onCancel={() => navigate(-1)}
       onUploadImage={uploadImage}
     />
   );

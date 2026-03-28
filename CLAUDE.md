@@ -456,6 +456,28 @@ apps/web/{name}    → 앱별 조합
 
 ---
 
+## 스택 페이지 패턴 (헤더 중복 방지)
+
+`AppLayout`이 이미 헤더를 렌더링하므로, 스택 페이지(`/community/write` 등)에서 자체 헤더/topBar를 추가하면 헤더가 두 개 생긴다.
+
+### 규칙
+
+1. **Feature 컴포넌트 내부에 topBar/헤더 div를 넣지 않는다**
+2. **페이지 타이틀은 `router.tsx`의 `stackRoutes`에서 관리한다**
+   - 와일드카드(`/community/*`) 이전에 정확한 경로(`/community/write`)를 먼저 등록한다
+   - `Object.entries(stackRoutes).find()` 는 삽입 순서대로 첫 번째 매치를 반환하므로, 순서가 중요하다
+3. **액션 버튼(게시하기 등)은 페이지 하단 바에 배치한다** — 헤더가 아닌 컨텐츠 영역 안에서
+
+```ts
+// router.tsx stackRoutes — 순서 주의
+const stackRoutes = {
+  '/community/write': '새 게시물',  // 정확한 경로 먼저
+  '/community/*': '커뮤니티',       // 그 다음 와일드카드
+};
+```
+
+---
+
 ## 스킬 사용법
 
 ### 프론트엔드 스킬

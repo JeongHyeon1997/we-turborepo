@@ -1,11 +1,20 @@
-import { useState, useRef, CSSProperties } from 'react';
+import { useState, useRef, useEffect, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { petColors } from '@we/utils';
 import { IoAdd } from 'react-icons/io5';
 import type { CommunityPostBase } from '@we/utils';
-import { AnnouncementBanner, ReportModal } from '@we/ui-web';
-import { communityPosts as initialPosts } from '../data/communityPosts';
+import { AnnouncementBanner, ReportModal, AuthPromptModal } from '@we/ui-web';
 import { announcements } from '../data/announcements';
+import { getPosts, toggleLike as apiToggleLike, reportPost } from '../api/community.api';
+import { useAuth } from '../data/authStore';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapPost(raw: any): CommunityPostBase {
+  return {
+    ...raw,
+    authorNickname: raw.author?.nickname ?? raw.authorNickname ?? '',
+  };
+}
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -115,10 +124,20 @@ function PostCard({
 
 export function CommunityPage() {
   const navigate = useNavigate();
-  const [posts, setPosts] = useState<CommunityPostBase[]>(initialPosts);
+  const { isLoggedIn } = useAuth();
+  const [posts, setPosts] = useState<CommunityPostBase[]>([]);
   const [reportTargetId, setReportTargetId] = useState<string | null>(null);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 
-  function toggleLike(id: string) {
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    getPosts({ page: 0, size: 20 }).then(res => {
+      setPosts(res.data.content.map(mapPost));
+    }).catch(() => {});
+  }, [isLoggedIn]);
+
+  async function handleToggleLike(id: string) {
+    if (!isLoggedIn) { setShowAuthPrompt(true); return; }
     setPosts(prev =>
       prev.map(p =>
         p.id === id
@@ -126,6 +145,21 @@ export function CommunityPage() {
           : p
       )
     );
+    await apiToggleLike(id).catch(() => {
+      setPosts(prev =>
+        prev.map(p =>
+          p.id === id
+            ? { ...p, liked: !p.liked, likeCount: p.liked ? p.likeCount - 1 : p.likeCount + 1 }
+            : p
+        )
+      );
+    });
+  }
+
+  async function handleReport(reasons: string[], text: string) {
+    if (!reportTargetId) return;
+    await reportPost(reportTargetId, { reason: reasons.join(',') + (text ? ` ${text}` : '') }).catch(() => {});
+    setReportTargetId(null);
   }
 
   return (
@@ -140,13 +174,16 @@ export function CommunityPage() {
           <PostCard
             key={post.id}
             post={post}
-            onLike={() => toggleLike(post.id)}
+            onLike={() => handleToggleLike(post.id)}
             onReport={() => setReportTargetId(post.id)}
           />
         ))}
       </div>
 
-      <button style={{ ...s.fab, backgroundColor: '#97A4D9' }} onClick={() => navigate('/community/write')}>
+      <button
+        style={{ ...s.fab, backgroundColor: '#97A4D9' }}
+        onClick={() => isLoggedIn ? navigate('/community/write') : setShowAuthPrompt(true)}
+      >
         <IoAdd size={28} color="#fff" />
       </button>
 
@@ -154,8 +191,16 @@ export function CommunityPage() {
         visible={reportTargetId !== null}
         targetType="post"
         accentColor="#97A4D9"
-        onSubmit={(_reasons, _text) => { /* TODO: API 연동 */ }}
+        onSubmit={handleReport}
         onClose={() => setReportTargetId(null)}
+      />
+
+      <AuthPromptModal
+        visible={showAuthPrompt}
+        message="커뮤니티 기능은 로그인 후 이용할 수 있어요."
+        accentColor="#97A4D9"
+        onLoginPress={() => { setShowAuthPrompt(false); navigate('/auth'); }}
+        onClose={() => setShowAuthPrompt(false)}
       />
     </div>
   );
