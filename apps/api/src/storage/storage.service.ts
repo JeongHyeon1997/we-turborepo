@@ -32,7 +32,7 @@ export class StorageService {
   constructor(private readonly config: ConfigService) {
     this.bucket = config.get('SUPABASE_BUCKET', 'media');
     this.publicUrl = config.get('SUPABASE_PUBLIC_URL', '');
-    this.serviceRoleKey = config.get('SUPABASE_SERVICE_ROLE_KEY', '');
+    this.serviceRoleKey = config.get('SUPABASE_SERVICE_ROLE_KEY', '') || config.get('SUPABASE_SECRET_KEY', '');
     this.expirySeconds = config.get<number>('SUPABASE_SIGNED_URL_EXPIRY_SECONDS', 3600);
 
     // SUPABASE_PUBLIC_URL = https://xxx.supabase.co/storage/v1/object/public
