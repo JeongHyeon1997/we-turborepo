@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { CommunityWriteFeature } from '@we/ui-web';
-import { getPresignedUploadUrl, getPublicUrl } from '../api/storage.api';
+import { getPresignedUploadUrl, getFileUrl } from '../api/storage.api';
 
 async function uploadImage(file: File): Promise<string> {
   const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg';
@@ -10,8 +10,7 @@ async function uploadImage(file: File): Promise<string> {
     fileName: `image.${ext}`,
   });
   await fetch(presigned.uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
-  const { data } = await getPublicUrl(presigned.path);
-  return data.publicUrl;
+  return getFileUrl(presigned.path);
 }
 
 export function CommunityWritePage() {

@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Query, Param, Req, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Req, Res, NotFoundException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { StorageService, PresignedUploadRequestDto } from './storage.service';
+import { Public } from '../common/decorators/public.decorator';
 
 @ApiTags('Storage')
 @ApiBearerAuth()
@@ -15,23 +16,33 @@ export class StorageController {
     return this.storageService.generateUploadUrl(dto);
   }
 
-  @Get('public-url')
-  @ApiOperation({ summary: '파일 공개 URL 조회' })
-  getPublicUrl(@Query('path') path: string) {
-    return this.storageService.getPublicUrl(path);
-  }
-
   @Get('signed-view-url')
   @ApiOperation({ summary: '파일 서명 조회 URL 발급' })
   getSignedViewUrl(@Query('path') path: string) {
     return this.storageService.getSignedViewUrl(path);
   }
 
+  /** 이미지 프록시 — Supabase URL을 클라이언트에 노출하지 않고 서버에서 스트리밍 */
+  @Public()
   @Get('files/*')
-  @ApiOperation({ summary: '파일 조회 (리다이렉트)' })
-  async redirectToFile(@Req() req: FastifyRequest, @Res() res: FastifyReply) {
-    const path = (req.url as string).replace('/api/storage/files/', '');
-    const { publicUrl } = this.storageService.getPublicUrl(path);
-    res.status(HttpStatus.FOUND).redirect(publicUrl);
+  @ApiOperation({ summary: '파일 프록시 (서버 경유 이미지 제공)' })
+  async proxyFile(@Req() req: FastifyRequest, @Res() res: FastifyReply) {
+    const filePath = (req.url as string).replace('/api/storage/files/', '');
+    const { publicUrl } = this.storageService.getPublicUrl(filePath);
+
+    const upstream = await fetch(publicUrl);
+    if (!upstream.ok) {
+      res.status(404).send({ message: '파일을 찾을 수 없습니다' });
+      return;
+    }
+
+    const contentType = upstream.headers.get('content-type') ?? 'application/octet-stream';
+    const buffer = Buffer.from(await upstream.arrayBuffer());
+
+    res
+      .header('Content-Type', contentType)
+      .header('Cache-Control', 'public, max-age=31536000, immutable')
+      .status(200)
+      .send(buffer);
   }
 }
