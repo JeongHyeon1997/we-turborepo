@@ -509,10 +509,10 @@ const s: Record<string, CSSProperties> = {
   toggleBtn: { display:'flex', alignItems:'center', gap:5, padding:'7px 16px', borderRadius:8, border:'none', backgroundColor:'transparent', cursor:'pointer' },
   toggleText: { fontSize:13, color:N.gray400 },
 
-  list: { flex:1, display:'flex', flexDirection:'column', gap:12, padding:'0 16px 90px', overflowY:'auto', scrollbarWidth:'none' },
+  list: { flex:1, minHeight:0, display:'flex', flexDirection:'column', gap:12, padding:'0 16px 90px', overflowY:'auto', scrollbarWidth:'none' },
 
-  calWrap: { flex:1, display:'flex', flexDirection:'column', overflow:'hidden', padding:'0 12px' },
-  calEntries: { flex:1, overflowY:'auto', scrollbarWidth:'none', padding:'0 0 90px' },
+  calWrap: { flex:1, minHeight:0, display:'flex', flexDirection:'column', overflow:'hidden', padding:'0 12px' },
+  calEntries: { flex:1, minHeight:0, overflowY:'auto', scrollbarWidth:'none', padding:'0 0 90px' },
   calMonthNav: { display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 },
   calNavBtn: { background:'none', border:'none', cursor:'pointer', padding:8, borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center' },
   calMonthTitle: { fontSize:18, fontFamily:'BMJUA, sans-serif', color:N.gray800 },
