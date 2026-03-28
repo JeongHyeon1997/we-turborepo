@@ -1,24 +1,25 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PageResponse } from '../../common/dto/page-response.dto';
+import { IsOptional, IsString } from 'class-validator';
 
 export class CreatePetDiaryDto {
-  petId?: string;
-  title?: string;
-  content: string;
-  mood?: string;
-  moodLabel?: string;
-  moodColor?: string;
-  imageUrl?: string;
+  @IsOptional() @IsString() petId?: string;
+  @IsOptional() @IsString() title?: string;
+  @IsString() content: string;
+  @IsOptional() @IsString() mood?: string;
+  @IsOptional() @IsString() moodLabel?: string;
+  @IsOptional() @IsString() moodColor?: string;
+  @IsOptional() @IsString() imageUrl?: string;
 }
 
 export class UpdatePetDiaryDto {
-  title?: string;
-  content?: string;
-  mood?: string;
-  moodLabel?: string;
-  moodColor?: string;
-  imageUrl?: string;
+  @IsOptional() @IsString() title?: string;
+  @IsOptional() @IsString() content?: string;
+  @IsOptional() @IsString() mood?: string;
+  @IsOptional() @IsString() moodLabel?: string;
+  @IsOptional() @IsString() moodColor?: string;
+  @IsOptional() @IsString() imageUrl?: string;
 }
 
 @Injectable()

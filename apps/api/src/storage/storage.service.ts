@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { IsString } from 'class-validator';
 
 export enum StorageFolder {
   SHARED_AVATAR = 'shared/avatars',
@@ -14,9 +15,9 @@ export enum StorageFolder {
 }
 
 export class PresignedUploadRequestDto {
-  folder: StorageFolder;
-  resourceId: string;
-  fileName: string;
+  @IsString() folder: string;
+  @IsString() resourceId: string;
+  @IsString() fileName: string;
 }
 
 @Injectable()

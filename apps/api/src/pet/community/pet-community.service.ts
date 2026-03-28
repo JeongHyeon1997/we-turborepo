@@ -1,10 +1,16 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PageResponse } from '../../common/dto/page-response.dto';
+import { IsArray, IsOptional, IsString } from 'class-validator';
 
-export class CreatePetPostDto { title: string; content: string; category?: string; imageUrls?: string[]; }
-export class CreatePetCommentDto { content: string; }
-export class CreatePetReportDto { reason: string; }
+export class CreatePetPostDto {
+  @IsString() title: string;
+  @IsString() content: string;
+  @IsOptional() @IsString() category?: string;
+  @IsOptional() @IsArray() @IsString({ each: true }) imageUrls?: string[];
+}
+export class CreatePetCommentDto { @IsString() content: string; }
+export class CreatePetReportDto { @IsString() reason: string; }
 
 @Injectable()
 export class PetCommunityService {
