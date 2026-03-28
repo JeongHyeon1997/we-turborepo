@@ -25,12 +25,19 @@ export class StorageService {
   private readonly s3: S3Client;
   private readonly bucket: string;
   private readonly publicUrl: string;
+  private readonly supabaseBaseUrl: string;
+  private readonly serviceRoleKey: string;
   private readonly expirySeconds: number;
 
   constructor(private readonly config: ConfigService) {
     this.bucket = config.get('SUPABASE_BUCKET', 'media');
     this.publicUrl = config.get('SUPABASE_PUBLIC_URL', '');
+    this.serviceRoleKey = config.get('SUPABASE_SERVICE_ROLE_KEY', '');
     this.expirySeconds = config.get<number>('SUPABASE_SIGNED_URL_EXPIRY_SECONDS', 3600);
+
+    // SUPABASE_PUBLIC_URL = https://xxx.supabase.co/storage/v1/object/public
+    // → base = https://xxx.supabase.co
+    this.supabaseBaseUrl = this.publicUrl.split('/storage/')[0];
 
     this.s3 = new S3Client({
       region: config.get('SUPABASE_REGION', 'ap-northeast-2'),
@@ -51,6 +58,7 @@ export class StorageService {
     return { uploadUrl, path, expiresIn: this.expirySeconds };
   }
 
+  /** Supabase Storage REST API로 직접 업로드 (S3 presigned URL CORS 문제 우회) */
   async uploadFile(
     folder: string,
     resourceId: string,
@@ -60,13 +68,23 @@ export class StorageService {
   ): Promise<{ path: string }> {
     const sanitized = fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
     const path = `${folder}/${resourceId}/${sanitized}`;
-    const command = new PutObjectCommand({
-      Bucket: this.bucket,
-      Key: path,
-      Body: buffer,
-      ContentType: mimeType,
+    const url = `${this.supabaseBaseUrl}/storage/v1/object/${this.bucket}/${path}`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.serviceRoleKey}`,
+        'Content-Type': mimeType,
+        'x-upsert': 'true',
+      },
+      body: buffer,
     });
-    await this.s3.send(command);
+
+    if (!response.ok) {
+      const msg = await response.text().catch(() => response.statusText);
+      throw new Error(`Supabase upload failed [${response.status}]: ${msg}`);
+    }
+
     return { path };
   }
 
