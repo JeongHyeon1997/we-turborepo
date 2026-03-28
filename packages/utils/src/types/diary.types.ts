@@ -4,7 +4,7 @@ import type { PaginationQuery, PageResult } from './common.types';
 
 export interface CoupleDiaryEntry {
   id: string;
-  coupleConnectionId: string;
+  coupleConnectionId: string | null;
   authorId: string;
   authorNickname: string;
   title: string | null;
@@ -12,6 +12,7 @@ export interface CoupleDiaryEntry {
   mood: string | null;
   moodLabel: string | null;
   moodColor: string | null;
+  imageUrl: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -27,6 +28,7 @@ export interface CreateCoupleDiaryRequest {
   mood?: string | null;
   moodLabel?: string | null;
   moodColor?: string | null;
+  imageUrl?: string | null;
 }
 
 /** PUT /api/couple/diary/:id 요청 */
@@ -36,6 +38,7 @@ export interface UpdateCoupleDiaryRequest {
   mood?: string | null;
   moodLabel?: string | null;
   moodColor?: string | null;
+  imageUrl?: string | null;
 }
 
 // ─── Pet Diary ────────────────────────────────────────────────────────────────
@@ -51,6 +54,7 @@ export interface PetDiaryEntry {
   mood: string | null;
   moodLabel: string | null;
   moodColor: string | null;
+  imageUrl: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -70,6 +74,7 @@ export interface CreatePetDiaryRequest {
   mood?: string | null;
   moodLabel?: string | null;
   moodColor?: string | null;
+  imageUrl?: string | null;
 }
 
 /** PUT /api/pet/diary/:id 요청 */
@@ -79,13 +84,14 @@ export interface UpdatePetDiaryRequest {
   mood?: string | null;
   moodLabel?: string | null;
   moodColor?: string | null;
+  imageUrl?: string | null;
 }
 
 // ─── Marriage Diary ───────────────────────────────────────────────────────────
 
 export interface MarriageDiaryEntry {
   id: string;
-  marriageConnectionId: string;
+  marriageConnectionId: string | null;
   authorId: string;
   authorNickname: string;
   title: string | null;
@@ -93,6 +99,7 @@ export interface MarriageDiaryEntry {
   mood: string | null;
   moodLabel: string | null;
   moodColor: string | null;
+  imageUrl: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -108,6 +115,7 @@ export interface CreateMarriageDiaryRequest {
   mood?: string | null;
   moodLabel?: string | null;
   moodColor?: string | null;
+  imageUrl?: string | null;
 }
 
 /** PUT /api/marriage/diary/:id 요청 */
@@ -117,4 +125,5 @@ export interface UpdateMarriageDiaryRequest {
   mood?: string | null;
   moodLabel?: string | null;
   moodColor?: string | null;
+  imageUrl?: string | null;
 }

@@ -66,6 +66,7 @@ export class CoupleDiaryService {
         mood: dto.mood,
         moodLabel: dto.moodLabel,
         moodColor: dto.moodColor,
+        imageUrl: dto.imageUrl,
       },
       include: { author: true },
     });
@@ -83,6 +84,7 @@ export class CoupleDiaryService {
         ...(dto.mood !== undefined && { mood: dto.mood }),
         ...(dto.moodLabel !== undefined && { moodLabel: dto.moodLabel }),
         ...(dto.moodColor !== undefined && { moodColor: dto.moodColor }),
+        ...(dto.imageUrl !== undefined && { imageUrl: dto.imageUrl }),
       },
       include: { author: true },
     });

@@ -4,7 +4,7 @@ import type { DiaryEntry } from '../diary';
 export interface DiaryRemoteApi {
   fetchEntries: () => Promise<DiaryEntry[]>;
   createEntry: (data: Omit<DiaryEntry, 'id' | 'createdAt'>) => Promise<DiaryEntry>;
-  updateEntry: (id: string, patch: { title?: string; content?: string }) => Promise<DiaryEntry>;
+  updateEntry: (id: string, patch: { title?: string; content?: string; imageUrl?: string | null }) => Promise<DiaryEntry>;
   deleteEntry: (id: string) => Promise<void>;
 }
 
@@ -61,7 +61,7 @@ export function createDiaryRepo(deps: DiaryRepoDeps) {
         }
       }
 
-      async function updateEntry(id: string, patch: { title?: string; content?: string }) {
+      async function updateEntry(id: string, patch: { title?: string; content?: string; imageUrl?: string | null }) {
         if (isLoggedIn && deps.remote) {
           const updated = await deps.remote.updateEntry(id, patch);
           store.updateEntry(id, updated);

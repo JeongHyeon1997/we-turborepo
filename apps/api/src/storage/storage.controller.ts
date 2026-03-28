@@ -31,7 +31,7 @@ export class StorageController {
   @ApiOperation({ summary: '파일 조회 (리다이렉트)' })
   async redirectToFile(@Req() req: FastifyRequest, @Res() res: FastifyReply) {
     const path = (req.url as string).replace('/api/storage/files/', '');
-    const { url } = this.storageService.getPublicUrl(path);
-    res.status(HttpStatus.FOUND).redirect(url);
+    const { publicUrl } = this.storageService.getPublicUrl(path);
+    res.status(HttpStatus.FOUND).redirect(publicUrl);
   }
 }

@@ -1,10 +1,10 @@
 import { $axios } from '../lib/$axios';
 import type { UserResponse, UpdateUserRequest, UpdateUserResponse } from '@we/utils';
 
-/** GET /api/user/me 🔒 */
+/** GET /api/users/me 🔒 */
 export const getMe = () =>
-  $axios.get<UserResponse>('/api/user/me');
+  $axios.get<UserResponse>('/api/users/me');
 
-/** PUT /api/user/me 🔒 */
+/** PUT /api/users/me 🔒 */
 export const updateMe = (req: UpdateUserRequest) =>
-  $axios.put<UpdateUserResponse>('/api/user/me', req);
+  $axios.put<UpdateUserResponse>('/api/users/me', req);

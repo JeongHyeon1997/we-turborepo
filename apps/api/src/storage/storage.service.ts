@@ -10,6 +10,7 @@ export enum StorageFolder {
   PET_AVATAR = 'pet/avatars',
   PET_DIARY = 'pet/diary',
   PET_COMMUNITY = 'pet/community',
+  MARRIAGE_DIARY = 'marriage/diary',
 }
 
 export class PresignedUploadRequestDto {
@@ -50,12 +51,13 @@ export class StorageService {
   }
 
   getPublicUrl(path: string) {
-    return { url: `${this.publicUrl}/${this.bucket}/${path}` };
+    return { publicUrl: `${this.publicUrl}/${this.bucket}/${path}` };
   }
 
   async getSignedViewUrl(path: string) {
     const command = new GetObjectCommand({ Bucket: this.bucket, Key: path });
-    const url = await getSignedUrl(this.s3, command, { expiresIn: this.expirySeconds });
-    return { url };
+    const signedUrl = await getSignedUrl(this.s3, command, { expiresIn: this.expirySeconds });
+    const expiresAt = new Date(Date.now() + this.expirySeconds * 1000).toISOString();
+    return { signedUrl, expiresAt };
   }
 }

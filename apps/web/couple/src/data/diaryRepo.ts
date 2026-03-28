@@ -13,6 +13,7 @@ function toLocal(e: CoupleDiaryEntry): DiaryEntry {
     mood: e.mood ?? undefined,
     moodLabel: e.moodLabel ?? undefined,
     moodColor: e.moodColor ?? undefined,
+    image: e.imageUrl ?? undefined,
     createdAt: e.createdAt,
   };
 }
@@ -29,11 +30,12 @@ const remote: DiaryRemoteApi = {
       mood: data.mood ?? null,
       moodLabel: data.moodLabel ?? null,
       moodColor: data.moodColor ?? null,
+      imageUrl: data.image ?? null,
     });
     return toLocal(res.data);
   },
   updateEntry: async (id, patch) => {
-    const res = await updateDiary(id, patch);
+    const res = await updateDiary(id, { ...patch, imageUrl: patch.imageUrl });
     return toLocal(res.data);
   },
   deleteEntry: async (id) => {

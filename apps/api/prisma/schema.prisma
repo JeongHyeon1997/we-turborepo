@@ -119,6 +119,7 @@ model CoupleDiaryEntry {
   mood                String?  @db.VarChar(10)
   moodLabel           String?  @map("mood_label") @db.VarChar(50)
   moodColor           String?  @map("mood_color") @db.VarChar(20)
+  imageUrl            String?  @map("image_url") @db.VarChar(500)
   createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -265,6 +266,7 @@ model PetDiaryEntry {
   mood      String?  @db.VarChar(10)
   moodLabel String?  @map("mood_label") @db.VarChar(50)
   moodColor String?  @map("mood_color") @db.VarChar(20)
+  imageUrl  String?  @map("image_url") @db.VarChar(500)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -384,6 +386,7 @@ model MarriageDiaryEntry {
   mood                 String?  @db.VarChar(10)
   moodLabel            String?  @map("mood_label") @db.VarChar(50)
   moodColor            String?  @map("mood_color") @db.VarChar(20)
+  imageUrl             String?  @map("image_url") @db.VarChar(500)
   createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz
 

@@ -9,6 +9,7 @@ export class CreatePetDiaryDto {
   mood?: string;
   moodLabel?: string;
   moodColor?: string;
+  imageUrl?: string;
 }
 
 export class UpdatePetDiaryDto {
@@ -17,6 +18,7 @@ export class UpdatePetDiaryDto {
   mood?: string;
   moodLabel?: string;
   moodColor?: string;
+  imageUrl?: string;
 }
 
 @Injectable()
@@ -76,6 +78,7 @@ export class PetDiaryService {
         mood: dto.mood,
         moodLabel: dto.moodLabel,
         moodColor: dto.moodColor,
+        imageUrl: dto.imageUrl,
       },
       include: { author: true },
     });
@@ -93,6 +96,7 @@ export class PetDiaryService {
         ...(dto.mood !== undefined && { mood: dto.mood }),
         ...(dto.moodLabel !== undefined && { moodLabel: dto.moodLabel }),
         ...(dto.moodColor !== undefined && { moodColor: dto.moodColor }),
+        ...(dto.imageUrl !== undefined && { imageUrl: dto.imageUrl }),
       },
       include: { author: true },
     });

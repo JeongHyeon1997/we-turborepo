@@ -25,6 +25,11 @@ export class CreateDiaryDto {
   @IsOptional()
   @IsString()
   moodColor?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
 }
 
 export class UpdateDiaryDto {
@@ -52,4 +57,9 @@ export class UpdateDiaryDto {
   @IsOptional()
   @IsString()
   moodColor?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
 }

@@ -14,7 +14,7 @@ const N = {
 };
 
 // ─── 타입 ─────────────────────────────────────────────────────────────────────
-type CreateFormData = { mood: Mood; title: string; content: string; image: string | null };
+type CreateFormData = { mood: Mood; title: string; content: string; image: string | null; imageFile: File | null };
 type ViewMode = 'list' | 'calendar';
 
 export interface DiaryFeatureProps {
@@ -31,9 +31,11 @@ export interface DiaryFeatureProps {
   /** 새 항목 추가 (id·createdAt 없이 데이터만 전달) */
   onAddEntry: (data: Omit<DiaryEntry, 'id' | 'createdAt'>) => void | Promise<void>;
   /** 항목 수정 (본인 항목만 호출됨) */
-  onUpdateEntry?: (id: string, patch: { title: string; content: string }) => void | Promise<void>;
+  onUpdateEntry?: (id: string, patch: { title: string; content: string; imageUrl?: string | null }) => void | Promise<void>;
   /** 항목 삭제 (본인 항목만 호출됨) */
   onDeleteEntry?: (id: string) => void | Promise<void>;
+  /** 이미지 파일 → 업로드 후 공개 URL 반환 */
+  onUploadImage?: (file: File) => Promise<string>;
 }
 
 // ─── 달력 헬퍼 ────────────────────────────────────────────────────────────────
@@ -105,7 +107,7 @@ const card: Record<string, CSSProperties> = {
 // ─── DiaryFeature ─────────────────────────────────────────────────────────────
 export function DiaryFeature({
   accentColor, moods, moodModalTitle, entries, loading,
-  onAddEntry, onUpdateEntry, onDeleteEntry,
+  onAddEntry, onUpdateEntry, onDeleteEntry, onUploadImage,
 }: DiaryFeatureProps) {
   const today = new Date();
   const [viewMode,      setViewMode]      = useState<ViewMode>('list');
@@ -119,8 +121,11 @@ export function DiaryFeature({
   const [isEditing,     setIsEditing]     = useState(false);
   const [editTitle,     setEditTitle]     = useState('');
   const [editContent,   setEditContent]   = useState('');
+  const [editImage,     setEditImage]     = useState<string | null>(null);
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [actionBusy,    setActionBusy]    = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef     = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
 
   const entryMap = buildEntryMap(entries);
   const calDays  = getCalendarDays(calYear, calMonth);
@@ -138,13 +143,14 @@ export function DiaryFeature({
 
   function selectMood(mood: Mood) {
     setShowMoodModal(false);
-    setCreateForm({ mood, title: '', content: '', image: null });
+    setCreateForm({ mood, title: '', content: '', image: null, imageFile: null });
   }
 
   function handleImageChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setCreateForm(prev => prev ? { ...prev, image: URL.createObjectURL(file) } : prev);
+    setCreateForm(prev => prev ? { ...prev, image: URL.createObjectURL(file), imageFile: file } : prev);
+    e.target.value = '';
   }
 
   async function submitDiary() {
@@ -152,13 +158,17 @@ export function DiaryFeature({
     if (!createForm.title.trim() || !createForm.content.trim()) { alert('제목과 내용을 입력해주세요.'); return; }
     setSubmitting(true);
     try {
+      let imageUrl: string | null = null;
+      if (createForm.imageFile && onUploadImage) {
+        imageUrl = await onUploadImage(createForm.imageFile);
+      }
       await onAddEntry({
         title: createForm.title.trim(),
         content: createForm.content.trim(),
         mood: createForm.mood.emoji,
         moodLabel: createForm.mood.label,
         moodColor: createForm.mood.color,
-        image: createForm.image,
+        image: imageUrl,
       });
       setCreateForm(null);
     } catch {
@@ -172,7 +182,17 @@ export function DiaryFeature({
     if (!detailEntry) return;
     setEditTitle(detailEntry.title ?? '');
     setEditContent(detailEntry.content);
+    setEditImage(detailEntry.image ?? null);
+    setEditImageFile(null);
     setIsEditing(true);
+  }
+
+  function handleEditImageChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setEditImageFile(file);
+    setEditImage(URL.createObjectURL(file));
+    e.target.value = '';
   }
 
   async function submitEdit() {
@@ -180,8 +200,12 @@ export function DiaryFeature({
     if (!editTitle.trim() || !editContent.trim()) { alert('제목과 내용을 입력해주세요.'); return; }
     setActionBusy(true);
     try {
-      await onUpdateEntry(detailEntry.id, { title: editTitle.trim(), content: editContent.trim() });
-      setDetailEntry(prev => prev ? { ...prev, title: editTitle.trim(), content: editContent.trim() } : prev);
+      let imageUrl: string | null = editImage;
+      if (editImageFile && onUploadImage) {
+        imageUrl = await onUploadImage(editImageFile);
+      }
+      await onUpdateEntry(detailEntry.id, { title: editTitle.trim(), content: editContent.trim(), imageUrl });
+      setDetailEntry(prev => prev ? { ...prev, title: editTitle.trim(), content: editContent.trim(), image: imageUrl ?? undefined } : prev);
       setIsEditing(false);
     } catch {
       alert('수정에 실패했습니다. 다시 시도해주세요.');
@@ -357,6 +381,21 @@ export function DiaryFeature({
                   onChange={e => setEditContent(e.target.value)}
                   placeholder="내용"
                 />
+                {editImage ? (
+                  <div style={s.imgPreview}>
+                    <img src={editImage} alt="" style={{ width: '100%', aspectRatio: '3/2', objectFit: 'cover', display: 'block' }} />
+                    <div style={s.editImgOverlay}>
+                      <button style={s.editImgBtn} onClick={() => editFileInputRef.current?.click()}>교체</button>
+                      <button style={s.editImgBtn} onClick={() => { setEditImage(null); setEditImageFile(null); }}>삭제</button>
+                    </div>
+                  </div>
+                ) : (
+                  <button style={s.addImgBtn} onClick={() => editFileInputRef.current?.click()}>
+                    <span style={{ fontSize: 16 }}>🖼️</span>
+                    <span style={s.footerBtnLabel}>이미지 추가</span>
+                  </button>
+                )}
+                <input ref={editFileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleEditImageChange} />
                 <div style={s.editActions}>
                   <button style={s.cancelBtn} onClick={() => setIsEditing(false)}>취소</button>
                   <button
@@ -504,7 +543,10 @@ const s: Record<string, CSSProperties> = {
 
   editBody: { flex:1, overflowY:'auto', padding:'14px 16px 8px', display:'flex', flexDirection:'column', gap:0 },
   editTitleInput: { width:'100%', border:'none', outline:'none', fontSize:18, fontFamily:'BMJUA, sans-serif', color:N.gray800, padding:'8px 0', boxSizing:'border-box' },
-  editContentInput: { width:'100%', flex:1, minHeight:160, border:'none', outline:'none', resize:'none', fontSize:15, fontFamily:'BMHANNAPro, sans-serif', color:N.gray700, lineHeight:1.7, padding:'4px 0', boxSizing:'border-box' },
+  editContentInput: { width:'100%', minHeight:120, border:'none', outline:'none', resize:'none', fontSize:15, fontFamily:'BMHANNAPro, sans-serif', color:N.gray700, lineHeight:1.7, padding:'4px 0', boxSizing:'border-box' },
+  editImgOverlay: { position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', gap:10, backgroundColor:'rgba(0,0,0,0.35)' },
+  editImgBtn: { padding:'6px 16px', borderRadius:20, border:'none', backgroundColor:'rgba(255,255,255,0.9)', fontSize:13, cursor:'pointer', fontFamily:'BMHANNAPro, sans-serif', color:N.gray700 },
+  addImgBtn: { display:'flex', alignItems:'center', gap:6, padding:'8px 12px', background:N.gray100, border:'none', borderRadius:10, cursor:'pointer', marginTop:10, alignSelf:'flex-start' },
   editActions: { display:'flex', justifyContent:'flex-end', gap:8, padding:'12px 0 4px', flexShrink:0 },
 
   moodModal: { backgroundColor:N.white, borderRadius:24, padding:28, width:'88%', maxWidth:360 },

@@ -20,7 +20,7 @@ export const createDiary = (req: CreateCoupleDiaryRequest) =>
   $axios.post<CoupleDiaryEntry>('/api/couple/diary', req);
 
 /** PUT /api/couple/diary/:id 🔒 */
-export const updateDiary = (id: string, req: { title?: string | null; content?: string | null }) =>
+export const updateDiary = (id: string, req: { title?: string | null; content?: string | null; imageUrl?: string | null }) =>
   $axios.put<CoupleDiaryEntry>(`/api/couple/diary/${id}`, req);
 
 /** DELETE /api/couple/diary/:id 🔒 */
