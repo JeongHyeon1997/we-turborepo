@@ -8,7 +8,7 @@ export interface CommunityPostBase {
   authorNickname: string;
   title: string;
   content: string;
-  imageUrl?: string | null;
+  imageUrls?: string[] | null;
   category: string | null;
   likeCount: number;
   commentCount: number;
@@ -60,6 +60,7 @@ export interface CreatePostRequest {
   title: string;
   content: string;
   category?: string | null;
+  imageUrls?: string[] | null;
 }
 
 /** POST /community/posts 응답 */

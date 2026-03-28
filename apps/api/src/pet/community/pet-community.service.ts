@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PageResponse } from '../../common/dto/page-response.dto';
 
-export class CreatePetPostDto { title: string; content: string; category?: string; }
+export class CreatePetPostDto { title: string; content: string; category?: string; imageUrls?: string[]; }
 export class CreatePetCommentDto { content: string; }
 export class CreatePetReportDto { reason: string; }
 
@@ -33,7 +33,7 @@ export class PetCommunityService {
 
   async createPost(userId: string, dto: CreatePetPostDto) {
     return this.prisma.petCommunityPost.create({
-      data: { authorId: userId, title: dto.title, content: dto.content, category: dto.category },
+      data: { authorId: userId, title: dto.title, content: dto.content, category: dto.category, imageUrls: dto.imageUrls ?? [] },
       include: { author: true },
     });
   }

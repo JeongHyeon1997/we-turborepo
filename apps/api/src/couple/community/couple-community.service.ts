@@ -37,7 +37,7 @@ export class CoupleCommunityService {
 
   async createPost(userId: string, dto: CreatePostDto) {
     return this.prisma.coupleCommunityPost.create({
-      data: { authorId: userId, title: dto.title, content: dto.content, category: dto.category },
+      data: { authorId: userId, title: dto.title, content: dto.content, category: dto.category, imageUrls: dto.imageUrls ?? [] },
       include: { author: true },
     });
   }

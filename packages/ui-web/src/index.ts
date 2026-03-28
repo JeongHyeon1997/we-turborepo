@@ -18,3 +18,5 @@ export type { AuthPromptModalProps } from './features/AuthPromptModal';
 export type { AuthFeatureProps } from './features/AuthFeature';
 export { ReportModal } from './features/ReportModal';
 export type { ReportModalProps } from './features/ReportModal';
+export { CommunityWriteFeature } from './features/CommunityWriteFeature';
+export type { CommunityWriteFeatureProps } from './features/CommunityWriteFeature';

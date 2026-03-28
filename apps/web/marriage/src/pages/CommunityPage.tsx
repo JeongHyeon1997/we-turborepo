@@ -1,6 +1,7 @@
 import { useState, useRef, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { marriageColors } from '@we/utils';
+import { IoAdd } from 'react-icons/io5';
 import type { CommunityPostBase } from '@we/utils';
 import { AnnouncementBanner, ReportModal } from '@we/ui-web';
 import { communityPosts as initialPosts } from '../data/communityPosts';
@@ -74,7 +75,13 @@ function PostCard({
 
       <p style={s.content}>{post.content}</p>
 
-      {post.imageUrl && <img src={post.imageUrl} alt="" style={s.image} />}
+      {post.imageUrls && post.imageUrls.length > 0 && (
+        <div style={post.imageUrls.length === 1 ? undefined : s.imageGrid}>
+          {post.imageUrls.map((url, i) => (
+            <img key={i} src={url} alt="" style={post.imageUrls!.length === 1 ? s.imageSingle : s.imageGridItem} />
+          ))}
+        </div>
+      )}
 
       <div style={s.actions}>
         <button style={s.actionBtn} onClick={handleLike} className={animating ? 'animate-heart-bounce' : ''}>
@@ -116,7 +123,7 @@ export function CommunityPage() {
   }
 
   return (
-    <div>
+    <div style={{ position: 'relative' }}>
       <AnnouncementBanner
         announcements={announcements}
         accentColor={ACCENT}
@@ -132,6 +139,10 @@ export function CommunityPage() {
           />
         ))}
       </div>
+
+      <button style={{ ...s.fab, backgroundColor: ACCENT }} onClick={() => navigate('/community/write')}>
+        <IoAdd size={28} color="#fff" />
+      </button>
 
       <ReportModal
         visible={reportTargetId !== null}
@@ -162,7 +173,16 @@ const s: Record<string, CSSProperties> = {
   menu: { position: 'absolute', right: 0, top: '100%', marginTop: 4, backgroundColor: '#fff', borderRadius: 10, boxShadow: '0 4px 16px rgba(0,0,0,0.12)', border: '1px solid #e5e7eb', zIndex: 100, minWidth: 120, overflow: 'hidden' },
   menuItem: { display: 'block', width: '100%', padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, fontFamily: 'BMJUA, sans-serif', color: '#ef4444', textAlign: 'left', whiteSpace: 'nowrap' },
   content: { margin: '10px 14px', fontSize: 14, lineHeight: 1.6, color: marriageColors.gray700, fontFamily: 'BMHANNAPro, sans-serif' },
-  image: { width: '100%', aspectRatio: '3/2', objectFit: 'cover', display: 'block' },
+  imageSingle: { width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block' },
+  imageGrid: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 },
+  imageGridItem: { width: '100%', aspectRatio: '1/1', objectFit: 'cover', display: 'block' },
+  fab: {
+    position: 'fixed', bottom: 80, right: 20,
+    width: 52, height: 52, borderRadius: 26,
+    border: 'none', cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.18)', zIndex: 50,
+  },
   actions: { display: 'flex', alignItems: 'center', gap: 4, padding: '10px 10px', borderTop: `1px solid ${marriageColors.gray100}`, marginTop: 4 },
   actionBtn: { display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 8, fontFamily: 'BMJUA, sans-serif' },
   actionCount: { fontSize: 13, color: marriageColors.gray500 },

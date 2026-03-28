@@ -64,7 +64,13 @@ export function CommunityDetailPage() {
 
       <p style={s.content}>{post.content}</p>
 
-      {post.imageUrl && <img src={post.imageUrl} alt="" style={s.image} />}
+      {post.imageUrls && post.imageUrls.length > 0 && (
+        <div>
+          {post.imageUrls.map((url, i) => (
+            <img key={i} src={url} alt="" style={s.image} />
+          ))}
+        </div>
+      )}
 
       <div style={s.actions}>
         <button style={s.actionBtn} onClick={handleLike} className={animating ? 'animate-heart-bounce' : ''}>

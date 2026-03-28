@@ -1,6 +1,7 @@
 import { useState, useRef, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { petColors } from '@we/utils';
+import { IoAdd } from 'react-icons/io5';
 import type { CommunityPostBase } from '@we/utils';
 import { AnnouncementBanner, ReportModal } from '@we/ui-web';
 import { communityPosts as initialPosts } from '../data/communityPosts';
@@ -76,8 +77,12 @@ function PostCard({
 
       <p style={s.content}>{post.content}</p>
 
-      {post.imageUrl && (
-        <img src={post.imageUrl} alt="" style={s.image} />
+      {post.imageUrls && post.imageUrls.length > 0 && (
+        <div style={post.imageUrls.length === 1 ? undefined : s.imageGrid}>
+          {post.imageUrls.map((url, i) => (
+            <img key={i} src={url} alt="" style={post.imageUrls!.length === 1 ? s.imageSingle : s.imageGridItem} />
+          ))}
+        </div>
       )}
 
       <div style={s.actions}>
@@ -124,7 +129,7 @@ export function CommunityPage() {
   }
 
   return (
-    <div>
+    <div style={{ position: 'relative' }}>
       <AnnouncementBanner
         announcements={announcements}
         accentColor="#97A4D9"
@@ -140,6 +145,10 @@ export function CommunityPage() {
           />
         ))}
       </div>
+
+      <button style={{ ...s.fab, backgroundColor: '#97A4D9' }} onClick={() => navigate('/community/write')}>
+        <IoAdd size={28} color="#fff" />
+      </button>
 
       <ReportModal
         visible={reportTargetId !== null}
@@ -205,9 +214,21 @@ const s: Record<string, CSSProperties> = {
     lineHeight: 1.6, color: petColors.gray700,
     fontFamily: 'BMHANNAPro, sans-serif',
   },
-  image: {
-    width: '100%', aspectRatio: '3/2',
-    objectFit: 'cover', display: 'block',
+  imageSingle: {
+    width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block',
+  },
+  imageGrid: {
+    display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2,
+  },
+  imageGridItem: {
+    width: '100%', aspectRatio: '1/1', objectFit: 'cover', display: 'block',
+  },
+  fab: {
+    position: 'fixed', bottom: 80, right: 20,
+    width: 52, height: 52, borderRadius: 26,
+    border: 'none', cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.18)', zIndex: 50,
   },
   actions: {
     display: 'flex', alignItems: 'center', gap: 4,

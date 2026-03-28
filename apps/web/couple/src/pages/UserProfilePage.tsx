@@ -13,7 +13,7 @@ function formatDate(iso: string) {
 function CommunityItem({ post }: { post: CommunityPostBase }) {
   return (
     <div style={s.item}>
-      {post.imageUrl && <img src={post.imageUrl} alt="" style={s.itemThumb} />}
+      {post.imageUrls?.[0] && <img src={post.imageUrls[0]} alt="" style={s.itemThumb} />}
       <div style={s.itemBody}>
         <p style={s.itemContent}>{post.content}</p>
         <span style={s.itemMeta}>{formatDate(post.createdAt)} · 🤍 {post.likeCount}</span>

@@ -7,6 +7,7 @@ import { DiaryPage } from './pages/DiaryPage';
 import { GalleryPage } from './pages/GalleryPage';
 import { CommunityPage } from './pages/CommunityPage';
 import { CommunityDetailPage } from './pages/CommunityDetailPage';
+import { CommunityWritePage } from './pages/CommunityWritePage';
 import { MyInfoPage } from './pages/MyInfoPage';
 import { UserProfilePage } from './pages/UserProfilePage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -52,6 +53,7 @@ export const router: ReturnType<typeof createBrowserRouter> = createBrowserRoute
         { path: 'diary', element: <DiaryPage /> },
         { path: 'gallery', element: <GalleryPage /> },
         { path: 'community', element: <CommunityPage /> },
+        { path: 'community/write', element: <CommunityWritePage /> },
         { path: 'community/:id', element: <CommunityDetailPage /> },
         { path: 'my-info', element: <MyInfoPage /> },
         { path: 'profile/:name', element: <UserProfilePage /> },
