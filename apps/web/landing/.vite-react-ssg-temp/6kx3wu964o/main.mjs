@@ -1,0 +1,709 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { ViteReactSSG } from "vite-react-ssg";
+import { Link, useParams, Navigate } from "react-router-dom";
+const ARTICLES = [
+  {
+    slug: "why-couple-diary-matters",
+    title: "커플 일기를 써야 하는 이유 — 연인 관계에서 기록의 힘",
+    summary: "매일 나누는 작은 이야기들이 모여 관계의 역사가 됩니다. 커플 일기가 두 사람의 유대를 어떻게 강화하는지 알아보세요.",
+    category: "커플",
+    date: "2025-12-01",
+    readTime: 5,
+    emoji: "💑",
+    content: [
+      {
+        body: '연애를 하다 보면 "우리가 언제 처음 만났더라?", "그때 뭘 먹었지?" 같은 질문을 서로에게 던지는 순간이 옵니다. 기억은 생각보다 훨씬 빨리 흐릿해집니다. 처음 손을 잡던 날의 설렘, 함께 걸었던 골목의 냄새, 서로를 보며 웃었던 표정들. 이 모든 것들이 기록되지 않으면 언젠가는 흐릿한 감정의 덩어리로만 남게 됩니다.'
+      },
+      {
+        heading: "기록은 감정을 오래 붙잡아 둡니다",
+        body: '심리학 연구에 따르면 감정적 기억은 반복적으로 회상할수록 더 생생하게 유지됩니다. 커플 일기를 쓰는 행위는 단순히 날짜와 장소를 적는 것이 아니라, 그 순간의 감정을 언어로 고정하는 작업입니다. "오늘 같이 산책하다 비를 맞았는데, 그래도 웃음이 났다"는 한 줄이 몇 년 뒤 읽혔을 때 얼마나 큰 감동으로 돌아오는지 경험해본 사람은 압니다.'
+      },
+      {
+        heading: "다툼 이후의 화해도 기록이 돕습니다",
+        body: '커플 일기는 좋은 날만을 위한 것이 아닙니다. 어려웠던 날, 오해했던 순간, 화해하기까지의 과정도 기록해두면 두 사람이 어떤 방식으로 갈등을 해결하는지 패턴을 발견할 수 있습니다. "우리는 항상 이런 식으로 풀었구나"라는 인식은 다음 갈등 앞에서 두려움을 줄여줍니다.'
+      },
+      {
+        heading: "함께 쓰는 일기의 특별함",
+        body: "혼자 쓰는 일기와 달리, 커플 일기는 두 사람이 같은 날을 서로 다른 시각으로 기록합니다. 같은 영화를 보고 전혀 다른 장면에서 울었다는 사실을 일기로 발견하는 경험은 상대방에 대한 이해를 깊게 만듭니다. 우리 앱에서는 두 사람이 같은 날에 각자의 일기를 작성하고, 서로의 기록을 함께 볼 수 있습니다."
+      },
+      {
+        heading: "지금 바로 시작하는 것이 중요합니다",
+        body: '완벽한 일기를 쓸 필요는 없습니다. "오늘 같이 떡볶이 먹었다. 맛있었다." 이 한 줄로도 충분합니다. 중요한 건 꾸준함입니다. 10년 뒤 그 한 줄을 읽으며 두 사람이 함께 웃을 수 있다면, 그것으로 이미 가치 있는 기록이 됩니다.'
+      }
+    ]
+  },
+  {
+    slug: "pet-diary-guide",
+    title: "반려동물 성장 일기 완벽 가이드 — 우리 아이의 모든 순간",
+    summary: "강아지가 처음 계단을 올라간 날, 고양이가 처음 골골송을 부른 날. 이 작은 이정표들을 놓치지 마세요.",
+    category: "펫",
+    date: "2025-12-05",
+    readTime: 6,
+    emoji: "🐾",
+    content: [
+      {
+        body: '반려동물을 키우는 사람이라면 누구나 경험합니다. "우리 강아지가 처음으로 악수를 배운 게 언제였지?" "고양이가 처음 집에 왔을 때 얼마나 작았었나?" 시간이 지나면 이 소중한 기억들이 뭉뚱그려져 버립니다. 반려동물의 성장은 사람보다 훨씬 빠릅니다. 그만큼 더 꼼꼼하게 기록해두는 것이 중요합니다.'
+      },
+      {
+        heading: "어떤 것들을 기록해야 할까요?",
+        body: "체중과 신체 변화는 건강 관리의 기본입니다. 월령별로 체중을 기록해두면 갑작스러운 체중 변화를 빠르게 알아챌 수 있습니다. 그 외에도 처음 먹어본 음식과 반응, 좋아하는 장난감과 놀이, 예방접종 날짜와 다음 접종 일정, 처음으로 성공한 훈련 등을 기록하면 나중에 매우 유용한 자료가 됩니다."
+      },
+      {
+        heading: "사진과 함께 기록하면 더욱 생생합니다",
+        body: "텍스트 기록만큼 중요한 것이 사진 기록입니다. 같은 장소, 같은 포즈로 분기마다 찍어두면 성장 비교 사진을 만들 수 있습니다. 강아지가 처음 입은 옷 사진, 고양이가 좋아하는 햇빛 드는 자리에서 자는 사진 — 이런 일상적인 사진들이 시간이 지날수록 더 소중해집니다."
+      },
+      {
+        heading: "가족과 함께 기록하세요",
+        body: "반려동물은 가족 구성원 모두가 함께 돌봅니다. 우리 아이 앱에서는 가족 그룹을 만들어 여러 명이 함께 일기를 작성할 수 있습니다. 아빠가 오전 산책 사진을 올리고, 엄마가 저녁 밥 먹는 영상을 추가하면 하루의 기록이 더욱 풍성해집니다."
+      },
+      {
+        heading: "수의사 방문 전 기록이 큰 도움이 됩니다",
+        body: "반려동물은 아프다는 말을 직접 할 수 없습니다. 이상한 행동이 언제부터 시작됐는지, 식욕이 줄어든 것이 며칠 전인지를 일기로 기록해두면 수의사에게 정확한 정보를 전달할 수 있습니다. 이는 정확한 진단에 큰 도움이 됩니다."
+      }
+    ]
+  },
+  {
+    slug: "marriage-memory-keeping",
+    title: "결혼 생활 기록의 힘 — 부부가 함께 추억을 쌓는 방법",
+    summary: "결혼 후에는 오히려 기록이 줄어드는 경우가 많습니다. 일상이 된 소중함을 놓치지 않는 방법을 소개합니다.",
+    category: "부부",
+    date: "2025-12-10",
+    readTime: 5,
+    emoji: "💍",
+    content: [
+      {
+        body: '연애할 때는 데이트마다 사진을 찍고, 카카오톡 대화를 저장해두고, 함께한 영수증도 모아두던 사람들이 결혼 후에는 기록이 급격히 줄어드는 경우가 많습니다. "매일 보는데 뭘 기록해"라는 생각, 익숙함이 가져오는 무심함이 그 이유입니다. 하지만 바로 그 일상적인 순간들이 나중에 가장 그리운 기억이 됩니다.'
+      },
+      {
+        heading: "작은 기념일을 만들어보세요",
+        body: "결혼기념일만이 기념일이 아닙니다. 처음으로 함께 요리한 날, 부부가 처음으로 크게 싸우고 화해한 날, 새 동네로 이사한 날 같은 크고 작은 이정표들을 기록해두세요. 5년 뒤 그 기록을 함께 읽으면 우리가 얼마나 많은 것들을 함께 겪어왔는지 실감할 수 있습니다."
+      },
+      {
+        heading: "감사의 기록도 중요합니다",
+        body: '일기에 "오늘 배우자가 야근하고 늦게 들어왔는데도 설거지를 해줬다"는 문장을 남겨두세요. 고마움을 글로 표현하는 습관은 관계를 긍정적으로 유지하는 데 큰 도움이 됩니다. 상대방도 나중에 그 기록을 보며 자신이 기억되고 있다는 따뜻함을 느낄 것입니다.'
+      },
+      {
+        heading: "부부 갤러리로 추억을 시각화하세요",
+        body: "스마트폰 사진 앨범은 너무 많은 사진이 뒤섞여 있어 특별한 순간을 찾기 어렵습니다. 부부 전용 갤러리에 의미 있는 사진들만 모아두면, 언제든 두 사람만의 이야기를 다시 볼 수 있습니다. 우리 부부 앱의 갤러리는 날짜별, 장소별로 정리해 보관할 수 있습니다."
+      }
+    ]
+  },
+  {
+    slug: "digital-diary-vs-paper",
+    title: "디지털 일기 vs 종이 일기 — 어떤 것이 더 나에게 맞을까?",
+    summary: "각각의 장단점을 비교하고, 두 방식을 현명하게 조합하는 방법을 알아봅니다.",
+    category: "일기 팁",
+    date: "2025-12-15",
+    readTime: 4,
+    emoji: "📔",
+    content: [
+      {
+        body: "일기를 쓰고 싶다는 마음은 있지만, 종이 일기를 사야 할지 앱을 써야 할지 망설이는 분들이 많습니다. 결론부터 말씀드리면, 두 방식 모두 장점이 있고 어떤 것이 더 낫다고 단정할 수 없습니다. 중요한 건 어떤 방식이 나에게 더 잘 맞느냐입니다."
+      },
+      {
+        heading: "종이 일기의 장점",
+        body: "손으로 글씨를 쓰는 행위 자체가 집중력을 높이고 감정을 정리하는 데 도움이 됩니다. 알림도 없고, 배터리도 필요 없고, 누군가에게 해킹당할 걱정도 없습니다. 또한 나중에 물리적으로 꺼내 읽을 때의 감촉과 느낌은 디지털 기기가 줄 수 없는 특별함이 있습니다."
+      },
+      {
+        heading: "디지털 일기의 장점",
+        body: "언제 어디서나 스마트폰으로 기록할 수 있다는 편리함이 가장 큰 장점입니다. 사진과 텍스트를 함께 남길 수 있고, 검색 기능으로 원하는 날의 기록을 바로 찾을 수 있습니다. 분실 걱정이 없고, 커플이나 가족과 함께 공유할 수 있다는 점도 디지털만의 강점입니다."
+      },
+      {
+        heading: "두 가지를 조합하는 방법",
+        body: "일상적인 메모와 사진은 앱에 기록하고, 특별한 날이나 깊이 있는 감정은 종이에 써보는 것도 좋은 방법입니다. 또는 평소에는 앱을 쓰다가 한 달에 한 번 그달의 기록을 종이에 필사하는 방식도 있습니다. 중요한 건 어떤 방식이든 꾸준히 쓰는 것입니다."
+      }
+    ]
+  },
+  {
+    slug: "how-we-built-this",
+    title: "우리가 이 서비스를 만든 방법 — Turborepo, NestJS, Vite React",
+    summary: "커플, 펫, 결혼 앱을 하나의 모노레포에서 관리하는 방법. 개발 스택과 아키텍처를 소개합니다.",
+    category: "개발 이야기",
+    date: "2025-12-18",
+    readTime: 7,
+    emoji: "⚙️",
+    content: [
+      {
+        body: '"우리" 서비스는 커플, 반려동물, 결혼이라는 세 가지 서비스를 하나의 코드베이스에서 개발하고 관리합니다. 서비스마다 별도의 저장소를 만들면 코드 중복이 많아지고 관리가 복잡해집니다. 이를 해결하기 위해 모노레포(Monorepo) 방식을 채택했습니다.'
+      },
+      {
+        heading: "Turborepo — 모노레포의 심장",
+        body: "Turborepo는 Vercel에서 만든 고성능 모노레포 빌드 시스템입니다. 여러 패키지와 앱의 빌드를 병렬로 실행하고, 변경이 없는 부분은 캐시를 활용해 건너뜁니다. 덕분에 커플 앱만 수정했을 때 펫 앱을 다시 빌드하지 않아도 됩니다. 빌드 시간을 획기적으로 줄여주는 핵심 도구입니다."
+      },
+      {
+        heading: "NestJS — 백엔드 API 서버",
+        body: "NestJS는 TypeScript 기반의 Node.js 프레임워크입니다. Angular에서 영감을 받은 모듈 시스템으로 코드를 체계적으로 구성할 수 있습니다. Prisma ORM과 Supabase PostgreSQL 데이터베이스를 조합해 안정적인 데이터 관리를 구현했습니다. 커플, 펫, 결혼 데이터를 별도 스키마로 격리해 각 서비스의 독립성을 보장합니다."
+      },
+      {
+        heading: "Vite + React — 웹 프론트엔드",
+        body: "웹 앱은 Vite 빌드 도구와 React 19를 사용합니다. Vite는 개발 서버 시작이 매우 빠르고, TypeScript를 기본으로 지원합니다. Tailwind CSS로 스타일링하고, Zustand로 상태를 관리합니다. 커플, 펫, 결혼 세 앱이 공통 UI 컴포넌트를 packages/ui-web에서 공유하기 때문에 디자인 일관성을 유지하면서 각 서비스의 테마만 다르게 적용할 수 있습니다."
+      },
+      {
+        heading: "Expo + React Native — 모바일 앱",
+        body: "모바일 앱은 Expo 기반의 React Native로 개발합니다. 하나의 코드베이스로 iOS와 Android 모두를 지원합니다. NativeWind를 사용해 웹과 동일한 Tailwind 문법으로 스타일링하여 웹과 앱 간 코드 공유를 극대화했습니다."
+      },
+      {
+        heading: "왜 이 스택을 선택했나요?",
+        body: '모든 선택의 기준은 "작은 팀이 세 개의 서비스를 효율적으로 유지보수할 수 있는가"였습니다. 모노레포로 코드를 공유하고, TypeScript로 웹·앱·백엔드를 통일하고, Bun으로 패키지 설치 속도를 빠르게 유지했습니다. 서비스를 사용하는 분들이 빠르고 안정적인 경험을 할 수 있도록 계속해서 개선해 나가겠습니다.'
+      }
+    ]
+  },
+  {
+    slug: "couple-communication-tips",
+    title: "연인 사이 소통을 위한 5가지 기록 습관",
+    summary: "좋은 관계는 좋은 소통에서 시작됩니다. 일기와 메모를 활용해 상대방을 더 잘 이해하는 방법을 알아봅니다.",
+    category: "커플",
+    date: "2025-12-22",
+    readTime: 4,
+    emoji: "💬",
+    content: [
+      {
+        body: '연애를 오래 하다 보면 대화가 줄어드는 경우가 있습니다. "어땠어?" "그냥 그랬어"와 같은 짧은 대화가 반복되면 두 사람 사이에 보이지 않는 거리가 생깁니다. 기록 습관은 이 거리를 좁히는 데 생각보다 큰 도움이 됩니다.'
+      },
+      {
+        heading: "1. 오늘의 감사한 점 한 가지씩 쓰기",
+        body: '매일 저녁 상대방에 대해 감사한 점 한 가지를 일기에 적어보세요. "오늘 내가 지쳐 있을 때 말없이 커피 한 잔 가져다준 것"처럼 사소한 것도 좋습니다. 이 습관은 관계에서 부정적인 부분에 집중하는 대신 긍정적인 면을 보는 연습을 시켜줍니다.'
+      },
+      {
+        heading: "2. 함께 보고 싶은 곳, 먹고 싶은 것 목록 만들기",
+        body: '"언젠가 가자"고 말하고 실제로 가지 못하는 장소들이 있지 않나요? 일기나 메모장에 버킷리스트를 함께 만들어보세요. 목록을 보며 다음 데이트를 계획하는 과정 자체가 설레는 경험이 됩니다.'
+      },
+      {
+        heading: "3. 상대방이 좋아하는 것 기록해두기",
+        body: '대화 중에 "나 이런 거 좋아해"라고 말했던 것들을 메모해두세요. 상대방이 좋아하는 음식, 꽃, 노래, 영화 장르. 이 기록들은 선물을 고를 때, 특별한 날을 계획할 때 큰 도움이 됩니다.'
+      },
+      {
+        heading: "4. 다툰 후 각자의 생각 정리하기",
+        body: "감정이 격해진 상태에서는 서로의 말을 온전히 듣기 어렵습니다. 다툼 후 각자 일기에 자신의 감정과 이유를 써보고, 진정된 후 서로의 기록을 공유해보세요. 말로는 하기 어려웠던 이야기를 글로 전달하면 오해를 푸는 데 도움이 됩니다."
+      },
+      {
+        heading: "5. 1년 전 오늘 무엇을 했는지 돌아보기",
+        body: '커플 일기를 1년 이상 써왔다면, 1년 전 오늘의 기록을 함께 읽어보는 시간을 가져보세요. "우리가 이때 이런 걸 했구나"라는 회상은 관계에 따뜻한 에너지를 불어넣어 줍니다.'
+      }
+    ]
+  },
+  {
+    slug: "gallery-tips",
+    title: "사진 갤러리로 추억 관리하는 스마트한 방법",
+    summary: "스마트폰 안에 수천 장이 쌓인 사진들, 어떻게 정리하면 나중에도 쉽게 찾고 오래 간직할 수 있을까요?",
+    category: "갤러리",
+    date: "2026-01-05",
+    readTime: 4,
+    emoji: "🖼️",
+    content: [
+      {
+        body: '많은 분들이 스마트폰 앨범에 수천 장의 사진을 가지고 있지만, 막상 특정 순간의 사진을 찾으려면 한참 스크롤해야 합니다. "그때 바다 갔을 때 찍은 사진 어디 갔더라?"라는 상황, 한 번씩 겪어보셨을 겁니다.'
+      },
+      {
+        heading: "공유 갤러리의 장점",
+        body: "커플이나 가족이 함께 쓰는 공유 갤러리의 가장 큰 장점은 각자의 시점에서 찍은 사진이 한곳에 모인다는 점입니다. 여행을 가면 한 명은 풍경을, 다른 한 명은 서로의 표정을 찍게 됩니다. 이 사진들이 하나의 앨범에 모이면 그날을 훨씬 입체적으로 기억할 수 있습니다."
+      },
+      {
+        heading: "일기와 사진을 함께 남기기",
+        body: '사진만 있으면 "어디서 찍었지?" "이게 언제였더라?"를 되묻게 됩니다. 사진과 함께 짧은 메모를 남겨두세요. 장소, 날씨, 그날의 느낌 한 줄이면 충분합니다. 나중에 그 사진을 볼 때 맥락이 있어서 훨씬 생생하게 기억이 살아납니다.'
+      },
+      {
+        heading: "자주 못 꺼내보는 사진은 없는 것과 다름없습니다",
+        body: "갤러리에 보관된 사진도 자주 꺼내보지 않으면 기억에서 멀어집니다. 월별로 그달의 베스트 사진을 골라보는 습관, 혹은 기념일에 작년 같은 날 사진을 꺼내보는 루틴을 만들어보세요. 과거의 사진이 현재의 감정과 연결될 때 추억은 살아납니다."
+      }
+    ]
+  },
+  {
+    slug: "community-feature-guide",
+    title: "커뮤니티 기능 활용하기 — 같은 경험을 가진 사람들과 연결되는 방법",
+    summary: "내 이야기를 나누고 다른 사람의 경험에서 배우는 커뮤니티. 처음 시작하는 분들을 위한 가이드입니다.",
+    category: "커뮤니티",
+    date: "2026-01-12",
+    readTime: 3,
+    emoji: "👥",
+    content: [
+      {
+        body: '일기는 나만의 공간이지만, 커뮤니티는 같은 상황에 있는 사람들과 이야기를 나누는 공간입니다. 처음 반려동물을 입양했을 때의 막막함, 커플 첫 여행의 설렘, 결혼 후 처음 겪는 생활 차이. 이런 경험들을 공유하면 "나만 그런 게 아니었구나"라는 위안을 얻을 수 있습니다.'
+      },
+      {
+        heading: "어떤 글을 올리면 좋을까요?",
+        body: "거창한 이야기가 아니어도 됩니다. 오늘 강아지가 처음으로 악수를 배웠다는 이야기, 연인과 함께 만들어 본 첫 요리 사진, 결혼기념일을 어떻게 보냈는지 — 일상적인 이야기들이 커뮤니티를 따뜻하게 만듭니다."
+      },
+      {
+        heading: "다른 사람의 글에서 아이디어 얻기",
+        body: "커뮤니티는 아이디어의 보물창고입니다. 다른 커플들의 데이트 장소, 다른 펫 가족들의 훈련 방법, 다른 부부들의 기념일 이벤트 아이디어를 보며 우리만의 방식을 발견할 수 있습니다."
+      },
+      {
+        heading: "익명성과 프라이버시 보호",
+        body: "커뮤니티에 글을 올리는 것이 부담스러운 분들도 있습니다. 우리 서비스에서는 닉네임으로 활동하기 때문에 실명이 노출되지 않습니다. 나누고 싶은 만큼만, 보여주고 싶은 만큼만 공유하면 됩니다."
+      }
+    ]
+  }
+];
+const APPS = [
+  {
+    key: "couple",
+    emoji: "💑",
+    name: "우리, 커플",
+    tagline: "연인과 함께",
+    description: "소중한 사람과의 하루를 기록하고 추억을 쌓아가세요. 둘만의 공간에서 더 가까워질 수 있어요.",
+    href: "https://couple.weourus.xyz",
+    gradient: "from-rose-50 to-pink-100",
+    border: "border-rose-200",
+    badge: "bg-rose-100 text-rose-500",
+    btn: "bg-rose-400 hover:bg-rose-500",
+    ring: "ring-rose-200",
+    features: ["커플 일기장", "사진 갤러리", "커뮤니티"]
+  },
+  {
+    key: "pet",
+    emoji: "🐾",
+    name: "우리, 아이",
+    tagline: "반려동물과 함께",
+    description: "내 아이의 성장을 기록하고 가족과 공유하세요. 펫 다이어리와 커뮤니티로 더 특별한 반려 생활을.",
+    href: "https://pet.weourus.xyz",
+    gradient: "from-teal-50 to-cyan-100",
+    border: "border-teal-200",
+    badge: "bg-teal-100 text-teal-600",
+    btn: "bg-teal-400 hover:bg-teal-500",
+    ring: "ring-teal-200",
+    features: ["펫 다이어리", "성장 갤러리", "커뮤니티"]
+  },
+  {
+    key: "marriage",
+    emoji: "💍",
+    name: "우리, 부부",
+    tagline: "배우자와 함께",
+    description: "결혼 생활의 소소한 행복을 기록하세요. 부부만의 일기와 갤러리로 함께한 날들을 오래도록 간직해요.",
+    href: "https://marriage.weourus.xyz",
+    gradient: "from-amber-50 to-yellow-100",
+    border: "border-amber-200",
+    badge: "bg-amber-100 text-amber-600",
+    btn: "bg-amber-400 hover:bg-amber-500",
+    ring: "ring-amber-200",
+    features: ["부부 일기장", "사진 갤러리", "커뮤니티"]
+  }
+];
+function Navbar() {
+  return /* @__PURE__ */ jsx("header", { className: "fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100", children: /* @__PURE__ */ jsxs("div", { className: "max-w-5xl mx-auto px-6 h-14 flex items-center justify-between", children: [
+    /* @__PURE__ */ jsx(Link, { to: "/", className: "text-lg font-bold tracking-tight text-gray-900 no-underline", children: "우리" }),
+    /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-5", children: [
+      /* @__PURE__ */ jsx("a", { href: "#apps", className: "text-sm text-gray-500 hover:text-gray-900 transition-colors", children: "서비스" }),
+      /* @__PURE__ */ jsx(Link, { to: "/story", className: "text-sm text-gray-500 hover:text-gray-900 transition-colors no-underline", children: "스토리" }),
+      /* @__PURE__ */ jsx(
+        "a",
+        {
+          href: "mailto:contact@weourus.xyz",
+          className: "text-sm text-gray-500 hover:text-gray-900 transition-colors",
+          children: "문의"
+        }
+      )
+    ] })
+  ] }) });
+}
+function Hero() {
+  return /* @__PURE__ */ jsxs("section", { className: "pt-28 pb-16 px-6 text-center", children: [
+    /* @__PURE__ */ jsxs("div", { className: "inline-flex items-center gap-2 bg-gray-100 text-gray-500 text-xs font-medium px-3 py-1.5 rounded-full mb-8", children: [
+      /* @__PURE__ */ jsx("span", { className: "w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" }),
+      "weourus.xyz"
+    ] }),
+    /* @__PURE__ */ jsxs("h1", { className: "text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-tight tracking-tight mb-5", children: [
+      "소중한 사람과",
+      /* @__PURE__ */ jsx("br", {}),
+      /* @__PURE__ */ jsx("span", { className: "text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-pink-400 to-purple-400", children: "함께하는 일상" })
+    ] }),
+    /* @__PURE__ */ jsx("p", { className: "max-w-lg mx-auto text-base sm:text-lg text-gray-500 leading-relaxed mb-10", children: "연인, 반려동물, 배우자와의 매일을 기록하고 공유하세요." }),
+    /* @__PURE__ */ jsx("div", { className: "flex flex-wrap items-center justify-center gap-3 mb-16", children: APPS.map((app) => /* @__PURE__ */ jsxs(
+      "a",
+      {
+        href: `#${app.key}`,
+        className: [
+          "inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium",
+          "border transition-all duration-200 hover:-translate-y-0.5",
+          app.border,
+          app.badge
+        ].join(" "),
+        children: [
+          /* @__PURE__ */ jsx("span", { children: app.emoji }),
+          app.name
+        ]
+      },
+      app.key
+    )) }),
+    /* @__PURE__ */ jsx("div", { className: "max-w-2xl mx-auto grid grid-cols-3 gap-3 px-4", children: APPS.map((app) => /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: [
+          "aspect-[9/16] rounded-2xl bg-gradient-to-br",
+          app.gradient,
+          "border",
+          app.border,
+          "flex flex-col items-center justify-center gap-2 shadow-sm"
+        ].join(" "),
+        children: [
+          /* @__PURE__ */ jsx("span", { className: "text-3xl", children: app.emoji }),
+          /* @__PURE__ */ jsx("span", { className: "text-xs font-semibold text-gray-600", children: app.name })
+        ]
+      },
+      app.key
+    )) })
+  ] });
+}
+function FeatureRow() {
+  const features = [
+    {
+      icon: "📔",
+      title: "일기 & 갤러리",
+      desc: "하루하루의 소중한 순간을 사진과 글로 기록해요."
+    },
+    {
+      icon: "👫",
+      title: "함께 관리",
+      desc: "커플, 가족과 공유하며 추억을 함께 쌓아가요."
+    },
+    {
+      icon: "💬",
+      title: "커뮤니티",
+      desc: "같은 마음을 가진 사람들과 이야기를 나눠요."
+    }
+  ];
+  return /* @__PURE__ */ jsx("section", { className: "bg-gray-50 border-y border-gray-100 py-16 px-6 my-4", children: /* @__PURE__ */ jsxs("div", { className: "max-w-5xl mx-auto", children: [
+    /* @__PURE__ */ jsx("p", { className: "text-center text-xs font-semibold text-gray-400 uppercase tracking-widest mb-10", children: "주요 기능" }),
+    /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-8 text-center", children: features.map((f) => /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-center", children: [
+      /* @__PURE__ */ jsx("div", { className: "w-12 h-12 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-center justify-center text-2xl mb-4", children: f.icon }),
+      /* @__PURE__ */ jsx("h3", { className: "text-sm font-bold text-gray-900 mb-1.5", children: f.title }),
+      /* @__PURE__ */ jsx("p", { className: "text-sm text-gray-500 leading-relaxed", children: f.desc })
+    ] }, f.title)) })
+  ] }) });
+}
+function AppCard({ app }) {
+  return /* @__PURE__ */ jsxs(
+    "a",
+    {
+      id: app.key,
+      href: app.href,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      className: [
+        "group relative flex flex-col rounded-2xl border",
+        app.border,
+        "bg-gradient-to-br",
+        app.gradient,
+        "p-7 transition-all duration-300",
+        "hover:-translate-y-1 hover:shadow-xl hover:ring-4",
+        app.ring,
+        "cursor-pointer no-underline"
+      ].join(" "),
+      children: [
+        /* @__PURE__ */ jsxs("div", { className: "flex items-start justify-between mb-5", children: [
+          /* @__PURE__ */ jsx("span", { className: "text-4xl leading-none", children: app.emoji }),
+          /* @__PURE__ */ jsx("span", { className: `text-xs font-semibold px-2.5 py-1 rounded-full ${app.badge}`, children: app.tagline })
+        ] }),
+        /* @__PURE__ */ jsx("h2", { className: "text-xl font-bold text-gray-900 mb-2", children: app.name }),
+        /* @__PURE__ */ jsx("p", { className: "text-sm text-gray-600 leading-relaxed flex-1 mb-5", children: app.description }),
+        /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-1.5 mb-6", children: app.features.map((f) => /* @__PURE__ */ jsx("span", { className: "text-xs bg-white/60 text-gray-600 px-2.5 py-1 rounded-lg font-medium", children: f }, f)) }),
+        /* @__PURE__ */ jsxs(
+          "div",
+          {
+            className: [
+              "inline-flex items-center justify-center gap-1.5",
+              "text-white text-sm font-semibold",
+              "px-5 py-2.5 rounded-xl",
+              "transition-colors duration-200",
+              app.btn,
+              "self-start"
+            ].join(" "),
+            children: [
+              "시작하기",
+              /* @__PURE__ */ jsx("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round", children: /* @__PURE__ */ jsx("path", { d: "M5 12h14M12 5l7 7-7 7" }) })
+            ]
+          }
+        )
+      ]
+    }
+  );
+}
+function AppsSection() {
+  return /* @__PURE__ */ jsxs("section", { id: "apps", className: "max-w-5xl mx-auto px-6 py-20", children: [
+    /* @__PURE__ */ jsxs("div", { className: "text-center mb-12", children: [
+      /* @__PURE__ */ jsx("p", { className: "text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3", children: "서비스" }),
+      /* @__PURE__ */ jsx("h2", { className: "text-2xl sm:text-3xl font-bold text-gray-900", children: "우리의 앱을 만나보세요" })
+    ] }),
+    /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-5", children: APPS.map((app) => /* @__PURE__ */ jsx(AppCard, { app }, app.key)) })
+  ] });
+}
+function ArticlePreviewStrip() {
+  const preview = ARTICLES.slice(0, 4);
+  return /* @__PURE__ */ jsxs("section", { className: "max-w-5xl mx-auto px-6 pb-20", children: [
+    /* @__PURE__ */ jsxs("div", { className: "text-center mb-10", children: [
+      /* @__PURE__ */ jsx("p", { className: "text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3", children: "스토리" }),
+      /* @__PURE__ */ jsx("h2", { className: "text-2xl sm:text-3xl font-bold text-gray-900 mb-3", children: "우리의 이야기" }),
+      /* @__PURE__ */ jsx("p", { className: "text-sm text-gray-500", children: "일상을 기록하고 관계를 깊게 만드는 방법을 나눕니다." })
+    ] }),
+    /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8", children: preview.map((article) => /* @__PURE__ */ jsxs(
+      Link,
+      {
+        to: `/story/${article.slug}`,
+        className: "group flex items-start gap-4 p-4 rounded-2xl border border-gray-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 no-underline bg-white",
+        children: [
+          /* @__PURE__ */ jsx("div", { className: "w-14 h-14 rounded-xl bg-gray-50 flex items-center justify-center text-2xl flex-shrink-0", children: article.emoji }),
+          /* @__PURE__ */ jsxs("div", { className: "flex-1 min-w-0", children: [
+            /* @__PURE__ */ jsxs("p", { className: "text-xs text-gray-400 mb-1", children: [
+              article.category,
+              " · ",
+              article.readTime,
+              "분 읽기"
+            ] }),
+            /* @__PURE__ */ jsx("h3", { className: "text-sm font-bold text-gray-900 leading-snug group-hover:text-rose-500 transition-colors line-clamp-2", children: article.title })
+          ] })
+        ]
+      },
+      article.slug
+    )) }),
+    /* @__PURE__ */ jsx("div", { className: "text-center", children: /* @__PURE__ */ jsxs(
+      Link,
+      {
+        to: "/story",
+        className: "inline-flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-400 px-6 py-2.5 rounded-xl transition-all no-underline",
+        children: [
+          "전체 스토리 보기",
+          /* @__PURE__ */ jsx("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round", children: /* @__PURE__ */ jsx("path", { d: "M5 12h14M12 5l7 7-7 7" }) })
+        ]
+      }
+    ) })
+  ] });
+}
+function CtaSection() {
+  return /* @__PURE__ */ jsx("section", { className: "max-w-5xl mx-auto px-6 pb-24", children: /* @__PURE__ */ jsxs("div", { className: "rounded-3xl bg-gradient-to-br from-gray-900 to-gray-800 p-10 sm:p-14 text-center", children: [
+    /* @__PURE__ */ jsx("p", { className: "text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4", children: "시작하기" }),
+    /* @__PURE__ */ jsx("h2", { className: "text-2xl sm:text-3xl font-bold text-white mb-4", children: "오늘의 일상을 기록해보세요" }),
+    /* @__PURE__ */ jsx("p", { className: "text-gray-400 text-sm sm:text-base mb-8 max-w-md mx-auto leading-relaxed", children: "회원가입 없이도 일기와 갤러리를 사용할 수 있어요. 지금 바로 시작해보세요." }),
+    /* @__PURE__ */ jsx("div", { className: "flex flex-wrap items-center justify-center gap-3", children: APPS.map((app) => /* @__PURE__ */ jsxs(
+      "a",
+      {
+        href: app.href,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        className: "inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors duration-200",
+        children: [
+          app.emoji,
+          " ",
+          app.name
+        ]
+      },
+      app.key
+    )) })
+  ] }) });
+}
+function Footer() {
+  return /* @__PURE__ */ jsx("footer", { className: "border-t border-gray-100 py-10 px-6", children: /* @__PURE__ */ jsxs("div", { className: "max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4", children: [
+    /* @__PURE__ */ jsx("span", { className: "text-sm font-bold text-gray-900", children: "우리" }),
+    /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-6 text-xs text-gray-400", children: [
+      /* @__PURE__ */ jsx("a", { href: "https://couple.weourus.xyz", target: "_blank", rel: "noopener noreferrer", className: "hover:text-gray-700 transition-colors", children: "커플" }),
+      /* @__PURE__ */ jsx("a", { href: "https://pet.weourus.xyz", target: "_blank", rel: "noopener noreferrer", className: "hover:text-gray-700 transition-colors", children: "아이" }),
+      /* @__PURE__ */ jsx("a", { href: "https://marriage.weourus.xyz", target: "_blank", rel: "noopener noreferrer", className: "hover:text-gray-700 transition-colors", children: "부부" }),
+      /* @__PURE__ */ jsx(Link, { to: "/story", className: "hover:text-gray-700 transition-colors no-underline", children: "스토리" }),
+      /* @__PURE__ */ jsx("a", { href: "mailto:contact@weourus.xyz", className: "hover:text-gray-700 transition-colors", children: "문의" })
+    ] }),
+    /* @__PURE__ */ jsx("p", { className: "text-xs text-gray-400", children: "© 2026 weourus.xyz" })
+  ] }) });
+}
+function App() {
+  return /* @__PURE__ */ jsxs("div", { className: "min-h-screen bg-white", children: [
+    /* @__PURE__ */ jsx(Navbar, {}),
+    /* @__PURE__ */ jsxs("main", { children: [
+      /* @__PURE__ */ jsx(Hero, {}),
+      /* @__PURE__ */ jsx(FeatureRow, {}),
+      /* @__PURE__ */ jsx(AppsSection, {}),
+      /* @__PURE__ */ jsx(ArticlePreviewStrip, {}),
+      /* @__PURE__ */ jsx(CtaSection, {})
+    ] }),
+    /* @__PURE__ */ jsx(Footer, {})
+  ] });
+}
+const CATEGORY_COLORS$1 = {
+  "커플": "bg-rose-100 text-rose-600",
+  "펫": "bg-teal-100 text-teal-600",
+  "부부": "bg-amber-100 text-amber-600",
+  "일기 팁": "bg-purple-100 text-purple-600",
+  "개발 이야기": "bg-blue-100 text-blue-600",
+  "갤러리": "bg-orange-100 text-orange-600",
+  "커뮤니티": "bg-green-100 text-green-600"
+};
+function StoryPage() {
+  return /* @__PURE__ */ jsxs("div", { className: "min-h-screen bg-white", children: [
+    /* @__PURE__ */ jsx("header", { className: "fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100", children: /* @__PURE__ */ jsxs("div", { className: "max-w-5xl mx-auto px-6 h-14 flex items-center justify-between", children: [
+      /* @__PURE__ */ jsx(Link, { to: "/", className: "text-lg font-bold tracking-tight text-gray-900 no-underline", children: "우리" }),
+      /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-5", children: [
+        /* @__PURE__ */ jsx(Link, { to: "/#apps", className: "text-sm text-gray-500 hover:text-gray-900 transition-colors no-underline", children: "서비스" }),
+        /* @__PURE__ */ jsx(Link, { to: "/story", className: "text-sm text-gray-900 font-semibold transition-colors no-underline", children: "스토리" }),
+        /* @__PURE__ */ jsx("a", { href: "mailto:contact@weourus.xyz", className: "text-sm text-gray-500 hover:text-gray-900 transition-colors", children: "문의" })
+      ] })
+    ] }) }),
+    /* @__PURE__ */ jsxs("main", { className: "pt-24 pb-24 max-w-5xl mx-auto px-6", children: [
+      /* @__PURE__ */ jsxs("div", { className: "text-center mb-14", children: [
+        /* @__PURE__ */ jsx("p", { className: "text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3", children: "스토리" }),
+        /* @__PURE__ */ jsx("h1", { className: "text-3xl sm:text-4xl font-bold text-gray-900 mb-4", children: "우리의 이야기" }),
+        /* @__PURE__ */ jsx("p", { className: "text-base text-gray-500 max-w-xl mx-auto leading-relaxed", children: "일상을 기록하는 방법, 관계를 더 깊게 만드는 습관, 그리고 서비스를 만드는 이야기를 나눕니다." })
+      ] }),
+      /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6", children: ARTICLES.map((article) => {
+        const categoryColor = CATEGORY_COLORS$1[article.category] ?? "bg-gray-100 text-gray-600";
+        return /* @__PURE__ */ jsxs(
+          Link,
+          {
+            to: `/story/${article.slug}`,
+            className: "group flex flex-col rounded-2xl border border-gray-100 bg-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden no-underline",
+            children: [
+              /* @__PURE__ */ jsx("div", { className: "h-36 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center", children: /* @__PURE__ */ jsx("span", { className: "text-5xl", children: article.emoji }) }),
+              /* @__PURE__ */ jsxs("div", { className: "flex flex-col flex-1 p-5", children: [
+                /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 mb-3", children: [
+                  /* @__PURE__ */ jsx("span", { className: `text-xs font-semibold px-2.5 py-1 rounded-full ${categoryColor}`, children: article.category }),
+                  /* @__PURE__ */ jsxs("span", { className: "text-xs text-gray-400", children: [
+                    article.readTime,
+                    "분 읽기"
+                  ] })
+                ] }),
+                /* @__PURE__ */ jsx("h2", { className: "text-sm font-bold text-gray-900 leading-snug mb-2 group-hover:text-rose-500 transition-colors", children: article.title }),
+                /* @__PURE__ */ jsx("p", { className: "text-xs text-gray-500 leading-relaxed flex-1 line-clamp-3", children: article.summary }),
+                /* @__PURE__ */ jsx("p", { className: "text-xs text-gray-400 mt-4", children: article.date })
+              ] })
+            ]
+          },
+          article.slug
+        );
+      }) })
+    ] }),
+    /* @__PURE__ */ jsx("footer", { className: "border-t border-gray-100 py-10 px-6", children: /* @__PURE__ */ jsxs("div", { className: "max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4", children: [
+      /* @__PURE__ */ jsx(Link, { to: "/", className: "text-sm font-bold text-gray-900 no-underline", children: "우리" }),
+      /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-6 text-xs text-gray-400", children: [
+        /* @__PURE__ */ jsx("a", { href: "https://couple.weourus.xyz", target: "_blank", rel: "noopener noreferrer", className: "hover:text-gray-700 transition-colors", children: "커플" }),
+        /* @__PURE__ */ jsx("a", { href: "https://pet.weourus.xyz", target: "_blank", rel: "noopener noreferrer", className: "hover:text-gray-700 transition-colors", children: "아이" }),
+        /* @__PURE__ */ jsx("a", { href: "https://marriage.weourus.xyz", target: "_blank", rel: "noopener noreferrer", className: "hover:text-gray-700 transition-colors", children: "부부" }),
+        /* @__PURE__ */ jsx("a", { href: "mailto:contact@weourus.xyz", className: "hover:text-gray-700 transition-colors", children: "문의" })
+      ] }),
+      /* @__PURE__ */ jsx("p", { className: "text-xs text-gray-400", children: "© 2026 weourus.xyz" })
+    ] }) })
+  ] });
+}
+const CATEGORY_COLORS = {
+  "커플": "bg-rose-100 text-rose-600",
+  "펫": "bg-teal-100 text-teal-600",
+  "부부": "bg-amber-100 text-amber-600",
+  "일기 팁": "bg-purple-100 text-purple-600",
+  "개발 이야기": "bg-blue-100 text-blue-600",
+  "갤러리": "bg-orange-100 text-orange-600",
+  "커뮤니티": "bg-green-100 text-green-600"
+};
+function ArticlePage() {
+  const { slug } = useParams();
+  const article = ARTICLES.find((a) => a.slug === slug);
+  if (!article) return /* @__PURE__ */ jsx(Navigate, { to: "/story", replace: true });
+  const categoryColor = CATEGORY_COLORS[article.category] ?? "bg-gray-100 text-gray-600";
+  const others = ARTICLES.filter((a) => a.slug !== slug).slice(0, 3);
+  return /* @__PURE__ */ jsxs("div", { className: "min-h-screen bg-white", children: [
+    /* @__PURE__ */ jsx("header", { className: "fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100", children: /* @__PURE__ */ jsxs("div", { className: "max-w-5xl mx-auto px-6 h-14 flex items-center justify-between", children: [
+      /* @__PURE__ */ jsx(Link, { to: "/", className: "text-lg font-bold tracking-tight text-gray-900 no-underline", children: "우리" }),
+      /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-5", children: [
+        /* @__PURE__ */ jsx(Link, { to: "/#apps", className: "text-sm text-gray-500 hover:text-gray-900 transition-colors no-underline", children: "서비스" }),
+        /* @__PURE__ */ jsx(Link, { to: "/story", className: "text-sm text-gray-500 hover:text-gray-900 transition-colors no-underline", children: "스토리" }),
+        /* @__PURE__ */ jsx("a", { href: "mailto:contact@weourus.xyz", className: "text-sm text-gray-500 hover:text-gray-900 transition-colors", children: "문의" })
+      ] })
+    ] }) }),
+    /* @__PURE__ */ jsxs("main", { className: "pt-24 pb-24", children: [
+      /* @__PURE__ */ jsxs("div", { className: "max-w-2xl mx-auto px-6 mb-12", children: [
+        /* @__PURE__ */ jsxs(Link, { to: "/story", className: "inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-700 transition-colors mb-6 no-underline", children: [
+          /* @__PURE__ */ jsx("svg", { width: "12", height: "12", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round", children: /* @__PURE__ */ jsx("path", { d: "M19 12H5M12 19l-7-7 7-7" }) }),
+          "스토리 목록으로"
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 mb-4", children: [
+          /* @__PURE__ */ jsx("span", { className: `text-xs font-semibold px-2.5 py-1 rounded-full ${categoryColor}`, children: article.category }),
+          /* @__PURE__ */ jsxs("span", { className: "text-xs text-gray-400", children: [
+            article.readTime,
+            "분 읽기"
+          ] }),
+          /* @__PURE__ */ jsx("span", { className: "text-xs text-gray-300", children: "·" }),
+          /* @__PURE__ */ jsx("span", { className: "text-xs text-gray-400", children: article.date })
+        ] }),
+        /* @__PURE__ */ jsx("h1", { className: "text-2xl sm:text-3xl font-bold text-gray-900 leading-tight mb-4", children: article.title }),
+        /* @__PURE__ */ jsx("p", { className: "text-base text-gray-500 leading-relaxed border-l-4 border-gray-100 pl-4", children: article.summary })
+      ] }),
+      /* @__PURE__ */ jsx("div", { className: "text-center text-4xl mb-12", children: article.emoji }),
+      /* @__PURE__ */ jsx("article", { className: "max-w-2xl mx-auto px-6 space-y-8", children: article.content.map((section, i) => /* @__PURE__ */ jsxs("section", { children: [
+        section.heading && /* @__PURE__ */ jsx("h2", { className: "text-lg font-bold text-gray-900 mb-3", children: section.heading }),
+        /* @__PURE__ */ jsx("p", { className: "text-base text-gray-600 leading-relaxed", children: section.body })
+      ] }, i)) }),
+      /* @__PURE__ */ jsx("div", { className: "max-w-2xl mx-auto px-6 mt-16", children: /* @__PURE__ */ jsxs("div", { className: "rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 p-8 text-center", children: [
+        /* @__PURE__ */ jsx("p", { className: "text-white font-bold text-lg mb-2", children: "지금 바로 시작해보세요" }),
+        /* @__PURE__ */ jsx("p", { className: "text-gray-400 text-sm mb-6", children: "회원가입 없이도 일기와 갤러리를 이용할 수 있어요." }),
+        /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap items-center justify-center gap-3", children: [
+          /* @__PURE__ */ jsx(
+            "a",
+            {
+              href: "https://couple.weourus.xyz",
+              target: "_blank",
+              rel: "noopener noreferrer",
+              className: "inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors",
+              children: "💑 우리, 커플"
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "a",
+            {
+              href: "https://pet.weourus.xyz",
+              target: "_blank",
+              rel: "noopener noreferrer",
+              className: "inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors",
+              children: "🐾 우리, 아이"
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "a",
+            {
+              href: "https://marriage.weourus.xyz",
+              target: "_blank",
+              rel: "noopener noreferrer",
+              className: "inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors",
+              children: "💍 우리, 부부"
+            }
+          )
+        ] })
+      ] }) }),
+      others.length > 0 && /* @__PURE__ */ jsxs("div", { className: "max-w-5xl mx-auto px-6 mt-20", children: [
+        /* @__PURE__ */ jsx("p", { className: "text-xs font-semibold text-gray-400 uppercase tracking-widest mb-6 text-center", children: "더 읽어보기" }),
+        /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-5", children: others.map((a) => {
+          const cc = CATEGORY_COLORS[a.category] ?? "bg-gray-100 text-gray-600";
+          return /* @__PURE__ */ jsxs(
+            Link,
+            {
+              to: `/story/${a.slug}`,
+              className: "group flex flex-col rounded-2xl border border-gray-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden no-underline",
+              children: [
+                /* @__PURE__ */ jsx("div", { className: "h-24 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center text-4xl", children: a.emoji }),
+                /* @__PURE__ */ jsxs("div", { className: "p-4", children: [
+                  /* @__PURE__ */ jsx("span", { className: `text-xs font-semibold px-2 py-0.5 rounded-full ${cc} inline-block mb-2`, children: a.category }),
+                  /* @__PURE__ */ jsx("p", { className: "text-sm font-bold text-gray-900 leading-snug group-hover:text-rose-500 transition-colors line-clamp-2", children: a.title })
+                ] })
+              ]
+            },
+            a.slug
+          );
+        }) })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsx("footer", { className: "border-t border-gray-100 py-10 px-6", children: /* @__PURE__ */ jsxs("div", { className: "max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4", children: [
+      /* @__PURE__ */ jsx(Link, { to: "/", className: "text-sm font-bold text-gray-900 no-underline", children: "우리" }),
+      /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-6 text-xs text-gray-400", children: [
+        /* @__PURE__ */ jsx("a", { href: "https://couple.weourus.xyz", target: "_blank", rel: "noopener noreferrer", className: "hover:text-gray-700 transition-colors", children: "커플" }),
+        /* @__PURE__ */ jsx("a", { href: "https://pet.weourus.xyz", target: "_blank", rel: "noopener noreferrer", className: "hover:text-gray-700 transition-colors", children: "아이" }),
+        /* @__PURE__ */ jsx("a", { href: "https://marriage.weourus.xyz", target: "_blank", rel: "noopener noreferrer", className: "hover:text-gray-700 transition-colors", children: "부부" }),
+        /* @__PURE__ */ jsx("a", { href: "mailto:contact@weourus.xyz", className: "hover:text-gray-700 transition-colors", children: "문의" })
+      ] }),
+      /* @__PURE__ */ jsx("p", { className: "text-xs text-gray-400", children: "© 2026 weourus.xyz" })
+    ] }) })
+  ] });
+}
+const createRoot = ViteReactSSG({
+  routes: [
+    { path: "/", element: /* @__PURE__ */ jsx(App, {}) },
+    { path: "/story", element: /* @__PURE__ */ jsx(StoryPage, {}) },
+    { path: "/story/:slug", element: /* @__PURE__ */ jsx(ArticlePage, {}) }
+  ]
+});
+export {
+  createRoot
+};
